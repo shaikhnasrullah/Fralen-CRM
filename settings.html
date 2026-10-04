@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>FRALEN CRM — Settings</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -74,6 +77,61 @@
   .badge-none { background: #F3F4F6; color: var(--gray); }
   .subscribe-btn { width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 700; cursor: pointer; margin-top: 16px; }
   .subscribe-btn:hover { background: var(--navy); }
+
+  /* STAFF TAB */
+  .staff-add { display: flex; gap: 8px; }
+  .staff-add input { flex: 1; min-width: 0; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 9px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; }
+  .staff-add input:focus { border-color: var(--accent); }
+  .staff-add button { padding: 0 18px; white-space: nowrap; flex-shrink: 0; background: var(--navy); color: white; border: none; border-radius: 9px; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .staff-list { margin-top: 16px; }
+  .staff-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 4px; border-bottom: 1px solid #F3F4F6; font-size: 14px; font-weight: 600; }
+  .staff-item:last-child { border-bottom: none; }
+  .staff-item button { background: white; border: 1.5px solid #FECACA; color: var(--red); border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .staff-empty { text-align: center; color: var(--gray); font-size: 13px; padding: 18px 0; }
+
+  /* STAFF PERFORMANCE (inside Staff Management) */
+  .container.wide { max-width: 960px; }
+  .sub-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .sub-tab { flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border); background: white; font-size: 13.5px; font-weight: 700; color: var(--navy); cursor: pointer; }
+  .sub-tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+  #sp-root .card { background: #fff; border-radius: 14px; border: 1px solid var(--border); padding: 18px; margin-bottom: 14px; }
+  #sp-root .card h2 { font-size: 16px; color: var(--navy); margin-bottom: 4px; }
+  #sp-root .card .hint { margin: 0 0 12px; }
+  #sp-root .quick-range { display: flex; gap: 8px; flex-wrap: wrap; }
+  #sp-root .qr-btn { padding: 8px 14px; border-radius: 9px; border: 1.5px solid var(--border); background: #fff; font-size: 13px; font-weight: 700; color: var(--navy); cursor: pointer; }
+  #sp-root .qr-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  #sp-root .custom-range { display: none; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; }
+  #sp-root .custom-range label { display: block; font-size: 11.5px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+  #sp-root .custom-range input { padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; }
+  #sp-root .range-label { margin-top: 12px; font-size: 12.5px; color: var(--gray); }
+  #sp-root .range-label b { color: var(--navy); }
+  #sp-root .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 14px; }
+  #sp-root .tile { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 14px; }
+  #sp-root .t-label { font-size: 11px; color: var(--gray); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+  #sp-root .t-num { font-size: 22px; font-weight: 800; color: var(--navy); margin-top: 6px; }
+  #sp-root .t-sub { font-size: 11.5px; color: var(--gray); margin-top: 2px; }
+  #sp-root .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+  #sp-root .lb-row:last-child { border-bottom: 0; }
+  #sp-root .rank { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); color: var(--navy); font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  #sp-root .rank.r1 { background: #FEF3C7; } #sp-root .rank.r2 { background: #E5E7EB; } #sp-root .rank.r3 { background: #FFEDD5; }
+  #sp-root .lb-info { flex: 1; min-width: 0; }
+  #sp-root .lb-name { font-weight: 800; font-size: 14.5px; }
+  #sp-root .lb-meta { font-size: 12px; color: var(--gray); margin-top: 2px; }
+  #sp-root .bar-wrap { height: 8px; background: var(--accent-soft); border-radius: 6px; margin-top: 7px; overflow: hidden; }
+  #sp-root .bar { height: 100%; background: var(--accent); border-radius: 6px; }
+  #sp-root .lb-amt { font-weight: 800; color: var(--navy); white-space: nowrap; text-align: right; font-size: 14px; }
+  #sp-root .lb-amt small { display: block; font-size: 11px; color: var(--gray); font-weight: 400; }
+  #sp-root .table-wrap { overflow-x: auto; }
+  #sp-root table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #sp-root th { text-align: left; padding: 10px 12px; background: #F3F7FA; color: #374151; font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px; cursor: pointer; white-space: nowrap; }
+  #sp-root td { padding: 11px 12px; border-bottom: 1px solid #F3F4F6; white-space: nowrap; }
+  #sp-root td.num, #sp-root th.num { text-align: right; }
+  #sp-root .pending { color: #B45309; font-weight: 700; }
+  #sp-root .export { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  #sp-root .export button { padding: 10px 16px; border-radius: 9px; border: 0; font-size: 13px; font-weight: 700; cursor: pointer; background: var(--accent-soft); color: var(--accent); }
+  #sp-root .export button.pdf { background: #FEE2E2; color: #B91C1C; }
+  #sp-root .empty { text-align: center; color: var(--gray); padding: 26px 10px; font-size: 13.5px; }
+  @media (max-width: 700px) { #sp-root .tiles { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
 <body>
@@ -87,6 +145,7 @@
 
 <div class="tabs">
   <div class="tab active" data-tab="profile" onclick="window.showTab('profile')">🏪 Profile</div>
+  <div class="tab" data-tab="staff" onclick="window.showTab('staff')">🧑‍💼 Staff Management</div>
   <div class="tab" data-tab="account" onclick="window.showTab('account')">👤 Account</div>
   <div class="tab" data-tab="help" onclick="window.showTab('help')">🆘 Help &amp; Support</div>
 </div>
@@ -137,6 +196,72 @@
     </div>
   </div>
 
+  <!-- STAFF MANAGEMENT TAB: Sales Persons + Staff Performance -->
+  <div class="tab-panel" data-tab="staff">
+    <div class="sub-tabs">
+      <button type="button" class="sub-tab active" data-sub="people" onclick="window.showSub('people')">👥 Sales Persons</button>
+      <button type="button" class="sub-tab" data-sub="perf" onclick="window.showSub('perf')">🏆 Staff Performance</button>
+    </div>
+
+    <div id="sub-people">
+      <div class="note-card">
+        Yahan apne staff ke naam add karo. Ye naam "Add New Sale" mein Sales Person ki list mein dikhenge, aur Staff Performance inhi ke hisaab se sales track karega.
+      </div>
+      <div class="panel">
+        <div class="staff-add">
+          <input type="text" id="staff-name" placeholder="Staff name, e.g. Rahul" maxlength="40"/>
+          <button type="button" onclick="window.addStaff()">+ Add</button>
+        </div>
+        <div class="status-msg" id="staffMsg"></div>
+        <div class="staff-list" id="staff-list"><div class="staff-empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <div id="sub-perf" style="display:none">
+      <div id="sp-root">
+        <div class="card">
+          <div class="quick-range">
+            <button type="button" class="qr-btn" data-range="today">Today</button>
+            <button type="button" class="qr-btn" data-range="week">This Week</button>
+            <button type="button" class="qr-btn active" data-range="month">This Month</button>
+            <button type="button" class="qr-btn" data-range="year">This Year</button>
+            <button type="button" class="qr-btn" data-range="all">All Time</button>
+            <button type="button" class="qr-btn" data-range="custom">Custom</button>
+          </div>
+          <div class="custom-range" id="custom-range">
+            <div><label>From Date</label><input type="date" id="range-from"></div>
+            <div><label>To Date</label><input type="date" id="range-to"></div>
+            <div><button type="button" class="qr-btn" id="apply-custom" style="border-color:#4F6BF0;color:#4F6BF0">Apply</button></div>
+          </div>
+          <div class="range-label" id="range-label">Showing: <b>This Month</b></div>
+        </div>
+
+        <div class="tiles">
+          <div class="tile"><div class="t-label">Total sales</div><div class="t-num" id="t-sales">Rs. 0</div><div class="t-sub" id="t-orders">0 orders</div></div>
+          <div class="tile"><div class="t-label">Active staff</div><div class="t-num" id="t-staff">0</div><div class="t-sub">with at least 1 order</div></div>
+          <div class="tile"><div class="t-label">Top performer</div><div class="t-num" id="t-top" style="font-size:18px;margin-top:9px">-</div><div class="t-sub" id="t-top-sub"></div></div>
+          <div class="tile"><div class="t-label">Pending balance</div><div class="t-num" id="t-pending">Rs. 0</div><div class="t-sub">still to collect</div></div>
+        </div>
+
+        <div class="card">
+          <h2>Leaderboard</h2>
+          <div class="hint">Zyada sales wala upar. Bar sabse upar wale staff ke mukable dikhta hai.</div>
+          <div id="leaderboard"><div class="empty">Loading...</div></div>
+        </div>
+
+        <div class="card">
+          <h2>Detailed Report</h2>
+          <div class="hint">Column ke heading par tap karke sort karo.</div>
+          <div class="table-wrap"><table id="staff-table"></table></div>
+          <div class="export">
+            <button type="button" id="btn-excel">⬇ Excel</button>
+            <button type="button" id="btn-pdf" class="pdf">⬇ PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ACCOUNT TAB -->
   <div class="tab-panel" data-tab="account">
     <div class="panel">
@@ -166,15 +291,29 @@
 </div>
 
 <script type="module">
-import { getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { requireAuth, profileDoc } from "./firebase-config.js";
+import { getDoc, getDocs, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { requireAuth, profileDoc, tenantCollection } from "./firebase-config.js";
 
 let currentUid = null;
 let logoDataUrl = null;
+let staffList = [];
 
 window.showTab = function (tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === tab));
+  if (tab !== 'staff') document.querySelector('.container').classList.remove('wide');
+  else window.showSub(currentSub);
+};
+
+// Staff Management has two parts: Sales Persons list and Staff Performance
+let currentSub = 'people';
+window.showSub = function (name) {
+  currentSub = name;
+  document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.dataset.sub === name));
+  document.getElementById('sub-people').style.display = name === 'people' ? 'block' : 'none';
+  document.getElementById('sub-perf').style.display = name === 'perf' ? 'block' : 'none';
+  document.querySelector('.container').classList.toggle('wide', name === 'perf');
+  if (name === 'perf') loadPerformance();
 };
 
 requireAuth(async (user) => {
@@ -190,6 +329,7 @@ requireAuth(async (user) => {
       document.getElementById('phone').value = p.phone || '';
       document.getElementById('address').value = p.address || '';
       document.getElementById('googlePlaceId').value = p.googlePlaceId || '';
+      staffList = Array.isArray(p.staff) ? p.staff : [];
       if (p.logoDataUrl) {
         logoDataUrl = p.logoDataUrl;
         renderLogoPreview();
@@ -222,6 +362,338 @@ requireAuth(async (user) => {
   } catch (e) {
     console.error('Profile load error:', e);
   }
+  renderStaff();
+});
+
+/* ---------------- STAFF ---------------- */
+function renderStaff() {
+  const box = document.getElementById('staff-list');
+  if (!staffList.length) {
+    box.innerHTML = '<div class="staff-empty">Abhi koi staff add nahi hua.</div>';
+    return;
+  }
+  box.innerHTML = '';
+  staffList.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'staff-item';
+    const label = document.createElement('span');
+    label.textContent = '🧑‍💼 ' + name;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Remove';
+    btn.onclick = () => window.removeStaff(i);
+    row.appendChild(label);
+    row.appendChild(btn);
+    box.appendChild(row);
+  });
+}
+
+async function saveStaff(message) {
+  const msg = document.getElementById('staffMsg');
+  msg.className = 'status-msg';
+  try {
+    // merge, so the rest of the profile is never touched
+    await setDoc(profileDoc(currentUid), { staff: staffList, updatedAt: serverTimestamp() }, { merge: true });
+    msg.textContent = message;
+    msg.classList.add('ok');
+    return true;
+  } catch (err) {
+    msg.textContent = 'Error: ' + err.message;
+    msg.classList.add('error');
+    return false;
+  }
+}
+
+window.addStaff = async function () {
+  const input = document.getElementById('staff-name');
+  const name = input.value.trim();
+  const msg = document.getElementById('staffMsg');
+  if (!name) return;
+  if (staffList.some(n => n.toLowerCase() === name.toLowerCase())) {
+    msg.className = 'status-msg error';
+    msg.textContent = 'Ye naam pehle se list mein hai.';
+    return;
+  }
+  staffList.push(name);
+  if (await saveStaff('✅ ' + name + ' added!')) {
+    input.value = '';
+  } else {
+    staffList.pop();
+  }
+  renderStaff();
+  if (perfLoaded) calculate();
+};
+
+window.removeStaff = async function (index) {
+  const removed = staffList[index];
+  if (!confirm(removed + ' ko list se hatana hai? Purane orders ka data safe rahega.')) return;
+  staffList.splice(index, 1);
+  await saveStaff('✅ ' + removed + ' removed.');
+  renderStaff();
+  if (perfLoaded) calculate();
+};
+
+document.getElementById('staff-name').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); window.addStaff(); }
+});
+
+
+/* ---------------- STAFF PERFORMANCE ---------------- */
+// Sales are taken from the "salesPerson" saved in every order.
+// Orders are read only when the Performance part is opened for the first time.
+let allOrders = [];
+let perfLoaded = false;
+let rangeFrom = null;   // null = no lower limit
+let rangeTo = null;     // null = no upper limit
+let rangeName = "This Month";
+let staffRows = [];
+let sortKey = "sales";
+let sortDir = -1;       // -1 = high to low
+
+function perfShopName() { return document.getElementById('shopName').value.trim() || "FRALEN Shop"; }
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function money(n) { return "Rs. " + Math.round(n).toLocaleString("en-IN"); }
+function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+
+async function loadPerformance() {
+  if (perfLoaded) return;
+  try {
+    const snap = await getDocs(tenantCollection(currentUid, "orders"));
+    snap.forEach(function (d) { allOrders.push(d.data()); });
+  } catch (e) {
+    document.getElementById("leaderboard").innerHTML = '<div class="empty">Error loading data: ' + esc(e.message) + '</div>';
+    return;
+  }
+  perfLoaded = true;
+  setRange("month");
+}
+
+/* ---------------- Date range ---------------- */
+function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0); }
+function endOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59); }
+
+function setRange(range) {
+  document.querySelectorAll(".qr-btn[data-range]").forEach(function (b) {
+    b.classList.toggle("active", b.getAttribute("data-range") === range);
+  });
+  document.getElementById("custom-range").style.display = range === "custom" ? "flex" : "none";
+  var now = new Date();
+
+  if (range === "today") {
+    rangeFrom = startOfDay(now); rangeTo = endOfDay(now); rangeName = "Today";
+  } else if (range === "week") {
+    var monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    rangeFrom = startOfDay(monday); rangeTo = endOfDay(now); rangeName = "This Week";
+  } else if (range === "month") {
+    rangeFrom = startOfDay(new Date(now.getFullYear(), now.getMonth(), 1)); rangeTo = endOfDay(now);
+    rangeName = "This Month (" + now.toLocaleDateString("en-IN", { month: "long", year: "numeric" }) + ")";
+  } else if (range === "year") {
+    rangeFrom = startOfDay(new Date(now.getFullYear(), 0, 1)); rangeTo = endOfDay(now);
+    rangeName = "This Year (" + now.getFullYear() + ")";
+  } else if (range === "all") {
+    rangeFrom = null; rangeTo = null; rangeName = "All Time";
+  } else {
+    return;   // custom: wait for the Apply button
+  }
+  document.getElementById("range-label").innerHTML = "Showing: <b>" + esc(rangeName) + "</b>";
+  calculate();
+}
+
+document.querySelectorAll(".qr-btn[data-range]").forEach(function (b) {
+  b.addEventListener("click", function () { setRange(b.getAttribute("data-range")); });
+});
+
+document.getElementById("apply-custom").addEventListener("click", function () {
+  var f = document.getElementById("range-from").value;
+  var t = document.getElementById("range-to").value;
+  if (!f || !t) { alert("From aur To dono date select karo."); return; }
+  var from = new Date(f + "T00:00:00"), to = new Date(t + "T23:59:59");
+  if (from > to) { alert("From date, To date se pehle honi chahiye."); return; }
+  rangeFrom = from; rangeTo = to;
+  rangeName = "Custom (" + from.toLocaleDateString("en-IN") + " - " + to.toLocaleDateString("en-IN") + ")";
+  document.getElementById("range-label").innerHTML = "Showing: <b>" + esc(rangeName) + "</b>";
+  calculate();
+});
+
+function inRange(iso) {
+  if (!rangeFrom && !rangeTo) return true;
+  if (!iso) return false;
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return false;
+  if (rangeFrom && d < rangeFrom) return false;
+  if (rangeTo && d > rangeTo) return false;
+  return true;
+}
+
+/* ---------------- Calculation ---------------- */
+function calculate() {
+  var map = {};
+  var totalSales = 0, totalOrders = 0, totalPending = 0;
+
+  // staff added in Settings always show up, even with 0 orders in this range.
+  // Names are matched ignoring capital/small letters (Rahul = RAHUL).
+  staffList.forEach(function (n) {
+    map[n.toLowerCase()] = { name: n, orders: 0, sales: 0, collected: 0, pending: 0, items: 0, last: "" };
+  });
+
+  allOrders.forEach(function (o) {
+    if (!inRange(o.createdAt)) return;
+    var name = String(o.salesPerson || "").trim() || "Not assigned";
+    var key = name.toLowerCase();
+    var s = map[key] || (map[key] = { name: name, orders: 0, sales: 0, collected: 0, pending: 0, items: 0, last: "" });
+    var payable = num(o.totals && o.totals.payable);
+    var pending = num(o.totals && o.totals.pending);
+    s.orders += 1;
+    s.sales += payable;
+    s.pending += pending;
+    s.collected += payable - pending;
+    s.items += (o.products || []).length;
+    if (o.createdAt && o.createdAt > s.last) s.last = o.createdAt;
+    totalSales += payable; totalOrders += 1; totalPending += pending;
+  });
+
+  staffRows = Object.keys(map).map(function (k) {
+    var s = map[k];
+    s.avg = s.orders ? s.sales / s.orders : 0;
+    s.share = totalSales ? (s.sales / totalSales) * 100 : 0;
+    return s;
+  });
+
+  // tiles
+  document.getElementById("t-sales").textContent = money(totalSales);
+  document.getElementById("t-orders").textContent = totalOrders + (totalOrders === 1 ? " order" : " orders");
+  document.getElementById("t-pending").textContent = money(totalPending);
+  var real = staffRows.filter(function (s) { return s.name !== "Not assigned" && s.orders > 0; });
+  document.getElementById("t-staff").textContent = real.length;
+  var top = real.slice().sort(function (a, b) { return b.sales - a.sales; })[0];
+  document.getElementById("t-top").textContent = top ? top.name : "-";
+  document.getElementById("t-top-sub").textContent = top ? money(top.sales) + " sales" : "";
+
+  renderLeaderboard();
+  renderTable();
+}
+
+/* ---------------- Leaderboard ---------------- */
+function renderLeaderboard() {
+  var box = document.getElementById("leaderboard");
+  if (!staffRows.length) { box.innerHTML = '<div class="empty">Is date range mein koi order nahi mila. Staff names Settings → Staff mein add karo.</div>'; return; }
+
+  var list = staffRows.slice().sort(function (a, b) { return b.sales - a.sales; });
+  var best = list[0].sales || 1;
+  box.innerHTML = list.map(function (s, i) {
+    var cls = i < 3 ? " r" + (i + 1) : "";
+    var medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
+    var width = Math.max(2, Math.round((s.sales / best) * 100));
+    return '<div class="lb-row">' +
+      '<div class="rank' + cls + '">' + medal + '</div>' +
+      '<div class="lb-info"><div class="lb-name">' + esc(s.name) + '</div>' +
+      '<div class="lb-meta">' + s.orders + (s.orders === 1 ? " order" : " orders") + " · avg " + money(s.avg) + " · " + s.share.toFixed(1) + '% of sales</div>' +
+      '<div class="bar-wrap"><div class="bar" style="width:' + width + '%"></div></div></div>' +
+      '<div class="lb-amt">' + money(s.sales) + '<small>pending ' + money(s.pending) + '</small></div>' +
+      '</div>';
+  }).join("");
+}
+
+/* ---------------- Table ---------------- */
+var columns = [
+  { key: "name", label: "Staff", num: false },
+  { key: "orders", label: "Orders", num: true },
+  { key: "items", label: "Items", num: true },
+  { key: "sales", label: "Sales", num: true },
+  { key: "avg", label: "Avg Order", num: true },
+  { key: "collected", label: "Collected", num: true },
+  { key: "pending", label: "Pending", num: true },
+  { key: "share", label: "Share %", num: true },
+  { key: "last", label: "Last Sale", num: false }
+];
+
+function sortedRows() {
+  return staffRows.slice().sort(function (a, b) {
+    var x = a[sortKey], y = b[sortKey];
+    if (typeof x === "string") return x.localeCompare(y) * sortDir;
+    return (x - y) * sortDir;
+  });
+}
+
+function cell(c, s) {
+  if (c.key === "name") return esc(s.name);
+  if (c.key === "last") return s.last ? new Date(s.last).toLocaleDateString("en-IN") : "-";
+  if (c.key === "share") return s.share.toFixed(1) + "%";
+  if (c.key === "orders" || c.key === "items") return s[c.key];
+  return money(s[c.key]);
+}
+
+function renderTable() {
+  var t = document.getElementById("staff-table");
+  if (!staffRows.length) { t.innerHTML = '<tr><td class="empty">Koi data nahi.</td></tr>'; return; }
+  var head = "<tr>" + columns.map(function (c) {
+    var arrow = c.key === sortKey ? (sortDir === 1 ? " ▲" : " ▼") : "";
+    return '<th class="' + (c.num ? "num" : "") + '" data-key="' + c.key + '">' + c.label + arrow + "</th>";
+  }).join("") + "</tr>";
+  var body = sortedRows().map(function (s) {
+    return "<tr>" + columns.map(function (c) {
+      var cls = (c.num ? "num" : "") + (c.key === "pending" && s.pending > 0 ? " pending" : "");
+      return '<td class="' + cls + '">' + cell(c, s) + "</td>";
+    }).join("") + "</tr>";
+  }).join("");
+  t.innerHTML = head + body;
+}
+
+document.getElementById("staff-table").addEventListener("click", function (e) {
+  var th = e.target.closest("th");
+  if (!th) return;
+  var key = th.getAttribute("data-key");
+  if (key === sortKey) sortDir = -sortDir;
+  else { sortKey = key; sortDir = key === "name" ? 1 : -1; }
+  renderTable();
+});
+
+/* ---------------- Export (Excel + PDF) ---------------- */
+function exportRows() {
+  return sortedRows().map(function (s) {
+    return {
+      "Staff": s.name, "Orders": s.orders, "Items": s.items,
+      "Sales (Rs)": Math.round(s.sales), "Avg Order (Rs)": Math.round(s.avg),
+      "Collected (Rs)": Math.round(s.collected), "Pending (Rs)": Math.round(s.pending),
+      "Share %": s.share.toFixed(1),
+      "Last Sale": s.last ? new Date(s.last).toLocaleDateString("en-IN") : ""
+    };
+  });
+}
+function fileName(ext) {
+  return "FRALEN_Staff_Performance_" + rangeName.replace(/[^\w]+/g, "_").slice(0, 30) + "." + ext;
+}
+
+document.getElementById("btn-excel").addEventListener("click", function () {
+  if (!staffRows.length) { alert("Is date range mein koi data nahi mila."); return; }
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportRows()), "Staff Performance");
+  XLSX.writeFile(wb, fileName("xlsx"));
+});
+
+document.getElementById("btn-pdf").addEventListener("click", function () {
+  if (!staffRows.length) { alert("Is date range mein koi data nahi mila."); return; }
+  var rows = exportRows();
+  var headers = Object.keys(rows[0]);
+  var pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  pdf.setFontSize(14); pdf.setTextColor(27, 42, 107);
+  pdf.text("Staff Performance Report", 14, 14);
+  pdf.setFontSize(9); pdf.setTextColor(107, 114, 128);
+  pdf.text(perfShopName() + "  |  " + rangeName, 14, 20);
+  pdf.autoTable({
+    head: [headers],
+    body: rows.map(function (r) { return headers.map(function (h) { return String(r[h]); }); }),
+    startY: 25,
+    styles: { fontSize: 9, cellPadding: 2 },
+    headStyles: { fillColor: [27, 42, 107], textColor: 255 },
+    alternateRowStyles: { fillColor: [243, 247, 250] }
+  });
+  pdf.save(fileName("pdf"));
 });
 
 function renderLogoPreview() {
