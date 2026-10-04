@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FRALEN CRM - Staff Performance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background-color: #F3F7FA; margin: 0; padding: 0; color: #111827; }
+
+/* ===== Sidebar (same as other pages) ===== */
+.sidebar { width: 200px; background-color: #1B2A6B; height: 100vh; box-sizing: border-box; position: fixed; top: 0; left: 0; color: white; padding-top: 20px; display: flex; flex-direction: column; }
+.sidebar h2 { text-align: center; margin-bottom: 30px; }
+.sidebar a { display: block; color: white; text-decoration: none; padding: 12px 20px; }
+.sidebar a:hover, .sidebar a.active { background-color: #2A3F8F; }
+.sidebar a:last-child { margin-top: auto; }
+
+.main { margin-left: 200px; padding: 20px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 14px 20px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.topbar h1 { margin: 0; font-size: 24px; color: #1B2A6B; }
+.sub { color: #6B7280; font-size: 13px; margin: 14px 2px 0; }
+.card { background: #fff; border-radius: 16px; padding: 20px; margin-top: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.card h2 { margin: 0 0 4px; font-size: 18px; }
+.card .hint { color: #6B7280; font-size: 12.5px; margin-bottom: 14px; }
+
+/* ===== Date range ===== */
+.quick-range { display: flex; gap: 8px; flex-wrap: wrap; }
+.qr-btn { padding: 8px 16px; border-radius: 9px; border: 1.5px solid #C5D3E8; background: #fff; font-size: 13px; font-weight: 700; color: #1B2A6B; cursor: pointer; }
+.qr-btn.active { background: #1B2A6B; color: #fff; border-color: #1B2A6B; }
+.custom-range { display: none; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-top: 12px; }
+.custom-range label { display: block; font-size: 11.5px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+.custom-range input { padding: 9px 12px; border: 1.5px solid #C5D3E8; border-radius: 8px; font-size: 13px; }
+.range-label { margin-top: 12px; font-size: 12.5px; color: #6B7280; }
+.range-label b { color: #1B2A6B; }
+
+/* ===== Summary tiles ===== */
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 16px; }
+.tile { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.t-label { font-size: 12px; color: #6B7280; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+.t-num { font-size: 26px; font-weight: 800; color: #1B2A6B; margin-top: 6px; }
+.t-sub { font-size: 12px; color: #6B7280; margin-top: 2px; }
+
+/* ===== Leaderboard ===== */
+.lb-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+.lb-row:last-child { border-bottom: 0; }
+.rank { width: 34px; height: 34px; border-radius: 50%; background: #EEF1FE; color: #1B2A6B; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.rank.r1 { background: #FEF3C7; } .rank.r2 { background: #E5E7EB; } .rank.r3 { background: #FFEDD5; }
+.lb-info { flex: 1; min-width: 0; }
+.lb-name { font-weight: 800; font-size: 15px; }
+.lb-meta { font-size: 12.5px; color: #6B7280; margin-top: 2px; }
+.bar-wrap { height: 8px; background: #EEF1FE; border-radius: 6px; margin-top: 7px; overflow: hidden; }
+.bar { height: 100%; background: #4F6BF0; border-radius: 6px; }
+.lb-amt { font-weight: 800; color: #1B2A6B; white-space: nowrap; text-align: right; }
+.lb-amt small { display: block; font-size: 11.5px; color: #6B7280; font-weight: 400; }
+
+/* ===== Detail table ===== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th { text-align: left; padding: 10px 12px; background: #F3F7FA; color: #374151; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; cursor: pointer; white-space: nowrap; }
+td { padding: 11px 12px; border-bottom: 1px solid #F3F4F6; white-space: nowrap; }
+td.num, th.num { text-align: right; }
+.pending { color: #B45309; font-weight: 700; }
+.export { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.export button { padding: 10px 16px; border-radius: 9px; border: 0; font-size: 13px; font-weight: 700; cursor: pointer; background: #EEF1FE; color: #4F6BF0; }
+.export button.pdf { background: #FEE2E2; color: #B91C1C; }
+.empty { text-align: center; color: #6B7280; padding: 30px 10px; font-size: 14px; }
+
+/* ===== Mobile hamburger ===== */
+.menu-toggle { display: none; position: fixed; top: 12px; left: 12px; width: 44px; height: 44px; padding: 9px; border: 0; border-radius: 8px; background: #1B2A6B; z-index: 1100; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.menu-toggle span { display: block; width: 25px; height: 3px; margin: 5px auto; border-radius: 3px; background: #fff; transition: .2s; }
+.menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.menu-toggle.active span:nth-child(2) { opacity: 0; }
+.menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.sidebar-overlay { display: none; }
+
+@media (max-width: 1100px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .menu-toggle { display: block; }
+  .sidebar { width: 240px; left: -260px; z-index: 1050; transition: left .25s ease; box-shadow: 4px 0 15px rgba(0,0,0,.20); overflow-y: auto; }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; }
+  .sidebar-overlay.show { display: block; }
+  .sidebar h2 { font-size: 23px; margin-bottom: 25px; }
+  .sidebar a { padding: 14px 20px; font-size: 16px; }
+  .main { margin-left: 0; padding: 10px; padding-top: 64px; }
+  .topbar h1 { font-size: 20px; }
+  .lb-amt { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open menu" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<div class="sidebar">
+  <h2>FRALEN</h2>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="product-menu-sub-bar.html">Products</a>
+  <a href="inventory.html">Inventory</a>
+  <a href="purchase.html">Purchase</a>
+  <a href="customers.html">Customers</a>
+  <a href="eye-test-reminders.html">👁️ Eye Test Reminders</a>
+  <a href="create-order.html">Add New Sale</a>
+  <a href="sales-history.html">Sales History</a>
+  <a href="reports.html">Reports</a>
+  <a href="staff-performance.html" class="active">🏆 Staff Performance</a>
+  <a href="expenses.html">💰 Expenses</a>
+  <a href="data-import.html">📊 Import Data</a>
+  <a href="review-assistant.html">⭐ Review Assistant</a>
+  <a href="loyalty.html">🎁 Loyalty &amp; Rewards</a>
+  <a href="settings.html">⚙️ Settings</a>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h1>🏆 Staff Performance</h1>
+    <button id="logout-btn" style="background:#EF4444;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:700;">Logout</button>
+  </div>
+  <p class="sub">Har sales person ki sales, orders aur pending balance, orders mein likhe "Sales Person" ke hisaab se.</p>
+
+  <div class="card">
+    <div class="quick-range">
+      <button class="qr-btn" data-range="today">Today</button>
+      <button class="qr-btn" data-range="week">This Week</button>
+      <button class="qr-btn active" data-range="month">This Month</button>
+      <button class="qr-btn" data-range="year">This Year</button>
+      <button class="qr-btn" data-range="all">All Time</button>
+      <button class="qr-btn" data-range="custom">Custom</button>
+    </div>
+    <div class="custom-range" id="custom-range">
+      <div><label>From Date</label><input type="date" id="range-from"></div>
+      <div><label>To Date</label><input type="date" id="range-to"></div>
+      <div><button class="qr-btn" id="apply-custom" style="border-color:#4F6BF0;color:#4F6BF0">Apply</button></div>
+    </div>
+    <div class="range-label" id="range-label">Showing: <b>This Month</b></div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="t-label">Total sales</div><div class="t-num" id="t-sales">Rs. 0</div><div class="t-sub" id="t-orders">0 orders</div></div>
+    <div class="tile"><div class="t-label">Active staff</div><div class="t-num" id="t-staff">0</div><div class="t-sub">with at least 1 order</div></div>
+    <div class="tile"><div class="t-label">Top performer</div><div class="t-num" id="t-top" style="font-size:20px;margin-top:10px">-</div><div class="t-sub" id="t-top-sub"></div></div>
+    <div class="tile"><div class="t-label">Pending balance</div><div class="t-num" id="t-pending">Rs. 0</div><div class="t-sub">still to collect</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Leaderboard</h2>
+    <div class="hint">Zyada sales wala upar. Bar sabse upar wale staff ke mukable dikhta hai.</div>
+    <div id="leaderboard"><div class="empty">Loading...</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Detailed Report</h2>
+    <div class="hint">Column ke heading par tap karke sort karo.</div>
+    <div class="table-wrap"><table id="staff-table"></table></div>
+    <div class="export">
+      <button id="btn-excel">⬇ Excel</button>
+      <button id="btn-pdf" class="pdf">⬇ PDF</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// FRALEN CRM - Staff Performance
+// Staff are taken from the "salesPerson" field already saved in every order.
+
+// ----- Mobile sidebar menu -----
+(function () {
+  const toggle = document.getElementById("menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  function closeMenu() {
+    sidebar.classList.remove("open"); overlay.classList.remove("show"); toggle.classList.remove("active");
+    toggle.setAttribute("aria-expanded", "false");
+  }
+  function openMenu() {
+    sidebar.classList.add("open"); overlay.classList.add("show"); toggle.classList.add("active");
+    toggle.setAttribute("aria-expanded", "true");
+  }
+  toggle.addEventListener("click", function () { sidebar.classList.contains("open") ? closeMenu() : openMenu(); });
+  overlay.addEventListener("click", closeMenu);
+  sidebar.querySelectorAll("a").forEach(function (l) { l.addEventListener("click", closeMenu); });
+})();
+
+// ----- Staff performance logic (Firebase) -----
+import { getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, signOut, requireAuth, tenantCollection, profileDoc } from "./firebase-config.js";
+
+var currentUid = null;
+var shopName = "FRALEN Shop";
+var allOrders = [];
+var staffNames = [];    // from Settings -> Staff
+var rangeFrom = null;   // null = no lower limit
+var rangeTo = null;     // null = no upper limit
+var rangeName = "This Month";
+var staffRows = [];     // result of the last calculation
+var sortKey = "sales";
+var sortDir = -1;       // -1 = high to low
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function money(n) { return "Rs. " + Math.round(n).toLocaleString("en-IN"); }
+function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+
+document.getElementById("logout-btn").addEventListener("click", async function () {
+  await signOut(auth);
+  window.location.href = "index.html";
+});
+
+requireAuth(async function (user) {
+  currentUid = user.uid;
+  try {
+    var p = await getDoc(profileDoc(currentUid));
+    if (p.exists()) {
+      if (p.data().shopName) shopName = p.data().shopName;
+      if (Array.isArray(p.data().staff)) staffNames = p.data().staff;
+    }
+  } catch (e) { /* shop name is only used in the PDF heading */ }
+  try {
+    var snap = await getDocs(tenantCollection(currentUid, "orders"));
+    snap.forEach(function (d) { allOrders.push(d.data()); });
+  } catch (e) {
+    document.getElementById("leaderboard").innerHTML = '<div class="empty">Error loading data: ' + esc(e.message) + '</div>';
+    return;
+  }
+  setRange("month");
+});
+
+/* ---------------- Date range ---------------- */
+function startOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0); }
+function endOfDay(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59); }
+
+function setRange(range) {
+  document.querySelectorAll(".qr-btn[data-range]").forEach(function (b) {
+    b.classList.toggle("active", b.getAttribute("data-range") === range);
+  });
+  document.getElementById("custom-range").style.display = range === "custom" ? "flex" : "none";
+  var now = new Date();
+
+  if (range === "today") {
+    rangeFrom = startOfDay(now); rangeTo = endOfDay(now); rangeName = "Today";
+  } else if (range === "week") {
+    var monday = new Date(now);
+    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    rangeFrom = startOfDay(monday); rangeTo = endOfDay(now); rangeName = "This Week";
+  } else if (range === "month") {
+    rangeFrom = startOfDay(new Date(now.getFullYear(), now.getMonth(), 1)); rangeTo = endOfDay(now);
+    rangeName = "This Month (" + now.toLocaleDateString("en-IN", { month: "long", year: "numeric" }) + ")";
+  } else if (range === "year") {
+    rangeFrom = startOfDay(new Date(now.getFullYear(), 0, 1)); rangeTo = endOfDay(now);
+    rangeName = "This Year (" + now.getFullYear() + ")";
+  } else if (range === "all") {
+    rangeFrom = null; rangeTo = null; rangeName = "All Time";
+  } else {
+    return;   // custom: wait for the Apply button
+  }
+  document.getElementById("range-label").innerHTML = "Showing: <b>" + esc(rangeName) + "</b>";
+  calculate();
+}
+
+document.querySelectorAll(".qr-btn[data-range]").forEach(function (b) {
+  b.addEventListener("click", function () { setRange(b.getAttribute("data-range")); });
+});
+
+document.getElementById("apply-custom").addEventListener("click", function () {
+  var f = document.getElementById("range-from").value;
+  var t = document.getElementById("range-to").value;
+  if (!f || !t) { alert("From aur To dono date select karo."); return; }
+  var from = new Date(f + "T00:00:00"), to = new Date(t + "T23:59:59");
+  if (from > to) { alert("From date, To date se pehle honi chahiye."); return; }
+  rangeFrom = from; rangeTo = to;
+  rangeName = "Custom (" + from.toLocaleDateString("en-IN") + " - " + to.toLocaleDateString("en-IN") + ")";
+  document.getElementById("range-label").innerHTML = "Showing: <b>" + esc(rangeName) + "</b>";
+  calculate();
+});
+
+function inRange(iso) {
+  if (!rangeFrom && !rangeTo) return true;
+  if (!iso) return false;
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return false;
+  if (rangeFrom && d < rangeFrom) return false;
+  if (rangeTo && d > rangeTo) return false;
+  return true;
+}
+
+/* ---------------- Calculation ---------------- */
+function calculate() {
+  var map = {};
+  var totalSales = 0, totalOrders = 0, totalPending = 0;
+
+  // staff added in Settings always show up, even with 0 orders in this range.
+  // Names are matched ignoring capital/small letters (Rahul = RAHUL).
+  staffNames.forEach(function (n) {
+    map[n.toLowerCase()] = { name: n, orders: 0, sales: 0, collected: 0, pending: 0, items: 0, last: "" };
+  });
+
+  allOrders.forEach(function (o) {
+    if (!inRange(o.createdAt)) return;
+    var name = String(o.salesPerson || "").trim() || "Not assigned";
+    var key = name.toLowerCase();
+    var s = map[key] || (map[key] = { name: name, orders: 0, sales: 0, collected: 0, pending: 0, items: 0, last: "" });
+    var payable = num(o.totals && o.totals.payable);
+    var pending = num(o.totals && o.totals.pending);
+    s.orders += 1;
+    s.sales += payable;
+    s.pending += pending;
+    s.collected += payable - pending;
+    s.items += (o.products || []).length;
+    if (o.createdAt && o.createdAt > s.last) s.last = o.createdAt;
+    totalSales += payable; totalOrders += 1; totalPending += pending;
+  });
+
+  staffRows = Object.keys(map).map(function (k) {
+    var s = map[k];
+    s.avg = s.orders ? s.sales / s.orders : 0;
+    s.share = totalSales ? (s.sales / totalSales) * 100 : 0;
+    return s;
+  });
+
+  // tiles
+  document.getElementById("t-sales").textContent = money(totalSales);
+  document.getElementById("t-orders").textContent = totalOrders + (totalOrders === 1 ? " order" : " orders");
+  document.getElementById("t-pending").textContent = money(totalPending);
+  var real = staffRows.filter(function (s) { return s.name !== "Not assigned" && s.orders > 0; });
+  document.getElementById("t-staff").textContent = real.length;
+  var top = real.slice().sort(function (a, b) { return b.sales - a.sales; })[0];
+  document.getElementById("t-top").textContent = top ? top.name : "-";
+  document.getElementById("t-top-sub").textContent = top ? money(top.sales) + " sales" : "";
+
+  renderLeaderboard();
+  renderTable();
+}
+
+/* ---------------- Leaderboard ---------------- */
+function renderLeaderboard() {
+  var box = document.getElementById("leaderboard");
+  if (!staffRows.length) { box.innerHTML = '<div class="empty">Is date range mein koi order nahi mila. Staff names Settings → Staff mein add karo.</div>'; return; }
+
+  var list = staffRows.slice().sort(function (a, b) { return b.sales - a.sales; });
+  var best = list[0].sales || 1;
+  box.innerHTML = list.map(function (s, i) {
+    var cls = i < 3 ? " r" + (i + 1) : "";
+    var medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : (i + 1);
+    var width = Math.max(2, Math.round((s.sales / best) * 100));
+    return '<div class="lb-row">' +
+      '<div class="rank' + cls + '">' + medal + '</div>' +
+      '<div class="lb-info"><div class="lb-name">' + esc(s.name) + '</div>' +
+      '<div class="lb-meta">' + s.orders + (s.orders === 1 ? " order" : " orders") + " · avg " + money(s.avg) + " · " + s.share.toFixed(1) + '% of sales</div>' +
+      '<div class="bar-wrap"><div class="bar" style="width:' + width + '%"></div></div></div>' +
+      '<div class="lb-amt">' + money(s.sales) + '<small>pending ' + money(s.pending) + '</small></div>' +
+      '</div>';
+  }).join("");
+}
+
+/* ---------------- Table ---------------- */
+var columns = [
+  { key: "name", label: "Staff", num: false },
+  { key: "orders", label: "Orders", num: true },
+  { key: "items", label: "Items", num: true },
+  { key: "sales", label: "Sales", num: true },
+  { key: "avg", label: "Avg Order", num: true },
+  { key: "collected", label: "Collected", num: true },
+  { key: "pending", label: "Pending", num: true },
+  { key: "share", label: "Share %", num: true },
+  { key: "last", label: "Last Sale", num: false }
+];
+
+function sortedRows() {
+  return staffRows.slice().sort(function (a, b) {
+    var x = a[sortKey], y = b[sortKey];
+    if (typeof x === "string") return x.localeCompare(y) * sortDir;
+    return (x - y) * sortDir;
+  });
+}
+
+function cell(c, s) {
+  if (c.key === "name") return esc(s.name);
+  if (c.key === "last") return s.last ? new Date(s.last).toLocaleDateString("en-IN") : "-";
+  if (c.key === "share") return s.share.toFixed(1) + "%";
+  if (c.key === "orders" || c.key === "items") return s[c.key];
+  return money(s[c.key]);
+}
+
+function renderTable() {
+  var t = document.getElementById("staff-table");
+  if (!staffRows.length) { t.innerHTML = '<tr><td class="empty">Koi data nahi.</td></tr>'; return; }
+  var head = "<tr>" + columns.map(function (c) {
+    var arrow = c.key === sortKey ? (sortDir === 1 ? " ▲" : " ▼") : "";
+    return '<th class="' + (c.num ? "num" : "") + '" data-key="' + c.key + '">' + c.label + arrow + "</th>";
+  }).join("") + "</tr>";
+  var body = sortedRows().map(function (s) {
+    return "<tr>" + columns.map(function (c) {
+      var cls = (c.num ? "num" : "") + (c.key === "pending" && s.pending > 0 ? " pending" : "");
+      return '<td class="' + cls + '">' + cell(c, s) + "</td>";
+    }).join("") + "</tr>";
+  }).join("");
+  t.innerHTML = head + body;
+}
+
+document.getElementById("staff-table").addEventListener("click", function (e) {
+  var th = e.target.closest("th");
+  if (!th) return;
+  var key = th.getAttribute("data-key");
+  if (key === sortKey) sortDir = -sortDir;
+  else { sortKey = key; sortDir = key === "name" ? 1 : -1; }
+  renderTable();
+});
+
+/* ---------------- Export (Excel + PDF) ---------------- */
+function exportRows() {
+  return sortedRows().map(function (s) {
+    return {
+      "Staff": s.name, "Orders": s.orders, "Items": s.items,
+      "Sales (Rs)": Math.round(s.sales), "Avg Order (Rs)": Math.round(s.avg),
+      "Collected (Rs)": Math.round(s.collected), "Pending (Rs)": Math.round(s.pending),
+      "Share %": s.share.toFixed(1),
+      "Last Sale": s.last ? new Date(s.last).toLocaleDateString("en-IN") : ""
+    };
+  });
+}
+function fileName(ext) {
+  return "FRALEN_Staff_Performance_" + rangeName.replace(/[^\w]+/g, "_").slice(0, 30) + "." + ext;
+}
+
+document.getElementById("btn-excel").addEventListener("click", function () {
+  if (!staffRows.length) { alert("Is date range mein koi data nahi mila."); return; }
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportRows()), "Staff Performance");
+  XLSX.writeFile(wb, fileName("xlsx"));
+});
+
+document.getElementById("btn-pdf").addEventListener("click", function () {
+  if (!staffRows.length) { alert("Is date range mein koi data nahi mila."); return; }
+  var rows = exportRows();
+  var headers = Object.keys(rows[0]);
+  var pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  pdf.setFontSize(14); pdf.setTextColor(27, 42, 107);
+  pdf.text("Staff Performance Report", 14, 14);
+  pdf.setFontSize(9); pdf.setTextColor(107, 114, 128);
+  pdf.text(shopName + "  |  " + rangeName, 14, 20);
+  pdf.autoTable({
+    head: [headers],
+    body: rows.map(function (r) { return headers.map(function (h) { return String(r[h]); }); }),
+    startY: 25,
+    styles: { fontSize: 9, cellPadding: 2 },
+    headStyles: { fillColor: [27, 42, 107], textColor: 255 },
+    alternateRowStyles: { fillColor: [243, 247, 250] }
+  });
+  pdf.save(fileName("pdf"));
+});
+</script>
+</body>
+</html>
