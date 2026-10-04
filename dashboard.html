@@ -563,6 +563,9 @@ async function loadGoogleRating(p) {
   var cacheKey = "fralen_gmp_" + currentUid, cached = null;
   try { cached = JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch (e) {}
 
+  // If the owner saved a Place ID that differs from what was cached, drop the old (wrong) cache.
+  if (cached && p.googlePlaceId && cached.placeId !== p.googlePlaceId) cached = null;
+
   // The cache only avoids paying for a Google call on every page view; it is never user-editable.
   if (cached && Date.now() - cached.at < RATING_CACHE_MS) { showRating(cached); return; }
   if (!GOOGLE_MAPS_API_KEY) {
@@ -575,7 +578,7 @@ async function loadGoogleRating(p) {
     var lib = await withTimeout(google.maps.importLibrary("places"), 15000, "Google did not respond (key, billing or referrer problem)");
     var Place = lib.Place, place = null;
     var fields = ["id", "displayName", "formattedAddress", "rating", "userRatingCount", "googleMapsURI"];
-    var pid = p.googlePlaceId || p.placeId || (cached && cached.placeId);
+    var pid = p.googlePlaceId || p.placeId;
 
     if (pid) {
       place = new Place({ id: pid });
@@ -1054,4 +1057,4 @@ applyCols();
 
 </script>
 </body>
-  </html>
+</html>
