@@ -574,9 +574,14 @@ async function loadGoogleRating(p) {
     showRating(d);
   } catch (err) {
     console.log("Google rating error: ", err);
-    if (cached) showRating(cached); else showRatingUnavailable("Could not reach Google Maps");
+    var why = String((err && err.message) || err || "").slice(0, 140);
+    if (cached) showRating(cached); else showRatingUnavailable("Could not reach Google Maps" + (why ? " (" + why + ")" : ""));
   }
 }
+// Google calls this when the key is rejected (referrer, billing, API not enabled)
+window.gm_authFailure = function () {
+  showRatingUnavailable("Google rejected the key (check referrer, billing, enabled APIs)", "Key error");
+};
 showRatingUnavailable("Connecting to Google Maps…", "Connecting…");
 
 // NOTE: There is still no separate "customers" collection. Every customer,
