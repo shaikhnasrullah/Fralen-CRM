@@ -524,15 +524,38 @@ function showRating(d) {
 }
 
 function loadMapsScript() {
-  return new Promise(function (resolve, reject) {
-    if (window.google && google.maps && google.maps.importLibrary) { resolve(); return; }
-    var sc = document.createElement("script");
-    sc.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(GOOGLE_MAPS_API_KEY) + "&loading=async&v=weekly";
-    sc.async = true;
-    sc.onload = resolve;
-    sc.onerror = function () { reject(new Error("Google Maps script failed to load")); };
-    document.head.appendChild(sc);
+  // Official Google inline bootstrap: defines google.maps.importLibrary immediately,
+  // then loads the real API in the background.
+  return new Promise(function (resolve) {
+    (function (g) {
+      var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__",
+        m = document, b = window;
+      b = b[c] || (b[c] = {});
+      var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams();
+      var u = function () {
+        return h || (h = new Promise(function (f, n) {
+          a = m.createElement("script");
+          e.set("libraries", Array.from(r).join(","));
+          for (k in g) e.set(k.replace(/[A-Z]/g, function (t) { return "_" + t[0].toLowerCase(); }), g[k]);
+          e.set("callback", c + ".maps." + q);
+          a.src = "https://maps.googleapis.com/maps/api/js?" + e;
+          d[q] = f;
+          a.onerror = function () { h = null; n(new Error(p + " could not load.")); };
+          m.head.append(a);
+        }));
+      };
+      if (!d[l]) d[l] = function (f) {
+        var n = Array.prototype.slice.call(arguments, 1);
+        r.add(f);
+        return u().then(function () { return d[l].apply(d, [f].concat(n)); });
+      };
+    })({ key: GOOGLE_MAPS_API_KEY, v: "weekly" });
+    resolve();
   });
+}
+
+function withTimeout(promise, ms, msg) {
+  return Promise.race([promise, new Promise(function (_, rej) { setTimeout(function () { rej(new Error(msg)); }, ms); })]);
 }
 
 async function loadGoogleRating(p) {
@@ -549,7 +572,7 @@ async function loadGoogleRating(p) {
 
   try {
     await loadMapsScript();
-    var lib = await google.maps.importLibrary("places");
+    var lib = await withTimeout(google.maps.importLibrary("places"), 15000, "Google did not respond (key, billing or referrer problem)");
     var Place = lib.Place, place = null;
     var fields = ["id", "displayName", "formattedAddress", "rating", "userRatingCount", "googleMapsURI"];
     var pid = p.googlePlaceId || p.placeId || (cached && cached.placeId);
@@ -1031,4 +1054,4 @@ applyCols();
 
 </script>
 </body>
-</html>
+  </html>
