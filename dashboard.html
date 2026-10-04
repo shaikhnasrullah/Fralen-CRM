@@ -64,10 +64,28 @@ body { font-family: Arial, sans-serif; background-color: #F3F7FA; margin: 0; pad
 .rating-badge.na { background: #9CA3AF; }
 
 /* Today sale */
-.today-list { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
-.today-line { font-size: 14px; font-weight: 700; color: #111827; line-height: 1.4; }
-.today-line .val { font-weight: 700; }
-.today-line .val.small { font-weight: 600; color: #6B7280; }
+.today-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.today-date { font-size: 11px; font-weight: 700; color: #6B7280; background: #F3F4F6; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.today-total { font-size: 32px; font-weight: 800; margin: 14px 0 4px; }
+.today-sub { font-size: 12px; color: #6B7280; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.chip.up { background: #D1FAE5; color: #047857; }
+.chip.down { background: #FEE2E2; color: #B91C1C; }
+.chip.flat { background: #F3F4F6; color: #6B7280; }
+.split-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #E5E7EB; margin: 18px 0 12px; }
+.split-bar span { display: block; height: 100%; transition: width .4s; }
+.split-online { background: #2563EB; }
+.split-cash { background: #10B981; }
+.pay-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pay-tile { border: 1px solid #E5E7EB; border-radius: 12px; padding: 12px; min-width: 0; }
+.pay-tile .top { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6B7280; font-weight: 600; }
+.pay-ico { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex: 0 0 auto; }
+.pay-ico.online { background: #DBEAFE; }
+.pay-ico.cash { background: #D1FAE5; }
+.pay-tile .amt { font-size: 20px; font-weight: 800; margin-top: 8px; }
+.pay-tile .pct { font-size: 11px; color: #6B7280; margin-top: 2px; }
+.today-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #E5E7EB; font-size: 12px; color: #6B7280; }
+.today-foot b { color: #111827; display: block; font-size: 14px; margin-top: 2px; }
 
 /* Product donut */
 .donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 12px; }
@@ -110,14 +128,7 @@ tr:last-child td { border-bottom: 0; }
 .act-btn:hover { background: #EFF6FF; }
 
 /* ===== Functional extras ===== */
-.rating-edit { border: 1px solid #E5E7EB; background: #fff; color: #2563EB; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
-.rating-form { display: none; flex-direction: column; gap: 6px; width: 100%; }
-.rating-form.show { display: flex; }
-.rating-form input { border: 1px solid #E5E7EB; border-radius: 6px; padding: 7px 9px; font-size: 13px; width: 100%; }
-.rating-form .row { display: flex; gap: 6px; }
-.rating-form button { border: 0; border-radius: 6px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
-.btn-save { background: #2563EB; color: #fff; }
-.btn-cancel { background: #F3F4F6; color: #374151; }
+.rating-place { font-size: 12px; color: #6B7280; }
 .legend-item { cursor: pointer; padding: 3px 4px; border-radius: 6px; }
 .legend-item:hover { background: #F3F4F6; }
 .legend-item.active { background: #EFF6FF; outline: 1px solid #2563EB; }
@@ -264,7 +275,7 @@ td.col-date, td.col-status, td.col-amount { white-space: nowrap; }
       <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
     </div>
 
-    <!-- Rating on Google map -->
+    <!-- Rating on Google map (read-only, live from Google Maps Platform) -->
     <div class="card c-rating">
       <h3 class="title">Rating on Google map</h3>
       <div class="rating-body">
@@ -273,30 +284,45 @@ td.col-date, td.col-status, td.col-amount { white-space: nowrap; }
           <span class="rating-num" id="rating-num">--</span>
         </div>
         <div class="stars" id="rating-stars"></div>
-        <div class="review-count" id="rating-reviews">Not available</div>
-        <span class="rating-badge na" id="rating-badge">Not connected</span>
+        <div class="review-count" id="rating-reviews">Connecting to Google Maps…</div>
+        <span class="rating-badge na" id="rating-badge">Connecting…</span>
+        <div class="rating-place" id="rating-place"></div>
         <div class="rating-actions">
-          <button type="button" class="rating-edit" id="rating-edit-btn">Edit rating</button>
+          <a class="rating-link" id="rating-maps-link" href="#" target="_blank" rel="noopener" style="display:none">View on Google Maps ↗</a>
           <a class="rating-link" href="review-assistant.html">⭐ Get more reviews</a>
-        </div>
-        <div class="rating-form" id="rating-form">
-          <input type="number" id="rating-input" min="0" max="5" step="0.1" placeholder="Rating (0 - 5)">
-          <input type="number" id="reviews-input" min="0" step="1" placeholder="Number of reviews">
-          <div class="row">
-            <button type="button" class="btn-save" id="rating-save">Save</button>
-            <button type="button" class="btn-cancel" id="rating-cancel">Cancel</button>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- Today sale -->
     <div class="card c-today" style="cursor:pointer" onclick="window.location.href='sales-history.html'">
-      <h3 class="title">Today sale</h3>
-      <div class="today-list">
-        <div class="today-line">Today sale Amount = <span class="val" id="today-amount">Rs. 0</span></div>
-        <div class="today-line">Online Amount received = <span class="val" id="today-online">Rs. 0</span></div>
-        <div class="today-line">Today cash amount = <span class="val" id="today-cash">Rs. 0</span></div>
+      <div class="today-head">
+        <h3 class="title">Today sale</h3>
+        <span class="today-date" id="today-date"></span>
+      </div>
+      <div class="today-total" id="today-amount">Rs. 0</div>
+      <div class="today-sub">
+        <span id="today-orders">0 orders</span>
+        <span class="chip flat" id="today-chip">–</span>
+      </div>
+      <div class="split-bar" title="Online vs Cash received today">
+        <span class="split-online" id="bar-online" style="width:0"></span><span class="split-cash" id="bar-cash" style="width:0"></span>
+      </div>
+      <div class="pay-tiles">
+        <div class="pay-tile">
+          <div class="top"><span class="pay-ico online">💳</span>Online received</div>
+          <div class="amt" id="today-online">Rs. 0</div>
+          <div class="pct" id="today-online-pct">0% of received</div>
+        </div>
+        <div class="pay-tile">
+          <div class="top"><span class="pay-ico cash">💵</span>Cash received</div>
+          <div class="amt" id="today-cash">Rs. 0</div>
+          <div class="pct" id="today-cash-pct">0% of received</div>
+        </div>
+      </div>
+      <div class="today-foot">
+        <div>Received today<b id="today-received">Rs. 0</b></div>
+        <div style="text-align:right">Balance due (today's orders)<b id="today-due">Rs. 0</b></div>
       </div>
     </div>
 
@@ -423,9 +449,9 @@ requireAuth(async function (user) {
       document.getElementById("payment-banner").style.display = "block";
     }
     profileData = profileSnap.exists() ? profileSnap.data() : {};
-    showGoogleRating(profileData);
-  } catch (e) { showGoogleRating({}); }
+  } catch (e) { /* profile is optional for older accounts */ }
 
+  loadGoogleRating(profileData);
   loadDashboardData();
 });
 
@@ -453,44 +479,105 @@ function money(n) { return "Rs. " + Math.round(n).toLocaleString("en-IN"); }
 function dayStart(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
 
-/* ---------- Google rating (only real data from the shop profile) ---------- */
-function showGoogleRating(p) {
-  // reset to the "Not connected" state first
-  document.getElementById("rating-num").textContent = "--";
-  var h0 = "";
-  for (var s = 0; s < 5; s++) h0 += "<span class='off'>☆</span>";
-  document.getElementById("rating-stars").innerHTML = h0;
-  document.getElementById("rating-reviews").textContent = "Not available";
-  var b0 = document.getElementById("rating-badge");
-  b0.textContent = "Not connected";
-  b0.classList.add("na");
+/* ---------- Google rating: live from Google Maps Platform (read-only) ---------- */
+// Paste your Google Maps Platform API key below. In Google Cloud Console enable
+// "Maps JavaScript API" and "Places API (New)", and restrict the key to your website
+// domain (HTTP referrers). The shop's Place ID is read from the shop profile
+// (googlePlaceId) when present; otherwise the shop is found automatically by name.
+var GOOGLE_MAPS_API_KEY = "";
+var RATING_CACHE_MS = 6 * 60 * 60 * 1000; // re-check Google at most every 6 hours
 
-  // a rating entered on this device wins, otherwise use the shop profile
-  var local = null;
-  try { local = JSON.parse(localStorage.getItem("fralen_google_rating_" + currentUid) || "null"); } catch (e) {}
-  var rating = local ? num(local.rating) : num(p.googleRating != null ? p.googleRating : p.googleMapRating);
-  var reviews = local ? num(local.reviews) : num(p.googleReviewCount != null ? p.googleReviewCount : (p.googleReviews != null ? p.googleReviews : p.reviewCount));
-  if (!rating) return;
-  document.getElementById("rating-num").textContent = rating.toFixed(1);
-  var full = Math.round(rating), h = "";
+function paintStars(rating) {
+  var full = Math.round(rating || 0), h = "";
   for (var i = 1; i <= 5; i++) h += i <= full ? "★" : "<span class='off'>☆</span>";
   document.getElementById("rating-stars").innerHTML = h;
-  document.getElementById("rating-reviews").textContent = reviews ? reviews + " reviews" : "Google reviews";
+}
+
+function showRatingUnavailable(msg, badge) {
+  document.getElementById("rating-num").textContent = "--";
+  paintStars(0);
+  document.getElementById("rating-reviews").textContent = msg;
   var b = document.getElementById("rating-badge");
-  b.classList.remove("na", "down");
-  if (local && local.prev != null && !isNaN(local.prev)) {
-    var diff = rating - local.prev;
-    b.textContent = (diff >= 0 ? "↑ +" : "↓ ") + diff.toFixed(1) + " since last update";
+  b.textContent = badge || "Not connected";
+  b.className = "rating-badge na";
+  document.getElementById("rating-place").textContent = "";
+  document.getElementById("rating-maps-link").style.display = "none";
+}
+
+function showRating(d) {
+  if (!d.rating) { showRatingUnavailable("No Google ratings yet", "Google Maps"); return; }
+  document.getElementById("rating-num").textContent = Number(d.rating).toFixed(1);
+  paintStars(d.rating);
+  document.getElementById("rating-reviews").textContent = (d.count || 0).toLocaleString("en-IN") + " Google reviews";
+  var b = document.getElementById("rating-badge");
+  b.className = "rating-badge";
+  if (d.prev != null && d.prev !== d.rating) {
+    var diff = d.rating - d.prev;
+    b.textContent = (diff > 0 ? "↑ +" : "↓ ") + diff.toFixed(1) + " since last check";
     if (diff < 0) b.classList.add("down");
   } else {
-    b.textContent = "Google rating";
+    b.textContent = "Live · Google Maps";
+  }
+  document.getElementById("rating-place").textContent = [d.name, d.address].filter(Boolean).join(" · ");
+  var link = document.getElementById("rating-maps-link");
+  if (d.url) { link.href = d.url; link.style.display = ""; } else { link.style.display = "none"; }
+}
+
+function loadMapsScript() {
+  return new Promise(function (resolve, reject) {
+    if (window.google && google.maps && google.maps.importLibrary) { resolve(); return; }
+    var sc = document.createElement("script");
+    sc.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(GOOGLE_MAPS_API_KEY) + "&loading=async&v=weekly";
+    sc.async = true;
+    sc.onload = resolve;
+    sc.onerror = function () { reject(new Error("Google Maps script failed to load")); };
+    document.head.appendChild(sc);
+  });
+}
+
+async function loadGoogleRating(p) {
+  p = p || {};
+  var cacheKey = "fralen_gmp_" + currentUid, cached = null;
+  try { cached = JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch (e) {}
+
+  // The cache only avoids paying for a Google call on every page view; it is never user-editable.
+  if (cached && Date.now() - cached.at < RATING_CACHE_MS) { showRating(cached); return; }
+  if (!GOOGLE_MAPS_API_KEY) {
+    if (cached) showRating(cached); else showRatingUnavailable("Google Maps key not added yet");
+    return;
+  }
+
+  try {
+    await loadMapsScript();
+    var lib = await google.maps.importLibrary("places");
+    var Place = lib.Place, place = null;
+    var fields = ["id", "displayName", "formattedAddress", "rating", "userRatingCount", "googleMapsURI"];
+    var pid = p.googlePlaceId || p.placeId || (cached && cached.placeId);
+
+    if (pid) {
+      place = new Place({ id: pid });
+      await place.fetchFields({ fields: fields });
+    } else {
+      var q = [p.shopName, p.address].filter(Boolean).join(" ");
+      if (!q) throw new Error("Shop name missing, cannot find it on Google Maps");
+      var res = await Place.searchByText({ textQuery: q, fields: fields, maxResultCount: 1 });
+      if (!res.places || !res.places.length) throw new Error("Shop not found on Google Maps");
+      place = res.places[0];
+    }
+
+    var d = {
+      rating: place.rating, count: place.userRatingCount, name: place.displayName,
+      address: place.formattedAddress, url: place.googleMapsURI, placeId: place.id, at: Date.now(),
+      prev: cached ? (cached.rating !== place.rating ? cached.rating : cached.prev) : null
+    };
+    try { localStorage.setItem(cacheKey, JSON.stringify(d)); } catch (e) {}
+    showRating(d);
+  } catch (err) {
+    console.log("Google rating error: ", err);
+    if (cached) showRating(cached); else showRatingUnavailable("Could not reach Google Maps");
   }
 }
-(function () {
-  var h = "";
-  for (var i = 0; i < 5; i++) h += "<span class='off'>☆</span>";
-  document.getElementById("rating-stars").innerHTML = h;
-})();
+showRatingUnavailable("Connecting to Google Maps…", "Connecting…");
 
 // NOTE: There is still no separate "customers" collection. Every customer,
 // along with their order count / spend / pending balance, is derived from
@@ -526,7 +613,7 @@ async function loadDashboardData() {
     document.getElementById("stat-pending-orders").textContent = pendingOrders;
     document.getElementById("stat-balance-due").textContent = "Rs. " + balanceDue;
 
-    renderToday(todaySales);
+    renderToday();
     renderSales();
     renderProducts();
     renderOrders();
@@ -545,17 +632,46 @@ function paymentsOf(order) {
   return adv > 0 ? [{ amount: adv, mode: "Cash", date: order.createdAt }] : [];
 }
 
-function renderToday(todaySales) {
-  var online = 0, cash = 0;
+function renderToday() {
+  var now = new Date(), yest = new Date(now);
+  yest.setDate(yest.getDate() - 1);
+  var yKey = dayKey(yest);
+  var sales = 0, orders = 0, due = 0, ySales = 0, online = 0, cash = 0;
+
   allOrders.forEach(function (o) {
+    if (isToday(o.createdAt)) { sales += payableOf(o); orders += 1; due += pendingOf(o); }
+    else if (o.createdAt && dayKey(new Date(o.createdAt)) === yKey) { ySales += payableOf(o); }
     paymentsOf(o).forEach(function (p) {
       if (!isToday(p.date)) return;
       if (p.mode === "Online") online += num(p.amount); else cash += num(p.amount);
     });
   });
-  document.getElementById("today-amount").textContent = money(todaySales);
+
+  var received = online + cash;
+  document.getElementById("today-date").textContent = now.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  document.getElementById("today-amount").textContent = money(sales);
+  document.getElementById("today-orders").textContent = orders + (orders === 1 ? " order today" : " orders today");
+
+  var chip = document.getElementById("today-chip");
+  if (ySales > 0) {
+    var pct = ((sales - ySales) / ySales) * 100;
+    chip.textContent = (pct >= 0 ? "▲ " : "▼ ") + Math.abs(pct).toFixed(0) + "% vs yesterday";
+    chip.className = "chip " + (pct >= 0 ? "up" : "down");
+  } else {
+    chip.textContent = sales > 0 ? "No sales yesterday" : "No sales yet";
+    chip.className = "chip flat";
+  }
+
+  var onPct = received ? (online / received * 100) : 0;
+  var caPct = received ? (cash / received * 100) : 0;
+  document.getElementById("bar-online").style.width = onPct + "%";
+  document.getElementById("bar-cash").style.width = caPct + "%";
   document.getElementById("today-online").textContent = money(online);
   document.getElementById("today-cash").textContent = money(cash);
+  document.getElementById("today-online-pct").textContent = onPct.toFixed(0) + "% of received";
+  document.getElementById("today-cash-pct").textContent = caPct.toFixed(0) + "% of received";
+  document.getElementById("today-received").textContent = money(received);
+  document.getElementById("today-due").textContent = money(due);
 }
 
 /* ---------- Sales card + line graph ---------- */
@@ -908,33 +1024,6 @@ document.getElementById("cols-menu").addEventListener("change", function () {
 document.addEventListener("click", function () { document.getElementById("cols-menu").classList.remove("show"); });
 applyCols();
 
-// Google rating: enter it by hand (saved on this device) if it is not in the shop profile
-document.getElementById("rating-edit-btn").addEventListener("click", function () {
-  var local = null;
-  try { local = JSON.parse(localStorage.getItem("fralen_google_rating_" + currentUid) || "null"); } catch (e) {}
-  document.getElementById("rating-input").value = local ? local.rating : "";
-  document.getElementById("reviews-input").value = local ? local.reviews : "";
-  document.getElementById("rating-form").classList.toggle("show");
-});
-document.getElementById("rating-cancel").addEventListener("click", function () {
-  document.getElementById("rating-form").classList.remove("show");
-});
-document.getElementById("rating-save").addEventListener("click", function () {
-  var rv = document.getElementById("rating-input").value.trim();
-  var cv = document.getElementById("reviews-input").value.trim();
-  var key = "fralen_google_rating_" + currentUid;
-  if (rv === "") {
-    try { localStorage.removeItem(key); } catch (e) {}
-  } else {
-    var r = parseFloat(rv);
-    if (isNaN(r) || r < 0 || r > 5) { alert("Rating must be between 0 and 5"); return; }
-    var oldLocal = null;
-    try { oldLocal = JSON.parse(localStorage.getItem(key) || "null"); } catch (e) {}
-    try { localStorage.setItem(key, JSON.stringify({ rating: r, reviews: parseInt(cv, 10) || 0, prev: oldLocal ? oldLocal.rating : null })); } catch (e) {}
-  }
-  document.getElementById("rating-form").classList.remove("show");
-  showGoogleRating(profileData);
-});
 </script>
 </body>
-  </html>
+</html>
