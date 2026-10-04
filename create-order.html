@@ -112,20 +112,7 @@ table.prod-table tr:nth-child(even) td { background: #f8faff; }
 <div class="container">
   <div class="form-card">
     <div class="form-row">
-      <div class="field sm">
-        <label><span class="req">*</span> Branch Name</label>
-        <select id="branch">
-          <option value="">-- Select Branch --</option>
-          <option>FRALEN Main Branch</option>
-          <option>FRALEN Branch 1</option>
-          <option>FRALEN Branch 2</option>
-          <option>FRALEN Branch 3</option>
-        </select>
-      </div>
-      <div class="field"><label>Referral Code</label><input type="text" id="referral" placeholder="referral code"/></div>
-    </div>
-    <div class="form-row">
-      <div class="field sm"><label>Order No.</label><input type="text" id="order-no" placeholder="text"/></div>
+      <div class="field sm"><label>Order No.</label><input type="text" id="order-no" placeholder="FLN01"/></div>
       <div class="field"><label>Date</label><input type="datetime-local" id="order-date"/></div>
       <div class="field"><label>Delivery Date</label><input type="datetime-local" id="delivery-date"/></div>
     </div>
@@ -137,10 +124,11 @@ table.prod-table tr:nth-child(even) td { background: #f8faff; }
     <div class="form-row">
       <div class="field"><label>Email</label><input type="email" id="email" placeholder="email@example.com"/></div>
       <div class="field">
-        <label>Sales Person</label>
+        <label><span class="req">*</span> Sales Person</label>
         <select id="salesperson">
-          <option>Admin</option><option>FAIZ</option><option>GANI</option><option>ASIF</option><option>SAHI</option>
+          <option value="">-- Select your name --</option>
         </select>
+        <div id="staff-hint" style="font-size:11px;color:var(--gray);display:none">Staff list empty hai. <a href="settings.html" style="color:var(--accent)">Settings → Staff</a> mein naam add karo.</div>
       </div>
     </div>
     <div class="form-row">
@@ -315,11 +303,22 @@ requireAuth(async (user) => {
     const snap = await getDoc(profileDoc(currentUid));
     if (snap.exists()) shopProfile = snap.data();
   } catch (e) { /* profile optional */ }
+  fillStaffList();
+  await setNextOrderNo();
   // Load THIS shop's real product catalog (users/{uid}/products) so the
   // order form's product dropdowns reflect what's actually in stock,
   // not a hardcoded demo list.
   await loadProductCatalog();
 });
+
+// Sales Person list comes from Settings -> Staff (saved in the shop profile)
+function fillStaffList() {
+  const select = document.getElementById('salesperson');
+  const staff = Array.isArray(shopProfile.staff) ? shopProfile.staff : [];
+  select.innerHTML = '<option value="">-- Select your name --</option>' +
+    staff.map(name => `<option value="${String(name).replace(/"/g, '&quot;')}">${String(name).replace(/</g, '&lt;')}</option>`).join('');
+  document.getElementById('staff-hint').style.display = staff.length ? 'none' : 'block';
+}
 
 const ROWS = 10;
 const COUPONS = { 'FRALEN10': 10, 'KETO15': 15, 'WELCOME5': 5 };
@@ -338,7 +337,30 @@ document.getElementById('order-date').value = fmt(now);
 document.getElementById('delivery-date').value = fmt(tomorrow);
 document.getElementById('payment-date').value = now.toISOString().slice(0,10);
 document.getElementById('rx-date').value = now.toISOString().slice(0,10);
-document.getElementById('order-no').value = 'ORD-' + Date.now().toString().slice(-6);
+// Order number is filled after login (see setNextOrderNo): FLN01, FLN02 ... FLN99, FLN100 ...
+let suggestedOrderNo = '';
+
+// Looks at this shop's existing orders, finds the biggest FLN number and adds 1.
+// Old orders with other formats (like ORD-123456) are ignored.
+async function getNextOrderNo() {
+  let max = 0;
+  try {
+    const snap = await getDocs(tenantCollection(currentUid, "orders"));
+    snap.forEach(d => {
+      const match = /^FLN(\d+)$/i.exec(String(d.data().orderNo || '').trim());
+      if (match) max = Math.max(max, parseInt(match[1], 10));
+    });
+  } catch (err) {
+    console.error('Order number lookup fail:', err);
+  }
+  const next = max + 1;
+  return 'FLN' + (next < 10 ? '0' + next : next);
+}
+
+async function setNextOrderNo() {
+  suggestedOrderNo = await getNextOrderNo();
+  document.getElementById('order-no').value = suggestedOrderNo;
+}
 
 document.getElementById('dob').addEventListener('change', function() {
   const dob = new Date(this.value);
@@ -506,10 +528,10 @@ function calcTotals() {
 }
 
 function saveOrder() {
-  const branch = document.getElementById('branch').value;
   const name = document.getElementById('cust-name').value.trim();
+  const hasStaff = Array.isArray(shopProfile.staff) && shopProfile.staff.length > 0;
   if (!currentUid) { alert('Login session nahi mila, dubara login karo.'); return; }
-  if (!branch) { alert('Branch select karo!'); return; }
+  if (hasStaff && !document.getElementById('salesperson').value) { alert('Sales Person mein apna naam select karo!'); return; }
   if (!name) { alert('Customer name daalo!'); return; }
   if (hasLens) {
     document.getElementById('rx-modal').classList.add('open');
@@ -542,9 +564,15 @@ async function finishSave() {
   saveBtn.textContent = 'Saving...';
   saveBtn.disabled = true;
 
+  // If the number was not changed by hand, check again right before saving, so two
+  // people saving at the same time do not end up with the same order number.
+  const orderNoField = document.getElementById('order-no');
+  if (orderNoField.value === suggestedOrderNo || !orderNoField.value.trim()) {
+    orderNoField.value = await getNextOrderNo();
+  }
+
   const order = {
     orderNo: document.getElementById('order-no').value,
-    branch: document.getElementById('branch').value,
     orderDate: document.getElementById('order-date').value,
     deliveryDate: document.getElementById('delivery-date').value,
     mobile: document.getElementById('mobile').value.trim(),
