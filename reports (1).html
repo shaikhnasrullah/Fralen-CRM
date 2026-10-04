@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FRALEN CRM — Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1B2A6B; --navy-light: #2A3F8F;
+    --accent: #4F6BF0; --accent-soft: #EEF1FE;
+    --gray: #6B7280; --border: #C5D3E8;
+    --green: #10B981; --orange: #F59E0B; --red: #EF4444;
+  }
+  body { font-family: 'Inter', sans-serif; background: #f0f4f8; color: #111827; min-height: 100vh; }
+
+  .topbar { background: var(--navy); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-logo { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 900; color: white; letter-spacing: 3px; }
+  .topbar-logo span { color: #7B93FF; }
+  .back-btn { background: rgba(255,255,255,0.15); color: white; border: none; padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  .page-title { background: white; padding: 14px 20px; font-size: 18px; font-weight: 700; color: var(--navy); border-bottom: 2px solid var(--accent); }
+
+  .container { padding: 16px; max-width: 900px; margin: 0 auto; }
+
+  /* DATE RANGE CARD */
+  .range-card { background: white; border-radius: 12px; border: 1px solid var(--border); padding: 18px; margin-bottom: 18px; }
+  .range-card h3 { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+  .quick-range { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .qr-btn {
+    padding: 8px 16px; border-radius: 9px; border: 1.5px solid var(--border); background: white;
+    font-size: 13px; font-weight: 600; color: var(--navy); cursor: pointer; transition: background 0.15s, color 0.15s;
+  }
+  .qr-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .custom-range { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .custom-range .field { display: flex; flex-direction: column; gap: 5px; }
+  .custom-range label { font-size: 11.5px; font-weight: 600; color: #374151; }
+  .custom-range input {
+    padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+  }
+  .custom-range input:focus { border-color: var(--accent); }
+  .range-label { margin-top: 12px; font-size: 12.5px; color: var(--gray); }
+  .range-label b { color: var(--navy); }
+
+  /* REPORT CARDS */
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .report-card {
+    background: white; border-radius: 12px; border: 1px solid var(--border);
+    padding: 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .rc-top { display: flex; align-items: center; gap: 10px; }
+  .rc-icon {
+    width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .rc-icon.orders { background: #EEF1FE; }
+  .rc-icon.customers { background: #ECFDF5; }
+  .rc-icon.products { background: #FEF3C7; }
+  .rc-icon.purchases { background: #FEE2E2; }
+  .rc-icon.returns { background: #F3E8FF; }
+  .rc-title { font-size: 14.5px; font-weight: 700; color: var(--navy); }
+  .rc-count { font-size: 12px; color: var(--gray); }
+  .rc-download {
+    margin-top: auto; background: var(--accent-soft); color: var(--accent); border: none;
+    border-radius: 8px; padding: 9px; font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .rc-download:hover { background: #DCE4FF; }
+  .rc-download:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .all-card {
+    grid-column: span 2; background: var(--navy); border-radius: 12px; padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  .all-card .txt h3 { color: white; font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+  .all-card .txt p { color: rgba(255,255,255,0.65); font-size: 12.5px; }
+  .all-download {
+    background: white; color: var(--navy); border: none; border-radius: 9px;
+    padding: 11px 22px; font-size: 13.5px; font-weight: 700; cursor: pointer;
+  }
+  .all-download:hover { background: #EEF1FE; }
+
+  .loading-note { text-align: center; padding: 30px; color: var(--gray); font-size: 13px; }
+
+  @media (max-width: 600px) {
+    .report-grid { grid-template-columns: 1fr; }
+    .all-card { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">FRAL<span>EN</span> CRM</div>
+  <button class="back-btn" onclick="window.location.href='dashboard.html'">← Dashboard</button>
+</div>
+
+<div class="page-title">Reports &amp; Excel Export</div>
+
+<div class="container">
+
+  <div class="range-card">
+    <h3>Select Date Range</h3>
+    <div class="quick-range">
+      <button class="qr-btn" data-range="today" onclick="window.setQuickRange('today')">Today</button>
+      <button class="qr-btn" data-range="week" onclick="window.setQuickRange('week')">This Week</button>
+      <button class="qr-btn active" data-range="month" onclick="window.setQuickRange('month')">This Month</button>
+      <button class="qr-btn" data-range="year" onclick="window.setQuickRange('year')">This Year</button>
+      <button class="qr-btn" data-range="all" onclick="window.setQuickRange('all')">All Time</button>
+      <button class="qr-btn" data-range="custom" onclick="window.setQuickRange('custom')">Custom</button>
+    </div>
+    <div class="custom-range" id="custom-range-fields" style="display:none">
+      <div class="field"><label>From Date</label><input type="date" id="range-from"/></div>
+      <div class="field"><label>To Date</label><input type="date" id="range-to"/></div>
+      <div class="field"><button class="qr-btn" style="border-color:var(--accent);color:var(--accent)" onclick="window.applyCustomRange()">Apply</button></div>
+    </div>
+    <div class="range-label" id="range-label">Showing: <b>This Month</b></div>
+  </div>
+
+  <div id="report-body" class="loading-note">Loading data...</div>
+
+</div>
+
+<script type="module">
+import { getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { requireAuth, tenantCollection } from "./firebase-config.js";
+
+let currentUid = null;
+let shopName = 'FRALEN Shop';
+
+// Raw data pulled once; date filtering happens client-side on each export
+// so switching ranges doesn't need a fresh Firestore read every time.
+let allOrders = [];
+let allProducts = [];
+let allPurchases = [];
+let allReturns = [];
+
+let rangeFrom = null; // Date or null (null = no lower bound)
+let rangeTo = null;   // Date or null (null = no upper bound)
+
+requireAuth(async (user) => {
+  currentUid = user.uid;
+  await loadAllData();
+  window.setQuickRange('month');
+});
+
+async function loadAllData() {
+  try {
+    const [orderSnap, productSnap, purchaseSnap, returnSnap] = await Promise.all([
+      getDocs(tenantCollection(currentUid, "orders")),
+      getDocs(tenantCollection(currentUid, "products")),
+      getDocs(tenantCollection(currentUid, "purchases")),
+      getDocs(tenantCollection(currentUid, "returns")),
+    ]);
+    allOrders = orderSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allProducts = productSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allPurchases = purchaseSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    allReturns = returnSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderReportCards();
+  } catch (err) {
+    document.getElementById('report-body').innerHTML = `<div class="loading-note">Error loading data: ${err.message}</div>`;
+  }
+}
+
+/* ---------------- DATE RANGE ---------------- */
+window.setQuickRange = function (range) {
+  document.querySelectorAll('.qr-btn').forEach(b => b.classList.toggle('active', b.dataset.range === range));
+  document.getElementById('custom-range-fields').style.display = range === 'custom' ? 'flex' : 'none';
+
+  const now = new Date();
+  const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+  const endOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+
+  if (range === 'today') {
+    rangeFrom = startOfDay(now); rangeTo = endOfDay(now);
+    setRangeLabel('Today');
+  } else if (range === 'week') {
+    const day = now.getDay(); // 0 = Sunday
+    const monday = new Date(now); monday.setDate(now.getDate() - ((day + 6) % 7));
+    rangeFrom = startOfDay(monday); rangeTo = endOfDay(now);
+    setRangeLabel('This Week (' + monday.toLocaleDateString('en-IN') + ' – ' + now.toLocaleDateString('en-IN') + ')');
+  } else if (range === 'month') {
+    rangeFrom = startOfDay(new Date(now.getFullYear(), now.getMonth(), 1));
+    rangeTo = endOfDay(now);
+    setRangeLabel('This Month (' + now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }) + ')');
+  } else if (range === 'year') {
+    rangeFrom = startOfDay(new Date(now.getFullYear(), 0, 1));
+    rangeTo = endOfDay(now);
+    setRangeLabel('This Year (' + now.getFullYear() + ')');
+  } else if (range === 'all') {
+    rangeFrom = null; rangeTo = null;
+    setRangeLabel('All Time');
+  } else if (range === 'custom') {
+    // Wait for user to pick dates and hit Apply.
+    return;
+  }
+  renderReportCards();
+};
+
+window.applyCustomRange = function () {
+  const fromVal = document.getElementById('range-from').value;
+  const toVal = document.getElementById('range-to').value;
+  if (!fromVal || !toVal) { alert('From aur To dono date select karo.'); return; }
+  const from = new Date(fromVal + 'T00:00:00');
+  const to = new Date(toVal + 'T23:59:59');
+  if (from > to) { alert('From date, To date se pehle honi chahiye.'); return; }
+  rangeFrom = from; rangeTo = to;
+  setRangeLabel('Custom (' + from.toLocaleDateString('en-IN') + ' – ' + to.toLocaleDateString('en-IN') + ')');
+  renderReportCards();
+};
+
+function setRangeLabel(text) {
+  document.getElementById('range-label').innerHTML = 'Showing: <b>' + text + '</b>';
+}
+
+function inRange(dateStr) {
+  if (!rangeFrom && !rangeTo) return true; // All Time
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return false;
+  if (rangeFrom && d < rangeFrom) return false;
+  if (rangeTo && d > rangeTo) return false;
+  return true;
+}
+
+/* ---------------- FILTERED DATASETS ---------------- */
+function getFilteredOrders() { return allOrders.filter(o => inRange(o.createdAt)); }
+function getFilteredPurchases() { return allPurchases.filter(p => inRange(p.createdAt)); }
+function getFilteredReturns() { return allReturns.filter(r => inRange(r.createdAt)); }
+function getFilteredProducts() {
+  // Products aren't really "dated" transactions, but honor the range if
+  // the product was added within it; fall back to all products if a
+  // product has no createdAt (e.g. was added before this field existed).
+  return allProducts.filter(p => !p.createdAt || inRange(p.createdAt));
+}
+function getFilteredCustomers() {
+  // Derived from filtered orders, same grouping logic as customers.html.
+  const map = {};
+  getFilteredOrders().forEach(o => {
+    const key = (o.mobile || 'unknown').trim() || 'unknown';
+    if (!map[key]) {
+      map[key] = { mobile: key, name: o.customerName || '(No name)', orders: 0, totalSpent: 0, totalPending: 0, lastOrder: o.createdAt || '' };
+    }
+    map[key].orders += 1;
+    map[key].totalSpent += (o.totals?.payable || 0);
+    map[key].totalPending += (o.totals?.pending || 0);
+    if ((o.createdAt || '') > (map[key].lastOrder || '')) {
+      map[key].lastOrder = o.createdAt || '';
+      if (o.customerName) map[key].name = o.customerName;
+    }
+  });
+  return Object.values(map);
+}
+
+/* ---------------- REPORT CARDS ---------------- */
+function renderReportCards() {
+  const orders = getFilteredOrders();
+  const customers = getFilteredCustomers();
+  const products = getFilteredProducts();
+  const purchases = getFilteredPurchases();
+  const returns = getFilteredReturns();
+
+  document.getElementById('report-body').innerHTML = `
+    <div class="report-grid">
+      <div class="all-card">
+        <div class="txt">
+          <h3>📦 Download Everything</h3>
+          <p>One Excel file, one sheet per report, for the selected date range.</p>
+        </div>
+        <button class="all-download" onclick="window.downloadAll()">⬇ Download All (.xlsx)</button>
+      </div>
+
+      <div class="report-card">
+        <div class="rc-top"><div class="rc-icon orders">🧾</div><div><div class="rc-title">Orders / Sales</div><div class="rc-count">${orders.length} orders</div></div></div>
+        <button class="rc-download" ${orders.length ? '' : 'disabled'} onclick="window.downloadOrders()">⬇ Download Excel</button>
+      </div>
+
+      <div class="report-card">
+        <div class="rc-top"><div class="rc-icon customers">👥</div><div><div class="rc-title">Customers</div><div class="rc-count">${customers.length} customers</div></div></div>
+        <button class="rc-download" ${customers.length ? '' : 'disabled'} onclick="window.downloadCustomers()">⬇ Download Excel</button>
+      </div>
+
+      <div class="report-card">
+        <div class="rc-top"><div class="rc-icon products">🕶️</div><div><div class="rc-title">Products</div><div class="rc-count">${products.length} products</div></div></div>
+        <button class="rc-download" ${products.length ? '' : 'disabled'} onclick="window.downloadProducts()">⬇ Download Excel</button>
+      </div>
+
+      <div class="report-card">
+        <div class="rc-top"><div class="rc-icon purchases">📥</div><div><div class="rc-title">Purchases</div><div class="rc-count">${purchases.length} purchases</div></div></div>
+        <button class="rc-download" ${purchases.length ? '' : 'disabled'} onclick="window.downloadPurchases()">⬇ Download Excel</button>
+      </div>
+
+      <div class="report-card">
+        <div class="rc-top"><div class="rc-icon returns">↩️</div><div><div class="rc-title">Returns / Defects</div><div class="rc-count">${returns.length} records</div></div></div>
+        <button class="rc-download" ${returns.length ? '' : 'disabled'} onclick="window.downloadReturns()">⬇ Download Excel</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------------- SHEET BUILDERS ---------------- */
+function ordersToRows(orders) {
+  return orders.map(o => ({
+    'Order No.': o.orderNo || '',
+    'Date': o.createdAt ? new Date(o.createdAt).toLocaleString('en-IN') : '',
+    'Customer Name': o.customerName || '',
+    'Mobile': o.mobile || '',
+    'Branch': o.branch || '',
+    'Sales Person': o.salesPerson || '',
+    'Items': (o.products || []).length,
+    'Basic Amount': o.totals?.basic || 0,
+    'GST': o.totals?.gst || 0,
+    'Item Discount': o.totals?.itemDiscount || 0,
+    'Coupon Discount': o.totals?.couponDiscount || 0,
+    'Loyalty Discount': o.totals?.loyaltyDiscount || 0,
+    'Payable Amount': o.totals?.payable || 0,
+    'Advance Paid': o.totals?.advance || 0,
+    'Pending Balance': o.totals?.pending || 0,
+    'Cash Received': (o.payments || []).filter(p => p.mode === 'Cash').reduce((s, p) => s + (p.amount || 0), 0),
+    'Online Received': (o.payments || []).filter(p => p.mode === 'Online').reduce((s, p) => s + (p.amount || 0), 0),
+    'Status': o.status || '',
+  }));
+}
+function customersToRows(customers) {
+  return customers.map(c => ({
+    'Customer Name': c.name, 'Mobile': c.mobile === 'unknown' ? '' : c.mobile,
+    'Total Orders': c.orders, 'Total Spent (Rs)': c.totalSpent.toFixed(2),
+    'Pending Balance (Rs)': c.totalPending.toFixed(2),
+    'Last Order Date': c.lastOrder ? new Date(c.lastOrder).toLocaleDateString('en-IN') : '',
+  }));
+}
+function productsToRows(products) {
+  return products.map(p => ({
+    'Product Name': p.name || '', 'Category': p.category || '', 'Brand': p.brand || '',
+    'SKU': p.sku || '', 'Purchase Price': p.purchasePrice || 0, 'Retail Price': p.retailPrice || 0,
+    'Stock': p.stock || 0, 'Reorder Level': p.reorderLevel || 0, 'Notes': p.notes || '',
+  }));
+}
+function purchasesToRows(purchases) {
+  const rows = [];
+  purchases.forEach(p => {
+    const items = p.items && p.items.length ? p.items : [{}];
+    items.forEach(it => {
+      rows.push({
+        'Date': p.date || (p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN') : ''),
+        'Supplier': p.supplier || '', 'Bill No.': p.billNo || '',
+        'Product': it.product || '', 'Description': it.description || '',
+        'Qty': it.qty || '', 'Price': it.price || '', 'Retail Price': it.retailPrice || '',
+        'Item Total': it.total || '', 'Purchase Total Amount': p.totalAmount || 0,
+        'Notes': p.notes || '',
+      });
+    });
+  });
+  return rows;
+}
+function returnsToRows(returns) {
+  return returns.map(r => ({
+    'Date': r.date || (r.createdAt ? new Date(r.createdAt).toLocaleDateString('en-IN') : ''),
+    'Supplier': r.supplier || '', 'Bill No.': r.billNo || '', 'Product': r.product || '',
+    'Qty': r.qty || 0, 'Type': r.type || '', 'Amount': r.amount || 0, 'Reason': r.reason || '',
+  }));
+}
+
+/* ---------------- DOWNLOAD HANDLERS ---------------- */
+function fileSuffix() {
+  const rangeText = document.getElementById('range-label').textContent.replace('Showing: ', '');
+  return rangeText.replace(/[^\w]+/g, '_').slice(0, 40);
+}
+
+function downloadSheet(rows, sheetName, filenamePrefix) {
+  if (!rows.length) { alert('Is date range mein koi data nahi mila.'); return; }
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, `${filenamePrefix}_${fileSuffix()}.xlsx`);
+}
+
+window.downloadOrders = () => downloadSheet(ordersToRows(getFilteredOrders()), 'Orders', 'FRALEN_Orders');
+window.downloadCustomers = () => downloadSheet(customersToRows(getFilteredCustomers()), 'Customers', 'FRALEN_Customers');
+window.downloadProducts = () => downloadSheet(productsToRows(getFilteredProducts()), 'Products', 'FRALEN_Products');
+window.downloadPurchases = () => downloadSheet(purchasesToRows(getFilteredPurchases()), 'Purchases', 'FRALEN_Purchases');
+window.downloadReturns = () => downloadSheet(returnsToRows(getFilteredReturns()), 'Returns', 'FRALEN_Returns');
+
+window.downloadAll = function () {
+  const orders = ordersToRows(getFilteredOrders());
+  const customers = customersToRows(getFilteredCustomers());
+  const products = productsToRows(getFilteredProducts());
+  const purchases = purchasesToRows(getFilteredPurchases());
+  const returns = returnsToRows(getFilteredReturns());
+
+  if (!orders.length && !customers.length && !products.length && !purchases.length && !returns.length) {
+    alert('Is date range mein koi data nahi mila.');
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+  if (orders.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(orders), 'Orders');
+  if (customers.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(customers), 'Customers');
+  if (products.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(products), 'Products');
+  if (purchases.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(purchases), 'Purchases');
+  if (returns.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(returns), 'Returns');
+  XLSX.writeFile(wb, `FRALEN_Report_${fileSuffix()}.xlsx`);
+};
+</script>
+
+</body>
+</html>
+
