@@ -210,7 +210,7 @@
       <div class="panel">
         <div class="staff-add">
           <input type="text" id="staff-name" placeholder="Staff name, e.g. Rahul" maxlength="40"/>
-          <button type="button" onclick="window.addStaff()">+ Add</button>
+          <button type="button" id="staff-add-btn">+ Add</button>
         </div>
         <div class="status-msg" id="staffMsg"></div>
         <div class="staff-list" id="staff-list"><div class="staff-empty">Loading...</div></div>
@@ -408,7 +408,18 @@ window.addStaff = async function () {
   const input = document.getElementById('staff-name');
   const name = input.value.trim();
   const msg = document.getElementById('staffMsg');
-  if (!name) return;
+  if (!name) {
+    msg.className = 'status-msg error';
+    msg.textContent = 'Pehle staff ka naam likho.';
+    return;
+  }
+  if (!currentUid) {
+    msg.className = 'status-msg error';
+    msg.textContent = 'Login session abhi load ho raha hai, 2 second ruk kar dobara dabao.';
+    return;
+  }
+  msg.className = 'status-msg';
+  msg.textContent = 'Saving...';
   if (staffList.some(n => n.toLowerCase() === name.toLowerCase())) {
     msg.className = 'status-msg error';
     msg.textContent = 'Ye naam pehle se list mein hai.';
@@ -432,6 +443,14 @@ window.removeStaff = async function (index) {
   renderStaff();
   if (perfLoaded) calculate();
 };
+
+document.getElementById('staff-add-btn').addEventListener('click', () => window.addStaff());
+
+// if anything goes wrong in this page, show it on screen (phones have no console)
+window.addEventListener('error', (e) => {
+  const msg = document.getElementById('staffMsg');
+  if (msg) { msg.className = 'status-msg error'; msg.textContent = 'Page error: ' + e.message; }
+});
 
 document.getElementById('staff-name').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); window.addStaff(); }
