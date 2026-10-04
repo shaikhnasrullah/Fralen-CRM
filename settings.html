@@ -126,6 +126,11 @@
           <textarea id="address" placeholder="Shop no., street, area, city, pincode"></textarea>
           <div class="hint">Prints on invoices and prescription cards.</div>
         </div>
+        <div class="field">
+          <label>Google Place ID (optional)</label>
+          <input type="text" id="googlePlaceId" placeholder="e.g. ChIJ..." autocomplete="off"/>
+          <div class="hint">Makes the dashboard show the exact Google Maps rating of your shop. Find it by searching your shop in Google's "Place ID Finder". Leave empty to find your shop automatically by name.</div>
+        </div>
         <button type="submit" class="save-btn" id="saveBtn">Save Profile</button>
         <div class="status-msg" id="statusMsg"></div>
       </form>
@@ -184,6 +189,7 @@ requireAuth(async (user) => {
       document.getElementById('ownerName').value = p.ownerName || '';
       document.getElementById('phone').value = p.phone || '';
       document.getElementById('address').value = p.address || '';
+      document.getElementById('googlePlaceId').value = p.googlePlaceId || '';
       if (p.logoDataUrl) {
         logoDataUrl = p.logoDataUrl;
         renderLogoPreview();
@@ -273,6 +279,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
       ownerName: document.getElementById('ownerName').value.trim(),
       phone: document.getElementById('phone').value.trim(),
       address: document.getElementById('address').value.trim(),
+      googlePlaceId: document.getElementById('googlePlaceId').value.trim(),
       logoDataUrl: logoDataUrl || null,
       updatedAt: serverTimestamp(),
     }, { merge: true });
