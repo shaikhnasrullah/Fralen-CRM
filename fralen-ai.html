@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>FRALEN AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 70px;
+      background: #071b3a;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 20px;
+    }
+
+    .ai-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+    }
+
+    .back-btn {
+      color: white;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.25);
+      padding: 9px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px;
+    }
+
+    .hero {
+      background: white;
+      border-radius: 18px;
+      padding: 25px;
+      box-shadow: 0 4px 18px rgba(15,23,42,.07);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 27px;
+      margin-bottom: 8px;
+      color: #071b3a;
+    }
+
+    .hero p {
+      color: #667085;
+      line-height: 1.6;
+    }
+
+    .status {
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #15803d;
+      background: #f0fdf4;
+      padding: 7px 11px;
+      border-radius: 999px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .chat-card {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(15,23,42,.07);
+      overflow: hidden;
+    }
+
+    .suggestions {
+      padding: 18px;
+      border-bottom: 1px solid #edf0f5;
+    }
+
+    .suggestions-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #475467;
+      margin-bottom: 11px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid #d9e0eb;
+      background: #f8fafc;
+      color: #344054;
+      padding: 9px 12px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: .2s;
+    }
+
+    .chip:hover {
+      background: #eef4ff;
+      border-color: #8bb5ff;
+      color: #174ea6;
+    }
+
+    .messages {
+      min-height: 430px;
+      max-height: 560px;
+      overflow-y: auto;
+      padding: 22px;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 18px;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: 82%;
+      padding: 13px 16px;
+      border-radius: 14px;
+      line-height: 1.55;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message.ai .bubble {
+      background: #f2f5fa;
+      color: #27364d;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.user .bubble {
+      background: #071b3a;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .ai-label {
+      font-size: 11px;
+      color: #667085;
+      margin-bottom: 5px;
+      font-weight: 700;
+    }
+
+    .welcome {
+      text-align: center;
+      padding: 50px 20px;
+      color: #667085;
+    }
+
+    .welcome-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .welcome h2 {
+      color: #172033;
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .welcome p {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .typing {
+      display: none;
+      padding: 0 22px 16px;
+    }
+
+    .typing-inner {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f2f5fa;
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background: #718096;
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: .15s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: .3s;
+    }
+
+    @keyframes blink {
+      0%, 80%, 100% {
+        opacity: .3;
+      }
+      40% {
+        opacity: 1;
+      }
+    }
+
+    .input-area {
+      border-top: 1px solid #edf0f5;
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      background: #fff;
+    }
+
+    #question {
+      flex: 1;
+      min-height: 48px;
+      max-height: 130px;
+      resize: vertical;
+      border: 1px solid #d5dce8;
+      border-radius: 11px;
+      padding: 13px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    #question:focus {
+      border-color: #477cf5;
+      box-shadow: 0 0 0 3px rgba(71,124,245,.1);
+    }
+
+    #sendBtn {
+      align-self: flex-end;
+      min-width: 92px;
+      height: 48px;
+      border: none;
+      border-radius: 11px;
+      background: #071b3a;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #sendBtn:hover {
+      background: #102d5c;
+    }
+
+    #sendBtn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .note {
+      text-align: center;
+      font-size: 11px;
+      color: #98a2b3;
+      padding: 12px 15px 16px;
+    }
+
+    @media (max-width: 650px) {
+      .topbar {
+        padding: 0 15px;
+        height: 62px;
+      }
+
+      .brand {
+        font-size: 17px;
+      }
+
+      .back-btn {
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+
+      .page {
+        padding: 15px 10px;
+      }
+
+      .hero {
+        padding: 19px;
+      }
+
+      .hero h1 {
+        font-size: 23px;
+      }
+
+      .messages {
+        min-height: 420px;
+        padding: 16px;
+      }
+
+      .bubble {
+        max-width: 90%;
+        font-size: 13px;
+      }
+
+      .input-area {
+        padding: 10px;
+      }
+
+      #sendBtn {
+        min-width: 70px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="ai-icon">🤖</div>
+      <span>FRALEN AI</span>
+    </div>
+
+    <a href="dashboard.html" class="back-btn">
+      ← Dashboard
+    </a>
+  </header>
+
+  <main class="page">
+
+    <section class="hero">
+      <h1>Your Business AI Assistant</h1>
+
+      <p>
+        Ask questions about your shop's sales, staff performance,
+        products, expenses and business trends.
+      </p>
+
+      <div class="status">
+        <span class="status-dot"></span>
+        Connected to your CRM data
+      </div>
+    </section>
+
+    <section class="chat-card">
+
+      <div class="suggestions">
+        <div class="suggestions-title">
+          Try asking
+        </div>
+
+        <div class="chips">
+          <button class="chip">Aaj kitni sale hui?</button>
+          <button class="chip">Pichhle 7 din ka comparison batao</button>
+          <button class="chip">Best performing staff kaun hai?</button>
+          <button class="chip">Top products batao</button>
+          <button class="chip">Slow products kaunse hain?</button>
+          <button class="chip">Last 30 days ka business kaisa hai?</button>
+          <button class="chip">Expenses kitne hue?</button>
+          <button class="chip">Sales badhane ke liye kya karu?</button>
+        </div>
+      </div>
+
+      <div id="messages" class="messages">
+
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon">🤖</div>
+
+          <h2>Namaste! Main FRALEN AI hoon.</h2>
+
+          <p>
+            Aap apne CRM business data ke baare mein kuch bhi pooch sakte hain.
+            Main available CRM data ke basis par answer dunga.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="typing" id="typing">
+        <div class="typing-inner">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <textarea
+          id="question"
+          placeholder="Jaise: Aaj ki sale kitni hui?"
+          rows="1"
+        ></textarea>
+
+        <button id="sendBtn">
+          Send
+        </button>
+      </div>
+
+      <div class="note">
+        FRALEN AI answers are based on the CRM data available to your account.
+      </div>
+
+    </section>
+
+  </main>
+
+  <script type="module">
+
+    import {
+      getFunctions,
+      httpsCallable
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+    import {
+      auth,
+      requireAuth
+    } from "./firebase-config.js";
+
+
+    const questionInput = document.getElementById("question");
+    const sendBtn = document.getElementById("sendBtn");
+    const messages = document.getElementById("messages");
+    const typing = document.getElementById("typing");
+    const welcome = document.getElementById("welcome");
+
+
+    let currentUser = null;
+
+
+    /*
+      Firebase Cloud Functions region
+      Must match functions/index.js
+    */
+    const functions = getFunctions(
+      undefined,
+      "asia-south1"
+    );
+
+    const fralenAI = httpsCallable(
+      functions,
+      "fralenAI"
+    );
+
+
+    /*
+      Authentication
+    */
+    async function initAuth() {
+      try {
+
+        currentUser = await requireAuth();
+
+        if (!currentUser) {
+          return;
+        }
+
+      } catch (error) {
+
+        console.error("Authentication error:", error);
+
+        alert("Please login again.");
+
+        window.location.href = "index.html";
+      }
+    }
+
+
+    /*
+      Add message to chat
+    */
+    function addMessage(text, type) {
+
+      if (welcome) {
+        welcome.remove();
+      }
+
+      const wrapper = document.createElement("div");
+
+      wrapper.className = `message ${type}`;
+
+      const content = document.createElement("div");
+
+      const bubble = document.createElement("div");
+
+      bubble.className = "bubble";
+
+      bubble.textContent = text;
+
+      if (type === "ai") {
+
+        const label = document.createElement("div");
+
+        label.className = "ai-label";
+
+        label.textContent = "FRALEN AI";
+
+        content.appendChild(label);
+      }
+
+      content.appendChild(bubble);
+
+      wrapper.appendChild(content);
+
+      messages.appendChild(wrapper);
+
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+
+    /*
+      Send question to backend
+    */
+    async function askAI(question) {
+
+      question = question.trim();
+
+      if (!question) {
+        return;
+      }
+
+      if (question.length > 2000) {
+
+        addMessage(
+          "Question bahut lambi hai. Please 2000 characters ke andar question poochhein.",
+          "ai"
+        );
+
+        return;
+      }
+
+
+      addMessage(question, "user");
+
+      questionInput.value = "";
+
+      sendBtn.disabled = true;
+
+      typing.style.display = "block";
+
+      messages.scrollTop = messages.scrollHeight;
+
+
+      try {
+
+        const result = await fralenAI({
+          question: question
+        });
+
+        const data = result.data;
+
+
+        if (!data || !data.success) {
+
+          throw new Error(
+            data?.error || "AI response nahi mila."
+          );
+        }
+
+
+        addMessage(
+          data.answer || "AI ne koi answer return nahi kiya.",
+          "ai"
+        );
+
+
+      } catch (error) {
+
+        console.error("FRALEN AI error:", error);
+
+        let message =
+          "AI se response lene mein problem aa gayi.";
+
+        if (error?.code === "functions/unauthenticated") {
+
+          message =
+            "Session expire ho gaya hai. Please login again.";
+        }
+
+        else if (error?.code === "functions/resource-exhausted") {
+
+          message =
+            "AI service abhi busy hai. Thodi der baad dobara try karein.";
+        }
+
+        else if (error?.message) {
+
+          message =
+            error.message;
+        }
+
+
+        addMessage(
+          message,
+          "ai"
+        );
+
+      } finally {
+
+        typing.style.display = "none";
+
+        sendBtn.disabled = false;
+
+        questionInput.focus();
+      }
+    }
+
+
+    /*
+      Send button
+    */
+    sendBtn.addEventListener(
+      "click",
+      () => {
+
+        askAI(
+          questionInput.value
+        );
+
+      }
+    );
+
+
+    /*
+      Enter = Send
+      Shift + Enter = New line
+    */
+    questionInput.addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key === "Enter" &&
+          !event.shiftKey
+        ) {
+
+          event.preventDefault();
+
+          askAI(
+            questionInput.value
+          );
+        }
+      }
+    );
+
+
+    /*
+      Suggested questions
+    */
+    document
+      .querySelectorAll(".chip")
+      .forEach(
+        (chip) => {
+
+          chip.addEventListener(
+            "click",
+            () => {
+
+              questionInput.value =
+                chip.textContent.trim();
+
+              questionInput.focus();
+
+            }
+          );
+
+        }
+      );
+
+
+    /*
+      Start
+    */
+    initAuth();
+
+  </script>
+
+</body>
+</html>
