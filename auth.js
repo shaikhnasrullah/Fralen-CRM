@@ -23,7 +23,7 @@ import { getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-fire
 // Show a message if we just bounced a suspended shop back here.
 if (new URLSearchParams(window.location.search).get('suspended') === '1') {
 window.addEventListener('DOMContentLoaded', () => {
-window.showLoginError("Yeh account suspend kar diya gaya hai. Support se contact karo.");
+window.showLoginError("This account has been suspended. Please contact support");
 });
 }
 
@@ -61,7 +61,7 @@ if (!isAdminUser(cred.user)) {
 const snap = await getDoc(profileDoc(cred.user.uid));
 if (snap.exists() && snap.data().status === "suspended") {
 await signOut(auth);
-window.showLoginError("Yeh account suspend kar diya gaya hai. Support se contact karo.");
+window.showLoginError("This account has been suspended. Please contact support.");
 btn.textContent = "Sign In";
 btn.classList.remove("loading");
 authActionInProgress = false;
@@ -116,7 +116,7 @@ authActionInProgress = false;
 window.handleForgotPassword = async function () {
 const email = document.getElementById("login-email").value.trim();
 if (!email) {
-window.showLoginError("Pehle apna email address likho, phir 'Forgot password?' dabao.");
+window.showLoginError("Enter your email address first, then click “Forgot password?");
 return;
 }
 try {
@@ -130,12 +130,12 @@ window.showLoginError(friendlyAuthError(err));
 function friendlyAuthError(err) {
 const code = err && err.code ? err.code : "";
 switch (code) {
-case "auth/invalid-email": return "Email address sahi format mein nahi hai.";
-case "auth/user-not-found": return "Is email se koi account nahi mila.";
+case "auth/invalid-email": return "Invalid email format.";
+case "auth/user-not-found": return "No account found with this email";
 case "auth/wrong-password":
-case "auth/invalid-credential": return "Email ya password galat hai.";
-case "auth/email-already-in-use": return "Is email se ek account pehle se hai. Login karo.";
-case "auth/weak-password": return "Password kam se kam 6 characters ka hona chahiye.";
-default: return (err && err.message) ? err.message : "Kuch galat ho gaya. Dobara try karo.";
+case "auth/invalid-credential": return "Incorrect email or password.";
+case "auth/email-already-in-use": return "An account already exists with this email. Please log in.";
+case "auth/weak-password": return "Password must be at least 6 characters..";
+default: return (err && err.message) ? err.message : "Something went wrong. Please try again..";
 }
 }
