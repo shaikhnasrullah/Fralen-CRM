@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Measurements - FRALEN CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #f4f6fb; color: #1B2A6B; padding: 16px; }
+  h1 { font-family: 'Montserrat', sans-serif; font-size: 22px; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #5b6488; margin-bottom: 16px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(27,42,107,0.08); }
+  .step-title { font-family: 'Montserrat', sans-serif; font-size: 15px; margin-bottom: 6px; }
+  .hint { font-size: 13px; color: #5b6488; margin-bottom: 10px; line-height: 1.5; }
+  .status { font-size: 12px; color: #4F6BF0; margin-bottom: 8px; }
+  video, canvas { width: 100%; border-radius: 8px; background: #000; display: block; }
+  #video { transform: scaleX(-1); }
+  canvas { touch-action: manipulation; cursor: crosshair; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  button, .filebtn { background: #4F6BF0; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  button.light, .filebtn { background: #e8ecfd; color: #1B2A6B; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .filebtn input { display: none; }
+  .hidden { display: none; }
+  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .res-box { background: #f4f6fb; border-radius: 8px; padding: 10px; }
+  .res-label { font-size: 12px; color: #5b6488; }
+  .res-value { font-family: 'Montserrat', sans-serif; font-size: 20px; margin-top: 2px; }
+  .note { font-size: 12px; color: #8a6d00; background: #fff8e1; padding: 8px 10px; border-radius: 8px; margin-top: 10px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Smart Measurements</h1>
+  <p class="sub">PD, Seg Height aur Pantoscopic Tilt - camera se, card ke scale ke saath</p>
+
+  <!-- Step instructions + status -->
+  <div class="card">
+    <div class="step-title" id="stepTitle">Step 1: Front photo</div>
+    <div class="hint" id="stepHint"></div>
+    <div class="status" id="status">Face model load ho raha hai...</div>
+
+    <!-- Camera area -->
+    <div id="cameraArea">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="row">
+        <button id="captureBtn">Photo lo</button>
+        <button id="switchBtn" class="light">Camera badlo</button>
+        <label class="filebtn">Photo upload karo<input type="file" id="fileInput" accept="image/*"></label>
+      </div>
+    </div>
+
+    <!-- Photo area (tap to mark points) -->
+    <div id="photoArea" class="hidden">
+      <canvas id="canvas"></canvas>
+      <div class="row">
+        <button id="undoBtn" class="light">Undo</button>
+        <button id="nextBtn">Aage</button>
+        <button id="retakeBtn" class="light">Photo dobara lo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="card hidden" id="resultCard">
+    <div class="step-title">Result</div>
+    <div class="results" id="results"></div>
+    <div class="note">Ye shop-measurement ka support tool hai. Final prescription ke liye optometrist ki measurement ko hi maano.</div>
+    <div class="row">
+      <button id="saveBtn">Customer record mein save karo</button>
+      <button id="restartBtn" class="light">Naya measurement</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+// Standard credit / ATM card ki width (mm)
+var CARD_WIDTH_MM = 85.6;
+
+// Page ke elements
+var video = document.getElementById('video');
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+var cameraArea = document.getElementById('cameraArea');
+var photoArea = document.getElementById('photoArea');
+var stepTitle = document.getElementById('stepTitle');
+var stepHint = document.getElementById('stepHint');
+var statusEl = document.getElementById('status');
+var nextBtn = document.getElementById('nextBtn');
+
+// Variables jo poore process mein chalte hain
+var faceLandmarker = null;
+var stream = null;
+var facing = 'user';
+var step = 'front-camera';
+var photo = null;          // abhi wali photo (canvas)
+var cardPoints = [];       // card ke 2 kinare
+var pupils = [];           // [right pupil, left pupil] (photo mein left se right)
+var noseX = null;
+var segPoints = [];        // lens ke neeche wale 2 points
+var tiltPoints = [];       // side photo mein lens ke upar aur neeche ke points
+var mmPerPx = null;
+var result = {};
+
+// ---------- Face model load ----------
+async function loadModel() {
+  try {
+    var files = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    faceLandmarker = await FaceLandmarker.createFromOptions(files, {
+      baseOptions: {
+        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+      },
+      runningMode: "IMAGE",
+      numFaces: 1
+    });
+    statusEl.textContent = "Face model ready.";
+  } catch (e) {
+    statusEl.textContent = "Face model load nahi hua. Pupil points aap khud tap karke bhi laga sakte ho.";
+  }
+}
+
+// ---------- Camera ----------
+async function startCamera() {
+  stopCamera();
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } }
+    });
+    video.srcObject = stream;
+    video.style.transform = facing === 'user' ? 'scaleX(-1)' : 'none';
+  } catch (e) {
+    statusEl.textContent = "Camera nahi khula. Permission check karo ya photo upload karo.";
+  }
+}
+
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach(function (t) { t.stop(); });
+    stream = null;
+  }
+}
+
+function takePhoto() {
+  if (!video.videoWidth) return;
+  var c = document.createElement('canvas');
+  c.width = video.videoWidth;
+  c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video, 0, 0);   // asli (mirror nahi) photo
+  photo = c;
+  afterPhoto();
+}
+
+function loadFile(file) {
+  var img = new Image();
+  img.onload = function () {
+    var c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    c.getContext('2d').drawImage(img, 0, 0);
+    photo = c;
+    afterPhoto();
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+function afterPhoto() {
+  stopCamera();
+  cameraArea.classList.add('hidden');
+  photoArea.classList.remove('hidden');
+  canvas.width = photo.width;
+  canvas.height = photo.height;
+  if (step === 'front-camera') {
+    setStep('calibrate');
+  } else {
+    setStep('tilt');
+  }
+}
+
+// ---------- Steps ----------
+function setStep(name) {
+  step = name;
+  if (name === 'front-camera') {
+    stepTitle.textContent = "Step 1: Front photo";
+    stepHint.textContent = "Customer frame pehne, camera ko seedha dekhe (30-40 cm door). Credit/ATM card ko maathe pe, chehre ke bilkul barabar (seedha, tilt nahi) pakde.";
+    photoArea.classList.add('hidden');
+    cameraArea.classList.remove('hidden');
+    startCamera();
+  } else if (name === 'calibrate') {
+    stepTitle.textContent = "Step 2: Card ka scale";
+    stepHint.textContent = "Photo mein card ke LEFT kinare pe tap karo, phir RIGHT kinare pe. (Card ki lambi side, 85.6 mm)";
+  } else if (name === 'pupils') {
+    stepTitle.textContent = "Step 3: Pupil check";
+    stepHint.textContent = "Dono pupil ke points auto lage hain. Galat ho to sahi jagah tap karo, nearest point wahan chala jayega.";
+  } else if (name === 'seg') {
+    stepTitle.textContent = "Step 4: Seg / Fitting Height";
+    stepHint.textContent = "Pehle photo mein LEFT wale lens ke sabse neeche wale edge pe tap karo (pupil ke seedha neeche), phir RIGHT wale lens pe. Bifocal ho to seg line pe tap karo. Frame nahi hai to Skip dabao.";
+  } else if (name === 'side-camera') {
+    stepTitle.textContent = "Step 5: Side photo (Pantoscopic Tilt)";
+    stepHint.textContent = "Customer ka side (profile) photo lo, frame pehne, seedha aage dekhte hue. Camera usse bilkul side se, aankh ki height pe ho.";
+    photoArea.classList.add('hidden');
+    cameraArea.classList.remove('hidden');
+    startCamera();
+  } else if (name === 'tilt') {
+    stepTitle.textContent = "Step 6: Lens ka angle";
+    stepHint.textContent = "Lens/frame ke rim ke sabse UPAR wale point pe tap karo, phir sabse NEECHE wale point pe.";
+  }
+  draw();
+  updateNextButton();
+}
+
+function updateNextButton() {
+  if (step === 'calibrate') {
+    nextBtn.textContent = "Aage";
+    nextBtn.disabled = cardPoints.length < 2;
+  } else if (step === 'pupils') {
+    nextBtn.textContent = "Aage";
+    nextBtn.disabled = pupils.length < 2;
+  } else if (step === 'seg') {
+    nextBtn.textContent = segPoints.length < 2 ? "Skip" : "Aage";
+    nextBtn.disabled = false;
+  } else if (step === 'tilt') {
+    nextBtn.textContent = tiltPoints.length < 2 ? "Skip" : "Result dekho";
+    nextBtn.disabled = false;
+  }
+}
+
+// ---------- Drawing ----------
+function dot(p, color, label) {
+  var r = Math.max(canvas.width / 160, 4);
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#fff';
+  ctx.stroke();
+  if (label) {
+    ctx.font = (r * 3) + "px Inter, sans-serif";
+    ctx.fillStyle = '#fff';
+    ctx.fillText(label, p.x + r * 1.5, p.y - r * 1.5);
+  }
+}
+
+function line(a, b, color) {
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.lineWidth = Math.max(canvas.width / 400, 2);
+  ctx.strokeStyle = color;
+  ctx.stroke();
+}
+
+function draw() {
+  if (!photo) return;
+  ctx.drawImage(photo, 0, 0);
+
+  if (step === 'side-camera' || step === 'tilt') {
+    if (tiltPoints.length > 0) dot(tiltPoints[0], '#F5A524', 'upar');
+    if (tiltPoints.length > 1) {
+      dot(tiltPoints[1], '#F5A524', 'neeche');
+      line(tiltPoints[0], tiltPoints[1], '#F5A524');
+    }
+    return;
+  }
+
+  if (cardPoints.length > 0) dot(cardPoints[0], '#22c55e', 'card L');
+  if (cardPoints.length > 1) {
+    dot(cardPoints[1], '#22c55e', 'card R');
+    line(cardPoints[0], cardPoints[1], '#22c55e');
+  }
+  if (step === 'pupils' || step === 'seg') {
+    if (pupils.length > 0) dot(pupils[0], '#4F6BF0', 'R');
+    if (pupils.length > 1) {
+      dot(pupils[1], '#4F6BF0', 'L');
+      line(pupils[0], pupils[1], '#4F6BF0');
+    }
+  }
+  if (step === 'seg') {
+    for (var i = 0; i < segPoints.length; i++) {
+      dot(segPoints[i], '#F5A524', 'seg');
+    }
+  }
+}
+
+// ---------- Canvas tap ----------
+function getPoint(e) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (canvas.width / rect.width),
+    y: (e.clientY - rect.top) * (canvas.height / rect.height)
+  };
+}
+
+canvas.addEventListener('pointerdown', function (e) {
+  var p = getPoint(e);
+
+  if (step === 'calibrate') {
+    if (cardPoints.length < 2) cardPoints.push(p);
+    else cardPoints[nearest(cardPoints, p)] = p;
+    if (cardPoints.length === 2) {
+      mmPerPx = CARD_WIDTH_MM / dist(cardPoints[0], cardPoints[1]);
+    }
+  } else if (step === 'pupils') {
+    if (pupils.length < 2) pupils.push(p);
+    else pupils[nearest(pupils, p)] = p;
+  } else if (step === 'seg') {
+    if (segPoints.length < 2) segPoints.push(p);
+  } else if (step === 'tilt') {
+    if (tiltPoints.length < 2) tiltPoints.push(p);
+  }
+  draw();
+  updateNextButton();
+});
+
+function dist(a, b) {
+  return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+function nearest(list, p) {
+  var best = 0;
+  for (var i = 1; i < list.length; i++) {
+    if (dist(list[i], p) < dist(list[best], p)) best = i;
+  }
+  return best;
+}
+
+// ---------- Pupil auto detect ----------
+function detectPupils() {
+  pupils = [];
+  noseX = null;
+  if (!faceLandmarker) return;
+  try {
+    var res = faceLandmarker.detect(photo);
+    if (res.faceLandmarks && res.faceLandmarks.length > 0) {
+      var lm = res.faceLandmarks[0];
+      // 468 aur 473 dono iris ke center hain
+      var a = { x: lm[468].x * photo.width, y: lm[468].y * photo.height };
+      var b = { x: lm[473].x * photo.width, y: lm[473].y * photo.height };
+      pupils = a.x < b.x ? [a, b] : [b, a];
+      noseX = lm[168].x * photo.width;   // dono aankhon ke beech ka point
+      statusEl.textContent = "Pupil detect ho gaye.";
+    } else {
+      statusEl.textContent = "Chehra detect nahi hua. Dono pupil pe khud tap karo.";
+    }
+  } catch (e) {
+    statusEl.textContent = "Detect mein error. Dono pupil pe khud tap karo.";
+  }
+}
+
+// ---------- Next button ----------
+nextBtn.addEventListener('click', function () {
+  if (step === 'calibrate') {
+    detectPupils();
+    setStep('pupils');
+  } else if (step === 'pupils') {
+    setStep('seg');
+  } else if (step === 'seg') {
+    if (segPoints.length < 2) segPoints = [];
+    photo = null;
+    setStep('side-camera');
+  } else if (step === 'tilt') {
+    if (tiltPoints.length < 2) tiltPoints = [];
+    showResults();
+  }
+});
+
+document.getElementById('undoBtn').addEventListener('click', function () {
+  if (step === 'calibrate') { cardPoints.pop(); mmPerPx = null; }
+  else if (step === 'pupils') { pupils = []; }
+  else if (step === 'seg') { segPoints.pop(); }
+  else if (step === 'tilt') { tiltPoints.pop(); }
+  draw();
+  updateNextButton();
+});
+
+document.getElementById('retakeBtn').addEventListener('click', function () {
+  photo = null;
+  if (step === 'tilt') {
+    tiltPoints = [];
+    setStep('side-camera');
+  } else {
+    cardPoints = []; pupils = []; segPoints = []; mmPerPx = null;
+    setStep('front-camera');
+  }
+});
+
+document.getElementById('captureBtn').addEventListener('click', takePhoto);
+document.getElementById('switchBtn').addEventListener('click', function () {
+  facing = facing === 'user' ? 'environment' : 'user';
+  startCamera();
+});
+document.getElementById('fileInput').addEventListener('change', function (e) {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+// ---------- Calculations ----------
+function round1(n) { return Math.round(n * 10) / 10; }
+
+function showResults() {
+  result = {};
+  var html = '';
+
+  // PD
+  if (mmPerPx && pupils.length === 2) {
+    var pd = dist(pupils[0], pupils[1]) * mmPerPx;
+    var centerX = noseX !== null ? noseX : (pupils[0].x + pupils[1].x) / 2;
+    result.pd = round1(pd);
+    result.pdRight = round1(Math.abs(pupils[0].x - centerX) * mmPerPx);
+    result.pdLeft = round1(Math.abs(pupils[1].x - centerX) * mmPerPx);
+    html += box('PD (total)', result.pd + ' mm');
+    html += box('Mono PD (R / L)', result.pdRight + ' / ' + result.pdLeft + ' mm');
+  }
+
+  // Seg height (photo mein pehla tap left lens, to wo patient ka right eye)
+  if (mmPerPx && segPoints.length === 2 && pupils.length === 2) {
+    var segR = (segPoints[0].y - pupils[0].y) * mmPerPx;
+    var segL = (segPoints[1].y - pupils[1].y) * mmPerPx;
+    result.segRight = round1(Math.abs(segR));
+    result.segLeft = round1(Math.abs(segL));
+    html += box('Seg Height Right', result.segRight + ' mm');
+    html += box('Seg Height Left', result.segLeft + ' mm');
+  }
+
+  // Pantoscopic tilt: lens line ka vertical se angle
+  if (tiltPoints.length === 2) {
+    var dx = Math.abs(tiltPoints[1].x - tiltPoints[0].x);
+    var dy = Math.abs(tiltPoints[1].y - tiltPoints[0].y);
+    result.tilt = round1(Math.atan2(dx, dy) * 180 / Math.PI);
+    html += box('Pantoscopic Tilt', result.tilt + '°');
+  }
+
+  document.getElementById('results').innerHTML = html;
+  document.getElementById('resultCard').classList.remove('hidden');
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function box(label, value) {
+  return '<div class="res-box"><div class="res-label">' + label + '</div><div class="res-value">' + value + '</div></div>';
+}
+
+// ---------- Save ----------
+// Apne FRALEN CRM mein jahan Firebase init hai, wahan se db le lo.
+// Abhi ke liye: agar window.db (Firestore) mili to wahan save hoga,
+// warna browser ke localStorage mein.
+document.getElementById('saveBtn').addEventListener('click', async function () {
+  var params = new URLSearchParams(window.location.search);
+  var customerId = params.get('customerId') || 'unknown';
+  var data = Object.assign({ customerId: customerId, createdAt: new Date().toISOString() }, result);
+
+  try {
+    if (window.db) {
+      await window.db.collection('measurements').add(data);
+      alert('Measurement save ho gayi.');
+    } else {
+      var old = JSON.parse(localStorage.getItem('measurements') || '[]');
+      old.push(data);
+      localStorage.setItem('measurements', JSON.stringify(old));
+      alert('Firebase connected nahi hai, isliye browser mein save hui.');
+    }
+  } catch (e) {
+    alert('Save nahi hui: ' + e.message);
+  }
+});
+
+document.getElementById('restartBtn').addEventListener('click', function () {
+  cardPoints = []; pupils = []; segPoints = []; tiltPoints = [];
+  mmPerPx = null; photo = null; result = {};
+  document.getElementById('resultCard').classList.add('hidden');
+  setStep('front-camera');
+});
+
+// Start
+loadModel();
+setStep('front-camera');
+</script>
+</body>
+</html>
