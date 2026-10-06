@@ -236,9 +236,9 @@ function dayKey(iso) {
   return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
 }
 
-document.getElementById("logout-btn").addEventListener("click", async function () {
+document.getElementById("dashboard-btn").addEventListener("click", async function () {
   await signOut(auth);
-  window.location.href = "index.html";
+  window.location.href = "dashboard.html";
 });
 
 requireAuth(async function (user) {
