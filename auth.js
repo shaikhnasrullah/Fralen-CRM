@@ -121,7 +121,7 @@ return;
 }
 try {
 await sendPasswordResetEmail(auth, email);
-window.showLoginSuccess("Password reset link bhej diya gaya hai " + email + " par.");
+window.showLoginSuccess("Password reset link has been sent to your email. " + email + " par.");
 } catch (err) {
 window.showLoginError(friendlyAuthError(err));
 }
