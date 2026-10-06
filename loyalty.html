@@ -127,14 +127,14 @@ body { font-family: Arial, sans-serif; background-color: #F3F7FA; margin: 0; pad
 <div class="main">
   <div class="topbar">
     <h1>🎁 Smart Loyalty &amp; Rewards</h1>
-    <div><button id="logout-btn" style="background:#EF4444;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:700;">Logout</button></div>
+    <div><button id="dashboard-btn" style="background:#3B82F6;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:700;">Back</button></div>
+
   </div>
-  <p class="sub">Customer ki visits apne aap track hoti hain. Reward unlock hone par customer ko WhatsApp bhej sakte ho.</p>
 
   <!-- Reward setup -->
   <div class="card">
     <h2>Reward Setup</h2>
-    <div class="hint">Yahan set karo ki kitni visits par kaun sa reward milega.</div>
+    <div class="hint">Set rewards by visits.</div>
     <label class="toggle-row"><input type="checkbox" id="cfg-enabled" checked> Loyalty program ON</label>
     <div class="form-grid">
       <div class="field">
@@ -151,13 +151,13 @@ body { font-family: Arial, sans-serif; background-color: #F3F7FA; margin: 0; pad
         </select>
       </div>
       <div class="field full">
-        <label>Reward details (customer ko yahi dikhega)</label>
+        <label>Reward details The customer will see this </label>
         <input type="text" id="cfg-text" placeholder="e.g. 10% discount on your next frame" maxlength="80">
       </div>
       <div class="field full">
         <label>WhatsApp message</label>
         <textarea id="cfg-message"></textarea>
-        <div class="hint" style="margin:4px 0 0">Ye words apne aap badal jayenge: {name} = customer ka naam, {reward} = reward, {shop} = shop ka naam, {visits} = visits</div>
+        <div class="hint" style="margin:4px 0 0">Auto-replaced: {name} = Name, {reward} = Reward, {shop} = Shop, {visits} = Visits</div>
       </div>
     </div>
     <button class="save-btn" id="cfg-save">Save Reward Setup</button>
@@ -175,7 +175,7 @@ body { font-family: Arial, sans-serif; background-color: #F3F7FA; margin: 0; pad
   <!-- Customer cards -->
   <div class="card">
     <h2>Customer Loyalty Cards</h2>
-    <div class="hint">Visit = ek din mein jitne bhi orders ho, wo 1 visit count hota hai. Customer mobile number se pehchana jata hai.</div>
+    <div class="hint">Visit.</div>
     <div class="toolbar">
       <input type="text" id="search" placeholder="Search name or mobile">
       <select id="filter">
