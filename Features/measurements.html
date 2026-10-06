@@ -1,481 +1,218 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Measurements - FRALEN CRM</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Digital Measurement - FRALEN CRM</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; background: #f4f6fb; color: #1B2A6B; padding: 16px; }
-  h1 { font-family: 'Montserrat', sans-serif; font-size: 22px; margin-bottom: 4px; }
-  .sub { font-size: 13px; color: #5b6488; margin-bottom: 16px; }
-  .wrap { max-width: 760px; margin: 0 auto; }
-  .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(27,42,107,0.08); }
-  .step-title { font-family: 'Montserrat', sans-serif; font-size: 15px; margin-bottom: 6px; }
-  .hint { font-size: 13px; color: #5b6488; margin-bottom: 10px; line-height: 1.5; }
-  .status { font-size: 12px; color: #4F6BF0; margin-bottom: 8px; }
-  video, canvas { width: 100%; border-radius: 8px; background: #000; display: block; }
-  #video { transform: scaleX(-1); }
-  canvas { touch-action: manipulation; cursor: crosshair; }
-  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  button, .filebtn { background: #4F6BF0; color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
-  button.light, .filebtn { background: #e8ecfd; color: #1B2A6B; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .filebtn input { display: none; }
-  .hidden { display: none; }
-  .results { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .res-box { background: #f4f6fb; border-radius: 8px; padding: 10px; }
-  .res-label { font-size: 12px; color: #5b6488; }
-  .res-value { font-family: 'Montserrat', sans-serif; font-size: 20px; margin-top: 2px; }
-  .note { font-size: 12px; color: #8a6d00; background: #fff8e1; padding: 8px 10px; border-radius: 8px; margin-top: 10px; line-height: 1.5; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Smart Measurements</h1>
-  <p class="sub">PD, Seg Height aur Pantoscopic Tilt - camera se, card ke scale ke saath</p>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:#f4f6fb;color:#1B2A6B;padding:16px}
+h1{font-family:Montserrat,sans-serif;font-size:22px}.wrap{max-width:820px;margin:0 auto}.sub{font-size:13px;color:#5b6488;margin:4px 0 14px}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(27,42,107,.08)}
+.t{font-family:Montserrat,sans-serif;font-size:15px;margin-bottom:6px}.hint{font-size:13px;color:#5b6488;margin-bottom:8px;line-height:1.5}
+.status{font-size:13px;margin:6px 0;font-weight:500}.err{color:#b42318}.ok{color:#16a34a}
+video,canvas{width:100%;border-radius:8px;background:#000;display:block}canvas{touch-action:manipulation;cursor:crosshair}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.hidden{display:none!important}
+button,.fb{background:#4F6BF0;color:#fff;border:0;padding:10px 16px;border-radius:8px;font:500 14px Inter,sans-serif;cursor:pointer}
+button.l,.fb{background:#e8ecfd;color:#1B2A6B}button:disabled{opacity:.45;cursor:not-allowed}.fb input{display:none}
+#chk{font-size:13px;line-height:1.7;margin-top:6px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px 4px;border-bottom:1px solid #eef0f7;text-align:left}
+td input{width:70px;padding:4px;border:1px solid #cfd6f5;border-radius:6px}.bar{height:6px;background:#e8ecfd;border-radius:3px;width:70px}.bar i{display:block;height:100%;border-radius:3px}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;background:#fff3cd;color:#8a6d00}.badge.v{background:#dcfce7;color:#166534}
+.note{font-size:12px;color:#8a6d00;background:#fff8e1;padding:8px 10px;border-radius:8px;margin-top:10px;line-height:1.5}
+</style></head><body><div class="wrap">
+<a href="../dashboard.html" style="font-size:13px;color:#4F6BF0;text-decoration:none">← Dashboard</a>
+<h1>Digital Measurement</h1>
+<p class="sub">Camera-based measurement support tool. Optometrist verification is required for final fitting.</p>
 
-  <!-- Step instructions + status -->
-  <div class="card">
-    <div class="step-title" id="stepTitle">Step 1: Front photo</div>
-    <div class="hint" id="stepHint"></div>
-    <div class="status" id="status">Face model load ho raha hai...</div>
+<div class="card"><div class="t" id="st"></div><div class="hint" id="hint"></div><div class="status" id="msg">Loading face model…</div>
+ <div id="camV"><video id="video" autoplay playsinline muted></video><div id="chk"></div>
+  <div class="row"><button id="cap" disabled>Capture Photo</button><button class="l" id="flip">Flip Camera</button><label class="fb">Upload Pic<input type="file" id="file" accept="image/*"></label></div></div>
+ <div id="phV" class="hidden"><canvas id="cv"></canvas>
+  <div class="row"><button class="l" id="undo">Undo</button><button id="next">Next</button><button class="l" id="retake">📸 Retake Photo</button></div></div>
+</div>
 
-    <!-- Camera area -->
-    <div id="cameraArea">
-      <video id="video" autoplay playsinline muted></video>
-      <div class="row">
-        <button id="captureBtn">Click</button>
-        <button id="switchBtn" class="light">Flip Camera</button>
-        <label class="filebtn">Upload Pic<input type="file" id="fileInput" accept="image/*"></label>
-      </div>
-    </div>
-
-    <!-- Photo area (tap to mark points) -->
-    <div id="photoArea" class="hidden">
-      <canvas id="canvas"></canvas>
-      <div class="row">
-        <button id="undoBtn" class="light">Undo</button>
-        <button id="nextBtn">Aage</button>
-        <button id="retakeBtn" class="light">📸 Retake Photo</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Results -->
-  <div class="card hidden" id="resultCard">
-    <div class="step-title">Result</div>
-    <div class="results" id="results"></div>
-    <div class="note">Ye shop-Measurement is a support tool only. Use the optometrist’s measurement for the final prescription.</div>
-    <div class="row">
-      <button id="saveBtn">Customer record mein save karo</button>
-      <button id="restartBtn" class="light">Naya measurement</button>
-    </div>
-  </div>
+<div class="card hidden" id="res"><div class="t">Result <span class="badge" id="badge"></span></div><div class="status" id="ovr"></div>
+ <table><thead><tr><th>Measurement</th><th>Value (editable)</th><th>Confidence</th><th>Source</th></tr></thead><tbody id="rows"></tbody></table>
+ <div class="row"><input id="why" placeholder="Correction reason (if edited)" style="flex:1;padding:8px;border:1px solid #cfd6f5;border-radius:8px">
+  <button id="verify">✓ Verify Measurements</button><button id="save" disabled>Save to CRM</button><button class="l" id="restart">Retake Photo</button></div>
+ <div class="note">AI-estimated measurement. Not a prescription: SPH/CYL/AXIS/ADD are never derived from a photo. Measurement is a support tool only. Use the optometrist’s measurement for the final prescription.</div></div>
 </div>
 
 <script type="module">
-import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+import{loadFace,detectFace}from'../js/measurement/faceDetection.js';
+import{calibrateCard}from'../js/measurement/calibration.js';
+import{assess}from'../js/measurement/qualityEngine.js';
+import{consensus,TOL}from'../js/measurement/consensusEngine.js';
+import{applyH,dist,fitLine,sideOf,alongDir,clamp}from'../js/measurement/geometry.js';
+import{detectFrame}from'../js/measurement/frameDetection.js';
+import{applyVerification,STATUS}from'../js/measurement/verification.js';
+import{requireAuth}from'../firebase-config.js';
+import{saveMeasurement,flushQueue,newId}from'../js/measurement/storage.js';
 
-// Standard credit / ATM card ki width (mm)
-var CARD_WIDTH_MM = 85.6;
+const $=id=>document.getElementById(id),Q=new URLSearchParams(location.search),customerMobile=Q.get('mobile'),customerId=Q.get('customerId')||customerMobile||'unknown',frameId=Q.get('frameId');
+const STEPS=['Camera check','Front capture','Card calibration','Pupil review','Seg height','Side view','Review & verify'];
+const MIN_OVERALL=.6; // below this, no measurement is produced
+const S={step:1,facing:'user',stream:null,frames:[],best:null,cal:null,corners:[],manual:null,seg:[],side:null,tilt:[],m:{},rec:null,timer:null,upload:false};
+const ctx=$('cv').getContext('2d'),video=$('video');
+const say=(t,bad)=>{$('msg').textContent=t;$('msg').className='status '+(bad?'err':'');};
 
-// Page ke elements
-var video = document.getElementById('video');
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
-var cameraArea = document.getElementById('cameraArea');
-var photoArea = document.getElementById('photoArea');
-var stepTitle = document.getElementById('stepTitle');
-var stepHint = document.getElementById('stepHint');
-var statusEl = document.getElementById('status');
-var nextBtn = document.getElementById('nextBtn');
-
-// Variables jo poore process mein chalte hain
-var faceLandmarker = null;
-var stream = null;
-var facing = 'user';
-var step = 'front-camera';
-var photo = null;          // abhi wali photo (canvas)
-var cardPoints = [];       // card ke 2 kinare
-var pupils = [];           // [right pupil, left pupil] (photo mein left se right)
-var noseX = null;
-var segPoints = [];        // lens ke neeche wale 2 points
-var tiltPoints = [];       // side photo mein lens ke upar aur neeche ke points
-var mmPerPx = null;
-var result = {};
-
-// ---------- Face model load ----------
-async function loadModel() {
-  try {
-    var files = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-    faceLandmarker = await FaceLandmarker.createFromOptions(files, {
-      baseOptions: {
-        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
-      },
-      runningMode: "IMAGE",
-      numFaces: 1
-    });
-    statusEl.textContent = "Face model ready.";
-  } catch (e) {
-    statusEl.textContent = "Face model load nahi hua. Pupil points aap khud tap karke bhi laga sakte ho.";
-  }
+// ---- camera ----
+async function startCam(){
+  stopCam();
+  if(!navigator.mediaDevices?.getUserMedia)return say('This browser has no camera support. Use Upload Pic or Chrome/Safari.',1);
+  try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:S.facing,width:{ideal:1920},height:{ideal:1080}}});
+    video.srcObject=S.stream;video.style.transform=S.facing==='user'?'scaleX(-1)':'none';
+    const s=S.stream.getVideoTracks()[0].getSettings();
+    if(Math.max(s.width,s.height)<1280)say(`Camera resolution is low (${s.width}×${s.height}). Accuracy will suffer; prefer ≥1920×1080.`,1);
+    live();
+  }catch(e){say(e.name==='NotAllowedError'?'Camera permission denied. Allow camera access or upload a photo.':'Camera unavailable. Upload a photo instead.',1);}
+}
+function stopCam(){clearInterval(S.timer);S.stream?.getTracks().forEach(t=>t.stop());S.stream=null;video.srcObject=null;}
+const grab=()=>{const c=document.createElement('canvas');c.width=video.videoWidth;c.height=video.videoHeight;c.getContext('2d').drawImage(video,0,0);return c;};
+// Live check ~3×/s on a 640px downscale (not every frame) — keeps tablets responsive.
+function live(){
+  clearInterval(S.timer);if(S.step!==2)return;const c=document.createElement('canvas');
+  S.timer=setInterval(()=>{if(!video.videoWidth)return;c.width=640;c.height=Math.round(640*video.videoHeight/video.videoWidth);
+    c.getContext('2d').drawImage(video,0,0,c.width,c.height);let a;try{a=assess(c,detectFace(c));}catch{return;}
+    const L={face:'Face detected',distance:'Distance OK',pose:'Head aligned',light:'Lighting acceptable',glare:'No strong glare',sharp:'Image sharp enough'};
+    $('chk').innerHTML=Object.entries(L).map(([k,t])=>`<div><span class="dot" style="background:${a.checks[k]?'#16a34a':'#dc2626'}"></span>${t}</div>`).join('')+
+      `<div class="${a.ok?'ok':'err'}">${a.ok?'Ready — Capture':a.issues[0]||''}</div>`;
+    $('cap').disabled=!a.ok;},330);
 }
 
-// ---------- Camera ----------
-async function startCamera() {
-  stopCamera();
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } }
-    });
-    video.srcObject = stream;
-    video.style.transform = facing === 'user' ? 'scaleX(-1)' : 'none';
-  } catch (e) {
-    statusEl.textContent = "Camera nahi khula. Permission check karo ya photo upload karo.";
-  }
+// ---- steps ----
+function setStep(n){
+  S.step=n;$('st').textContent=`STEP ${n} / ${STEPS.length} — ${STEPS[n-1]}`;
+  const cam=n===2||n===6;$('camV').classList.toggle('hidden',!cam);$('phV').classList.toggle('hidden',cam||n===7);$('res').classList.toggle('hidden',n!==7);
+  $('hint').textContent={2:'Customer wears the frame, looks into the camera, 30–40 cm away. Hold a bank/ATM card flat beside the eye, same distance as the face.',
+    3:'Tap the 4 corners of the card (any order). A tilted, blurred or partly hidden card is rejected.',
+    4:'Pupils were detected automatically. If wrong, tap the correct spot (nearest pupil moves; marked MANUAL).',
+    5:'Tap the lowest edge of the lens below each pupil — photo-left lens first. Skip if no frame is worn. (Manual input.)',
+    6:'Side profile, frame on, looking straight ahead, camera at eye height. Take or upload a photo.'}[n]||'';
+  $('chk').innerHTML='';$('cap').disabled=n===2;
+  if(cam){startCam();say(n===2?'Waiting for a good position…':'Take a side photo.');if(n===6)$('cap').disabled=false;}else stopCam();
+  if(n===7)showResults();draw();upd();
+}
+function upd(){const nx=$('next');nx.disabled=false;nx.textContent='Next';
+  if(S.step===3)nx.disabled=S.corners.length<4;if(S.step===5)nx.textContent=S.seg.length<2?'Skip':'Next';
+  if(S.step===6)nx.textContent=S.tilt.length<2?'Skip':'Show result';}
+
+// ---- capture ----
+$('cap').onclick=async()=>{
+  if(S.step===6){S.side=grab();stopCam();$('phV').classList.remove('hidden');$('camV').classList.add('hidden');S.tilt=[];$('hint').textContent='Tap the TOP then the BOTTOM of the lens rim (manual input).';return draw();}
+  $('cap').disabled=true;say('Capturing 5 frames — hold still…');const raw=[];
+  for(let i=0;i<5;i++){raw.push(grab());await new Promise(r=>setTimeout(r,250));}
+  stopCam();takeFrames(raw);
+};
+function takeFrames(raw){
+  S.frames=[];raw.forEach(c=>{try{const f=detectFace(c);if(f)S.frames.push({c,f,a:assess(c,f)});}catch{}});
+  const ok=S.frames.filter(x=>x.a.ok),need=S.upload?1:3;
+  if(ok.length<need){const w=[...S.frames].sort((a,b)=>a.a.score-b.a.score)[0];
+    setStep(2);return say('Measurement unstable — Retake Photo. '+(w?.a.issues[0]||'Face not detected.'),1);}
+  S.frames=ok;S.best=ok.sort((a,b)=>b.a.score-a.a.score)[0];S.corners=[];S.cal=null;S.manual=null;
+  $('cv').width=S.best.c.width;$('cv').height=S.best.c.height;setStep(3);say(`${ok.length} good frame(s). Mark the card corners.`);
+}
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const im=new Image();
+  im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);URL.revokeObjectURL(im.src);
+    if(S.step===6){S.side=c;stopCam();$('phV').classList.remove('hidden');$('camV').classList.add('hidden');S.tilt=[];draw();}else{S.upload=true;takeFrames([c]);}};
+  im.onerror=()=>say('Could not read that image.',1);im.src=URL.createObjectURL(f);};
+$('flip').onclick=()=>{S.facing=S.facing==='user'?'environment':'user';startCam();};
+
+// ---- measurement math ----
+// Each frame: image points → card-plane mm via homography H; PD = distance between pupils in that plane;
+// monocular PD = perpendicular distance from each pupil to the fitted facial midline (NOT "nose = centre");
+// seg = distance along the midline direction (face-vertical) from pupil to lens-bottom point.
+function frameMeasures(f,H,segPts){
+  const m=p=>applyH(H,p),R=m(f.pupils.R),L=m(f.pupils.L),line=fitLine(f.mid.map(m)),sR=sideOf(R,line),sL=sideOf(L,line);
+  const o={pd:dist(R,L),mono:sR*sL<0,pdR:Math.abs(sR),pdL:Math.abs(sL),rms:line.rms,
+    irisR:(dist(m(f.iris.R[0]),m(f.iris.R[2]))+dist(m(f.iris.R[1]),m(f.iris.R[3])))/2,irisL:(dist(m(f.iris.L[0]),m(f.iris.L[2]))+dist(m(f.iris.L[1]),m(f.iris.L[3])))/2};
+  if(segPts?.length===2){o.segR=alongDir(R,m(segPts[0]),line);o.segL=alongDir(L,m(segPts[1]),line);}
+  return o;
+}
+function compute(){
+  const H=S.cal.H,fr=S.manual?[{...S.best,f:{...S.best.f,pupils:S.manual}}]:S.frames,per=fr.map(x=>frameMeasures(x.f,H,S.seg)),ts=new Date().toISOString();
+  const one=per.length<3,n=one?1:3,src=S.manual?'MANUAL (pupils)':'AI',pen=one?.5:1;
+  const mk=(k,tol,unit='mm')=>{const c=consensus(per.map(p=>p[k]),tol,n);return{value:c.value,unit,confidence:+(c.confidence*pen).toFixed(2),source:src,timestamp:ts,stable:c.stable,n:c.n};};
+  const mid=clamp(1-per.reduce((s,p)=>s+p.rms,0)/per.length/3);
+  S.m={pd:mk('pd',TOL.pd),pdR:mk('pdR',TOL.mono),pdL:mk('pdL',TOL.mono),irisR:mk('irisR',TOL.iris),irisL:mk('irisL',TOL.iris)};
+  const sg=(k,t)=>S.seg.length===2?{...mk(k,t),source:'AI pupil + MANUAL lens edge'}:null;
+  S.m.segR=sg('segR',TOL.seg)||{value:null};S.m.segL=sg('segL',TOL.seg)||{value:null};
+  // Midline uncertainty lowers monocular-PD confidence
+  ['pdR','pdL'].forEach(k=>{S.m[k].confidence=+(S.m[k].confidence*clamp(mid*1.2)).toFixed(2);if(mid<.5)S.m[k].warn='Monocular PD confidence low';});
+  if(S.tilt.length===2){const dx=Math.abs(S.tilt[1].x-S.tilt[0].x),dy=Math.abs(S.tilt[1].y-S.tilt[0].y);
+    S.m.tilt={value:+(Math.atan2(dx,dy)*180/Math.PI).toFixed(1),unit:'°',confidence:null,source:'MANUAL INPUT (side photo)',timestamp:ts};}
+  const fq=fr.reduce((s,x)=>s+x.a.score,0)/fr.length;
+  S.overall=+(.3*S.cal.confidence+.3*(S.m.pd.confidence||0)+.2*fq+.2*mid).toFixed(2);S.fq=fq;S.mid=mid;
 }
 
-function stopCamera() {
-  if (stream) {
-    stream.getTracks().forEach(function (t) { t.stop(); });
-    stream = null;
-  }
+// ---- drawing ----
+const dot=(p,c,t)=>{const r=Math.max($('cv').width/170,4);ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fillStyle=c;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();
+  if(t){ctx.font=`${r*3}px Inter`;ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=3;ctx.strokeText(t,p.x+r*1.5,p.y-r*1.5);ctx.fillText(t,p.x+r*1.5,p.y-r*1.5);}};
+const ln=(a,b,c)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineWidth=Math.max($('cv').width/450,2);ctx.strokeStyle=c;ctx.stroke();};
+function draw(){
+  const img=S.step===6?S.side:S.best?.c;if(!img||S.step===2||S.step===7)return;
+  $('cv').width=img.width;$('cv').height=img.height;ctx.drawImage(img,0,0);
+  if(S.step===6){S.tilt.forEach((p,i)=>dot(p,'#F5A524',i?'bottom':'top'));if(S.tilt.length===2)ln(S.tilt[0],S.tilt[1],'#F5A524');return;}
+  S.corners.forEach((p,i)=>dot(p,'#22c55e','C'+(i+1)));
+  if(S.cal)S.cal.corners.forEach((p,i)=>ln(p,S.cal.corners[(i+1)%4],'#22c55e'));
+  if(S.step>=4){const f=S.best.f,pu=S.manual||f.pupils,mm=S.m;
+    ln(f.mid[0],f.mid[4],'#06b6d4');ln(pu.R,pu.L,'#4F6BF0');dot(pu.R,'#4F6BF0','OD');dot(pu.L,'#4F6BF0','OS');
+    if(mm.pd?.value){ctx.font=`${$('cv').width/40}px Inter`;ctx.fillStyle='#fff';ctx.strokeStyle='#000';ctx.lineWidth=4;const t='PD '+mm.pd.value+' mm',x=(pu.R.x+pu.L.x)/2-60,y=pu.R.y-40;ctx.strokeText(t,x,y);ctx.fillText(t,x,y);}}
+  S.seg.forEach(p=>dot(p,'#F5A524','seg'));
 }
+const near=(l,p)=>l.reduce((b,q,i)=>dist(q,p)<dist(l[b],p)?i:b,0);
+$('cv').onpointerdown=e=>{const r=$('cv').getBoundingClientRect(),p={x:(e.clientX-r.left)*$('cv').width/r.width,y:(e.clientY-r.top)*$('cv').height/r.height};
+  if(S.step===3){if(S.corners.length<4)S.corners.push(p);else S.corners[near(S.corners,p)]=p;S.cal=null;}
+  else if(S.step===4){const pu=S.manual||{...S.best.f.pupils};const k=dist(pu.R,p)<dist(pu.L,p)?'R':'L';S.manual={...pu,[k]:p};compute();}
+  else if(S.step===5){if(S.seg.length<2)S.seg.push(p);}
+  else if(S.step===6){if(S.tilt.length<2)S.tilt.push(p);}
+  draw();upd();};
+$('undo').onclick=()=>{if(S.step===3){S.corners.pop();S.cal=null;}else if(S.step===4)S.manual=null;else if(S.step===5)S.seg.pop();else if(S.step===6)S.tilt.pop();if(S.step===4)compute();draw();upd();};
+$('next').onclick=()=>{
+  if(S.step===3){const c=calibrateCard(S.corners,{w:S.best.c.width,h:S.best.c.height});
+    if(!c.ok){S.corners=[];draw();upd();return say(c.reason,1);}S.cal=c;compute();setStep(4);say(`Calibration confidence ${Math.round(c.confidence*100)}%.`);}
+  else if(S.step===4)setStep(5);
+  else if(S.step===5){if(S.seg.length<2)S.seg=[];compute();setStep(6);}
+  else if(S.step===6){if(S.tilt.length<2)S.tilt=[];compute();setStep(7);}};
+$('retake').onclick=restart;$('restart').onclick=restart;
+function restart(){Object.assign(S,{frames:[],best:null,cal:null,corners:[],manual:null,seg:[],side:null,tilt:[],m:{},rec:null,upload:false});$('save').disabled=true;setStep(2);}
 
-function takePhoto() {
-  if (!video.videoWidth) return;
-  var c = document.createElement('canvas');
-  c.width = video.videoWidth;
-  c.height = video.videoHeight;
-  c.getContext('2d').drawImage(video, 0, 0);   // asli (mirror nahi) photo
-  photo = c;
-  afterPhoto();
+// ---- results / verification ----
+const F=[['pd','PD (binocular)'],['pdR','OD PD (right mono)'],['pdL','OS PD (left mono)'],['irisR','OD iris Ø*'],['irisL','OS iris Ø*'],['segR','OD Seg height'],['segL','OS Seg height'],['tilt','Pantoscopic tilt']];
+const NA=[['Frame A / B / DBL / ED','Not reliably detected (frame model not connected)'],['Vertex distance','Requires verification — needs side/multi-angle model'],['Face-form / wrap','Additional angled views + model required']];
+async function showResults(){
+  const fr=await detectFrame(S.best.c,S.cal.H);
+  if(S.overall<MIN_OVERALL){$('rows').innerHTML='';$('badge').textContent='NO RESULT';$('ovr').innerHTML='<span class="err">Measurement confidence too low. Please retake the required capture.</span>';
+    $('verify').disabled=true;return;}
+  $('verify').disabled=false;S.rec=build(fr);
+  $('badge').textContent='AI ESTIMATE';$('badge').className='badge';
+  $('ovr').textContent=`Overall quality ${Math.round(S.overall*100)}% — ${S.overall>.85?'Good':S.overall>.7?'Fair':'Low: verify carefully'} · calibration ${Math.round(S.cal.confidence*100)}% · image ${Math.round(S.fq*100)}%`;
+  $('rows').innerHTML=F.map(([k,l])=>{const m=S.m[k];if(!m||m.value==null)return`<tr><td>${l}</td><td>—</td><td></td><td>${k==='tilt'?'Additional side view required':'not measured'}</td></tr>`;
+    const c=m.confidence,col=c==null?'#9aa3c7':c>.8?'#16a34a':c>.6?'#f59e0b':'#dc2626';
+    return`<tr><td>${l}</td><td><input data-k="${k}" value="${m.value}"> ${m.unit}</td><td>${c==null?'manual':`<div class="bar"><i style="width:${c*100}%;background:${col}"></i></div>${Math.round(c*100)}%`}</td><td>${m.source}${m.warn?`<div class="err">${m.warn}</div>`:''}${m.stable===false?'<div class="err">Unstable</div>':''}</td></tr>`;}).join('')
+   +NA.map(([l,t])=>`<tr><td>${l}</td><td colspan=3>${t}</td></tr>`).join('')+'<tr><td colspan=4 style="font-size:11px;color:#5b6488">*Iris diameter, not pupil diameter (pupil size is not measured). Seg/PD are scaled with the card plane; depth between card and eyes is not corrected.</td></tr>';
+  $('save').disabled=true;
 }
+function build(fr){const ai={};F.forEach(([k])=>ai[k]=S.m[k]?.value??null);
+  return{measurementId:newId(),customerId,customerMobile:customerMobile||null,frameId,captureId:newId(),createdAt:new Date().toISOString(),status:STATUS.AI,deviceModel:navigator.userAgent,cameraResolution:S.cal.cameraResolution,
+    calibration:{method:S.cal.method,confidence:S.cal.confidence,referenceWidthMm:S.cal.physicalWidthMm,referenceHeightMm:S.cal.physicalHeightMm,cardWidthPx:S.cal.cardWidthPx,cardHeightPx:S.cal.cardHeightPx,homography:S.cal.H,distortionStatus:S.cal.distortionStatus},
+    frame:{...fr,A:fr.A??null,B:fr.B??null,DBL:fr.DBL??null,ED:fr.ED??null},
+    geometry:{pantoscopicTilt:S.m.tilt?.value??null,vertexDistance:null,faceFormAngle:null},
+    quality:{overall:S.overall,imageQuality:+S.fq.toFixed(2),calibration:S.cal.confidence,midline:+S.mid.toFixed(2),framesUsed:S.m.pd.n},
+    measures:S.m,verification:{aiValues:ai,verifiedValues:{},corrections:[],verifiedBy:null,verifiedAt:null}};}
+$('verify').onclick=()=>{if(!S.rec)return;const ed={};document.querySelectorAll('#rows input').forEach(i=>ed[i.dataset.k]=i.value);
+  const by=prompt('Verified by (optometrist name):',S.user?.displayName||'')?.trim();if(!by)return;
+  const edited=Object.entries(ed).some(([k,v])=>Number(v)!==S.rec.verification.aiValues[k]);
+  if(edited&&!$('why').value.trim())return say('Please enter a correction reason for edited values.',1);
+  S.rec.verification.verifiedByAccount=S.user?.email||null;applyVerification(S.rec,ed,by,$('why').value.trim());const v=S.rec.verification.verifiedValues;
+  Object.assign(S.rec,{pd:v.pd,rightPD:v.pdR,leftPD:v.pdL,segHeightRight:v.segR,segHeightLeft:v.segL,pantoscopicTilt:v.tilt});
+  $('badge').textContent='OPTOMETRIST VERIFIED';$('badge').className='badge v';$('save').disabled=false;say('Verified. You can save to CRM.');};
+$('save').onclick=async()=>{if(S.rec?.status!==STATUS.VERIFIED)return say('Verify measurements first.',1);S.rec.status=STATUS.FINAL;
+  const r=await saveMeasurement(S.rec,S.uid);$('badge').textContent='FINAL MEASUREMENT';
+  say(r==='synced'?'Saved to CRM.':'Measurement saved locally. Will sync when connection returns.');$('save').disabled=true;};
+addEventListener('online',()=>S.uid&&flushQueue(S.uid).then(n=>n&&say(`${n} saved measurement(s) synced.`)));
 
-function loadFile(file) {
-  var img = new Image();
-  img.onload = function () {
-    var c = document.createElement('canvas');
-    c.width = img.width;
-    c.height = img.height;
-    c.getContext('2d').drawImage(img, 0, 0);
-    photo = c;
-    afterPhoto();
-  };
-  img.src = URL.createObjectURL(file);
-}
-
-function afterPhoto() {
-  stopCamera();
-  cameraArea.classList.add('hidden');
-  photoArea.classList.remove('hidden');
-  canvas.width = photo.width;
-  canvas.height = photo.height;
-  if (step === 'front-camera') {
-    setStep('calibrate');
-  } else {
-    setStep('tilt');
-  }
-}
-
-// ---------- Steps ----------
-function setStep(name) {
-  step = name;
-  if (name === 'front-camera') {
-    stepTitle.textContent = "Step 1: Front photo";
-    stepHint.textContent = "Customer frame pehne, camera ko seedha dekhe (30-40 cm door). Credit/ATM card ko maathe pe, chehre ke bilkul barabar (seedha, tilt nahi) pakde.";
-    photoArea.classList.add('hidden');
-    cameraArea.classList.remove('hidden');
-    startCamera();
-  } else if (name === 'calibrate') {
-    stepTitle.textContent = "Step 2: Card ka scale";
-    stepHint.textContent = "Photo mein card ke LEFT kinare pe tap karo, phir RIGHT kinare pe. (Card ki lambi side, 85.6 mm)";
-  } else if (name === 'pupils') {
-    stepTitle.textContent = "Step 3: Pupil check";
-    stepHint.textContent = "Dono pupil ke points auto lage hain. Galat ho to sahi jagah tap karo, nearest point wahan chala jayega.";
-  } else if (name === 'seg') {
-    stepTitle.textContent = "Step 4: Seg / Fitting Height";
-    stepHint.textContent = "Pehle photo mein LEFT wale lens ke sabse neeche wale edge pe tap karo (pupil ke seedha neeche), phir RIGHT wale lens pe. Bifocal ho to seg line pe tap karo. Frame nahi hai to Skip dabao.";
-  } else if (name === 'side-camera') {
-    stepTitle.textContent = "Step 5: Side photo (Pantoscopic Tilt)";
-    stepHint.textContent = "Customer ka side (profile) photo lo, frame pehne, seedha aage dekhte hue. Camera usse bilkul side se, aankh ki height pe ho.";
-    photoArea.classList.add('hidden');
-    cameraArea.classList.remove('hidden');
-    startCamera();
-  } else if (name === 'tilt') {
-    stepTitle.textContent = "Step 6: Lens ka angle";
-    stepHint.textContent = "Lens/frame ke rim ke sabse UPAR wale point pe tap karo, phir sabse NEECHE wale point pe.";
-  }
-  draw();
-  updateNextButton();
-}
-
-function updateNextButton() {
-  if (step === 'calibrate') {
-    nextBtn.textContent = "Aage";
-    nextBtn.disabled = cardPoints.length < 2;
-  } else if (step === 'pupils') {
-    nextBtn.textContent = "Aage";
-    nextBtn.disabled = pupils.length < 2;
-  } else if (step === 'seg') {
-    nextBtn.textContent = segPoints.length < 2 ? "Skip" : "Aage";
-    nextBtn.disabled = false;
-  } else if (step === 'tilt') {
-    nextBtn.textContent = tiltPoints.length < 2 ? "Skip" : "Result dekho";
-    nextBtn.disabled = false;
-  }
-}
-
-// ---------- Drawing ----------
-function dot(p, color, label) {
-  var r = Math.max(canvas.width / 160, 4);
-  ctx.beginPath();
-  ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = '#fff';
-  ctx.stroke();
-  if (label) {
-    ctx.font = (r * 3) + "px Inter, sans-serif";
-    ctx.fillStyle = '#fff';
-    ctx.fillText(label, p.x + r * 1.5, p.y - r * 1.5);
-  }
-}
-
-function line(a, b, color) {
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.lineTo(b.x, b.y);
-  ctx.lineWidth = Math.max(canvas.width / 400, 2);
-  ctx.strokeStyle = color;
-  ctx.stroke();
-}
-
-function draw() {
-  if (!photo) return;
-  ctx.drawImage(photo, 0, 0);
-
-  if (step === 'side-camera' || step === 'tilt') {
-    if (tiltPoints.length > 0) dot(tiltPoints[0], '#F5A524', 'upar');
-    if (tiltPoints.length > 1) {
-      dot(tiltPoints[1], '#F5A524', 'neeche');
-      line(tiltPoints[0], tiltPoints[1], '#F5A524');
-    }
-    return;
-  }
-
-  if (cardPoints.length > 0) dot(cardPoints[0], '#22c55e', 'card L');
-  if (cardPoints.length > 1) {
-    dot(cardPoints[1], '#22c55e', 'card R');
-    line(cardPoints[0], cardPoints[1], '#22c55e');
-  }
-  if (step === 'pupils' || step === 'seg') {
-    if (pupils.length > 0) dot(pupils[0], '#4F6BF0', 'R');
-    if (pupils.length > 1) {
-      dot(pupils[1], '#4F6BF0', 'L');
-      line(pupils[0], pupils[1], '#4F6BF0');
-    }
-  }
-  if (step === 'seg') {
-    for (var i = 0; i < segPoints.length; i++) {
-      dot(segPoints[i], '#F5A524', 'seg');
-    }
-  }
-}
-
-// ---------- Canvas tap ----------
-function getPoint(e) {
-  var rect = canvas.getBoundingClientRect();
-  return {
-    x: (e.clientX - rect.left) * (canvas.width / rect.width),
-    y: (e.clientY - rect.top) * (canvas.height / rect.height)
-  };
-}
-
-canvas.addEventListener('pointerdown', function (e) {
-  var p = getPoint(e);
-
-  if (step === 'calibrate') {
-    if (cardPoints.length < 2) cardPoints.push(p);
-    else cardPoints[nearest(cardPoints, p)] = p;
-    if (cardPoints.length === 2) {
-      mmPerPx = CARD_WIDTH_MM / dist(cardPoints[0], cardPoints[1]);
-    }
-  } else if (step === 'pupils') {
-    if (pupils.length < 2) pupils.push(p);
-    else pupils[nearest(pupils, p)] = p;
-  } else if (step === 'seg') {
-    if (segPoints.length < 2) segPoints.push(p);
-  } else if (step === 'tilt') {
-    if (tiltPoints.length < 2) tiltPoints.push(p);
-  }
-  draw();
-  updateNextButton();
-});
-
-function dist(a, b) {
-  return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
-}
-
-function nearest(list, p) {
-  var best = 0;
-  for (var i = 1; i < list.length; i++) {
-    if (dist(list[i], p) < dist(list[best], p)) best = i;
-  }
-  return best;
-}
-
-// ---------- Pupil auto detect ----------
-function detectPupils() {
-  pupils = [];
-  noseX = null;
-  if (!faceLandmarker) return;
-  try {
-    var res = faceLandmarker.detect(photo);
-    if (res.faceLandmarks && res.faceLandmarks.length > 0) {
-      var lm = res.faceLandmarks[0];
-      // 468 aur 473 dono iris ke center hain
-      var a = { x: lm[468].x * photo.width, y: lm[468].y * photo.height };
-      var b = { x: lm[473].x * photo.width, y: lm[473].y * photo.height };
-      pupils = a.x < b.x ? [a, b] : [b, a];
-      noseX = lm[168].x * photo.width;   // dono aankhon ke beech ka point
-      statusEl.textContent = "Pupil detect ho gaye.";
-    } else {
-      statusEl.textContent = "Chehra detect nahi hua. Dono pupil pe khud tap karo.";
-    }
-  } catch (e) {
-    statusEl.textContent = "Detect mein error. Dono pupil pe khud tap karo.";
-  }
-}
-
-// ---------- Next button ----------
-nextBtn.addEventListener('click', function () {
-  if (step === 'calibrate') {
-    detectPupils();
-    setStep('pupils');
-  } else if (step === 'pupils') {
-    setStep('seg');
-  } else if (step === 'seg') {
-    if (segPoints.length < 2) segPoints = [];
-    photo = null;
-    setStep('side-camera');
-  } else if (step === 'tilt') {
-    if (tiltPoints.length < 2) tiltPoints = [];
-    showResults();
-  }
-});
-
-document.getElementById('undoBtn').addEventListener('click', function () {
-  if (step === 'calibrate') { cardPoints.pop(); mmPerPx = null; }
-  else if (step === 'pupils') { pupils = []; }
-  else if (step === 'seg') { segPoints.pop(); }
-  else if (step === 'tilt') { tiltPoints.pop(); }
-  draw();
-  updateNextButton();
-});
-
-document.getElementById('retakeBtn').addEventListener('click', function () {
-  photo = null;
-  if (step === 'tilt') {
-    tiltPoints = [];
-    setStep('side-camera');
-  } else {
-    cardPoints = []; pupils = []; segPoints = []; mmPerPx = null;
-    setStep('front-camera');
-  }
-});
-
-document.getElementById('captureBtn').addEventListener('click', takePhoto);
-document.getElementById('switchBtn').addEventListener('click', function () {
-  facing = facing === 'user' ? 'environment' : 'user';
-  startCamera();
-});
-document.getElementById('fileInput').addEventListener('change', function (e) {
-  if (e.target.files[0]) loadFile(e.target.files[0]);
-});
-
-// ---------- Calculations ----------
-function round1(n) { return Math.round(n * 10) / 10; }
-
-function showResults() {
-  result = {};
-  var html = '';
-
-  // PD
-  if (mmPerPx && pupils.length === 2) {
-    var pd = dist(pupils[0], pupils[1]) * mmPerPx;
-    var centerX = noseX !== null ? noseX : (pupils[0].x + pupils[1].x) / 2;
-    result.pd = round1(pd);
-    result.pdRight = round1(Math.abs(pupils[0].x - centerX) * mmPerPx);
-    result.pdLeft = round1(Math.abs(pupils[1].x - centerX) * mmPerPx);
-    html += box('PD (total)', result.pd + ' mm');
-    html += box('Mono PD (R / L)', result.pdRight + ' / ' + result.pdLeft + ' mm');
-  }
-
-  // Seg height (photo mein pehla tap left lens, to wo patient ka right eye)
-  if (mmPerPx && segPoints.length === 2 && pupils.length === 2) {
-    var segR = (segPoints[0].y - pupils[0].y) * mmPerPx;
-    var segL = (segPoints[1].y - pupils[1].y) * mmPerPx;
-    result.segRight = round1(Math.abs(segR));
-    result.segLeft = round1(Math.abs(segL));
-    html += box('Seg Height Right', result.segRight + ' mm');
-    html += box('Seg Height Left', result.segLeft + ' mm');
-  }
-
-  // Pantoscopic tilt: lens line ka vertical se angle
-  if (tiltPoints.length === 2) {
-    var dx = Math.abs(tiltPoints[1].x - tiltPoints[0].x);
-    var dy = Math.abs(tiltPoints[1].y - tiltPoints[0].y);
-    result.tilt = round1(Math.atan2(dx, dy) * 180 / Math.PI);
-    html += box('Pantoscopic Tilt', result.tilt + '°');
-  }
-
-  document.getElementById('results').innerHTML = html;
-  document.getElementById('resultCard').classList.remove('hidden');
-  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
-}
-
-function box(label, value) {
-  return '<div class="res-box"><div class="res-label">' + label + '</div><div class="res-value">' + value + '</div></div>';
-}
-
-// ---------- Save ----------
-// Apne FRALEN CRM mein jahan Firebase init hai, wahan se db le lo.
-// Abhi ke liye: agar window.db (Firestore) mili to wahan save hoga,
-// warna browser ke localStorage mein.
-document.getElementById('saveBtn').addEventListener('click', async function () {
-  var params = new URLSearchParams(window.location.search);
-  var customerId = params.get('customerId') || 'unknown';
-  var data = Object.assign({ customerId: customerId, createdAt: new Date().toISOString() }, result);
-
-  try {
-    if (window.db) {
-      await window.db.collection('measurements').add(data);
-      alert('Measurement save ho gayi.');
-    } else {
-      var old = JSON.parse(localStorage.getItem('measurements') || '[]');
-      old.push(data);
-      localStorage.setItem('measurements', JSON.stringify(old));
-      alert('Firebase connected nahi hai, isliye browser mein save hui.');
-    }
-  } catch (e) {
-    alert('Save nahi hui: ' + e.message);
-  }
-});
-
-document.getElementById('restartBtn').addEventListener('click', function () {
-  cardPoints = []; pupils = []; segPoints = []; tiltPoints = [];
-  mmPerPx = null; photo = null; result = {};
-  document.getElementById('resultCard').classList.add('hidden');
-  setStep('front-camera');
-});
-
-// Start
-loadModel();
-setStep('front-camera');
-</script>
-</body>
-</html>
+// ---- start ----
+addEventListener('pagehide',stopCam);
+// Same login guard as every other CRM page: redirects to index.html if signed out / suspended.
+requireAuth(user=>{S.uid=user.uid;S.user=user;setStep(2);flushQueue(user.uid);});
+loadFace().then(()=>say('Face model ready.')).catch(()=>say('Face model could not load (network?). Reload to retry — no values are guessed.',1));
+</script></body></html>
