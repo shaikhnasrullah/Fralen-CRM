@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FRALEN CRM — Complete Your Payment</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1B2A6B; --navy-light: #2A3F8F;
+    --accent: #4F6BF0; --accent-soft: #EEF1FE;
+    --gray: #6B7280; --border: #C5D3E8;
+    --green: #10B981; --orange: #F59E0B; --red: #EF4444;
+  }
+  body { font-family: 'Inter', sans-serif; background: #F0F2FA; min-height: 100vh; padding: 20px; }
+  .wrap { max-width: 460px; margin: 0 auto; }
+  .head { text-align: center; margin-bottom: 20px; }
+  .head .logo { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 900; color: var(--navy); letter-spacing: 3px; }
+  .head .logo span { color: var(--accent); }
+  .head p { font-size: 13px; color: var(--gray); margin-top: 4px; }
+  .card { background: white; border-radius: 18px; padding: 24px 22px; box-shadow: 0 8px 40px rgba(27,42,107,0.10); margin-bottom: 16px; }
+  .plan-box { background: var(--navy); border-radius: 14px; padding: 18px; text-align: center; color: white; margin-bottom: 18px; }
+  .plan-box .plan-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #C7D2FE; }
+  .plan-box .plan-amount { font-size: 30px; font-weight: 900; margin-top: 4px; }
+  .plan-box .plan-amount span { font-size: 14px; font-weight: 500; color: #C7D2FE; }
+  .rzp-btn {
+    width: 100%; padding: 14px; background: #072654; color: white; border: none; border-radius: 10px;
+    font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .rzp-btn:hover { background: #0a3572; }
+  .rzp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .rzp-note { font-size: 11.5px; color: var(--gray); text-align: center; margin-top: 10px; line-height: 1.5; }
+  .msg { font-size: 12.5px; margin-top: 14px; display: none; text-align: center; }
+  .msg.ok { color: var(--green); display: block; background: #ECFDF5; padding: 10px; border-radius: 8px; }
+  .msg.error { color: var(--red); display: block; background: #FEF2F2; padding: 10px; border-radius: 8px; }
+  .msg.info { color: var(--navy); display: block; background: var(--accent-soft); padding: 10px; border-radius: 8px; }
+  .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 14px; }
+  .status-pending { background: #FEF3C7; color: #B45309; }
+  .status-paid { background: #D1FAE5; color: #047857; }
+  .helpline { background: white; border-radius: 14px; padding: 18px; text-align: center; box-shadow: 0 4px 20px rgba(27,42,107,0.06); }
+  .helpline .hl-title { font-size: 12.5px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .helpline .hl-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; color: #374151; margin-bottom: 6px; }
+  .helpline a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .helpline .hl-24x7 { font-size: 11px; color: var(--green); font-weight: 700; background: #D1FAE5; padding: 2px 9px; border-radius: 20px; display: inline-block; margin-top: 6px; }
+  .dashboard-btn {
+    width: 100%; padding: 13px; border-radius: 10px; font-size: 14.5px; font-weight: 700;
+    cursor: pointer; border: none; margin-top: 12px; background: var(--accent-soft); color: var(--accent);
+  }
+  .dashboard-btn:hover { background: #DCE4FF; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="head">
+    <div class="logo">FRAL<span>EN</span> CRM</div>
+    <p>Complete your payment to activate your account</p>
+  </div>
+
+  <div class="card">
+    <div id="status-area"></div>
+
+    <div class="plan-box">
+      <div class="plan-name">Monthly Subscription</div>
+      <div class="plan-amount">₹999 <span>/ month</span></div>
+    </div>
+
+    <button class="rzp-btn" id="pay-btn" type="button">
+      💳 Pay ₹999 Securely with Razorpay
+    </button>
+
+    <div class="rzp-note">
+      UPI, cards and net banking are supported through Razorpay's secure checkout.
+      Your payment is automatically verified after successful payment.
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <button class="dashboard-btn" type="button"
+      onclick="window.location.href='dashboard.html'">
+      Continue to Dashboard
+    </button>
+  </div>
+
+  <div class="helpline">
+    <div class="hl-title">Need Help?</div>
+    <div class="hl-row">📞 <a href="tel:9304477821">9304477821</a> <span class="hl-24x7">24×7</span></div>
+    <div class="hl-row">✉️ <a href="mailto:mdnasrullah911@gmail.com">mdnasrullah911@gmail.com</a></div>
+  </div>
+</div>
+
+<!-- Razorpay Checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script type="module">
+import {app, requireAuth, profileDoc} from "./firebase-config.js";
+import {
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFunctions,
+  httpsCallable,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+
+const functions = getFunctions(app, "us-central1");
+const createRazorpayOrder = httpsCallable(functions, "createRazorpayOrder");
+const verifyRazorpayPayment = httpsCallable(functions, "verifyRazorpayPayment");
+
+const payBtn = document.getElementById("pay-btn");
+const msg = document.getElementById("msg");
+const statusArea = document.getElementById("status-area");
+
+let currentUser = null;
+let paymentAlreadyPaid = false;
+
+function showMessage(text, type) {
+  msg.textContent = text;
+  msg.className = `msg ${type}`;
+}
+
+function setPayButton(enabled, text) {
+  payBtn.disabled = !enabled;
+  payBtn.textContent = text;
+}
+
+async function loadStatus() {
+  if (!currentUser) return;
+
+  try {
+    const snap = await getDoc(profileDoc(currentUser.uid));
+
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+
+    if (data.paymentStatus === "paid") {
+      paymentAlreadyPaid = true;
+      statusArea.innerHTML =
+        `<div class="status-badge status-paid">✅ Payment Active</div>`;
+      showMessage("Your FRALEN CRM subscription is already active.", "ok");
+      setPayButton(false, "✅ Payment Already Completed");
+      return;
+    }
+
+    if (data.paymentStatus === "pending") {
+      statusArea.innerHTML =
+        `<div class="status-badge status-pending">⏳ Payment Pending</div>`;
+    }
+  } catch (error) {
+    console.error("Payment status check failed:", error);
+  }
+}
+
+async function startPayment() {
+  if (!currentUser || paymentAlreadyPaid) return;
+
+  setPayButton(false, "Creating secure payment...");
+
+  try {
+    showMessage("Creating your secure Razorpay order...", "info");
+
+    // The server creates the order and decides the amount.
+    const orderResult = await createRazorpayOrder();
+    const order = orderResult.data;
+
+    if (!order || !order.orderId || !order.keyId) {
+      throw new Error("Invalid payment order received from server.");
+    }
+
+    const options = {
+      key: order.keyId,
+      amount: order.amount,
+      currency: order.currency,
+      name: "FRALEN CRM",
+      description: "FRALEN CRM Monthly Subscription",
+      order_id: order.orderId,
+      prefill: {
+        name: currentUser.displayName || "",
+        email: currentUser.email || "",
+      },
+      notes: {
+        firebaseUid: currentUser.uid,
+      },
+      theme: {
+        color: "#1B2A6B",
+      },
+
+      handler: async function (response) {
+        try {
+          setPayButton(false, "Verifying payment...");
+          showMessage("Payment received. Verifying securely...", "info");
+
+          // The backend verifies the Razorpay signature, order,
+          // amount and captured status before marking the user as paid.
+          const verifyResult = await verifyRazorpayPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          if (verifyResult.data && verifyResult.data.paymentStatus === "paid") {
+            paymentAlreadyPaid = true;
+            statusArea.innerHTML =
+              `<div class="status-badge status-paid">✅ Payment Successful</div>`;
+
+            showMessage(
+              "✅ Payment verified successfully. Your account is now active.",
+              "ok"
+            );
+
+            setPayButton(false, "✅ Payment Completed");
+
+            setTimeout(() => {
+              window.location.href = "dashboard.html";
+            }, 1200);
+
+            return;
+          }
+
+          throw new Error("Payment verification did not return a paid status.");
+        } catch (error) {
+          console.error("Payment verification error:", error);
+          showMessage(
+            "Payment was received, but automatic verification failed. Please contact support and keep your Razorpay payment ID.",
+            "error"
+          );
+          setPayButton(true, "🔄 Retry Verification");
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          if (!paymentAlreadyPaid) {
+            showMessage("Payment window closed. You can try again.", "info");
+            setPayButton(true, "💳 Pay ₹999 Securely with Razorpay");
+          }
+        },
+      },
+    };
+
+    showMessage("Opening secure Razorpay checkout...", "info");
+
+    const razorpay = new window.Razorpay(options);
+
+    razorpay.on("payment.failed", function (response) {
+      console.error("Razorpay payment failed:", response.error);
+      showMessage(
+        response.error && response.error.description
+          ? response.error.description
+          : "Payment failed. Please try again.",
+        "error"
+      );
+      setPayButton(true, "💳 Pay ₹999 Securely with Razorpay");
+    });
+
+    razorpay.open();
+  } catch (error) {
+    console.error("Unable to start payment:", error);
+    showMessage(
+      error && error.message
+        ? error.message
+        : "Unable to start payment. Please try again.",
+      "error"
+    );
+    setPayButton(true, "💳 Pay ₹999 Securely with Razorpay");
+  }
+}
+
+payBtn.addEventListener("click", startPayment);
+
+requireAuth(async (user) => {
+  currentUser = user;
+  await loadStatus();
+});
+</script>
+
+</body>
+</html>
