@@ -178,7 +178,7 @@ exports.verifyRazorpayPayment = onCall(
           );
         }
 
-        if (payment.amount !== 99900) {
+        if (payment.amount !== 100) {
           throw new HttpsError(
               "invalid-argument",
               "Incorrect payment amount.",
