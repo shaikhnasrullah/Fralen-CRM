@@ -45,7 +45,7 @@ exports.createRazorpayOrder = onCall(
         });
 
         // FRALEN CRM subscription amount: ₹999
-        const amount = 99900;
+        const amount = 100;
 
         const receipt = `fralen_${uid}_${Date.now()}`;
 
