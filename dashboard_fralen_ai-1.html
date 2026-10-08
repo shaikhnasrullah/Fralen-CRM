@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FRALEN CRM - Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background-color: #F3F7FA; margin: 0; padding: 0; color: #111827; }
+
+/* ===== Sidebar (unchanged) ===== */
+.sidebar { width: 200px; background-color: #1B2A6B; height: 100vh; box-sizing: border-box; position: fixed; top: 0; left: 0; color: white; padding-top: 20px; display: flex; flex-direction: column; }
+.sidebar h2 { text-align: center; margin-bottom: 30px; }
+.sidebar a { display: block; color: white; text-decoration: none; padding: 12px 20px; }
+.sidebar a:hover { background-color: #2A3F8F; }
+.sidebar a:last-child { margin-top: auto; }
+
+/* ===== Layout ===== */
+.main { margin-left: 200px; padding: 20px; }
+.topbar { background-color: white; padding: 15px 20px; border: 1px solid #E5E7EB; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(16,24,40,.06); }
+.topbar h1 { font-size: 20px; margin: 0; }
+#logout-btn { background-color: #EF4444; color: white; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; }
+
+/* existing quick stats (kept so existing IDs/logic keep working) */
+.stats-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.stat-box { background-color: white; border: 1px solid #E5E7EB; border-radius: 12px; padding: 14px 18px; flex: 1; min-width: 180px; box-shadow: 0 1px 3px rgba(16,24,40,.06); }
+.stat-box.clickable { cursor: pointer; transition: box-shadow 0.15s; }
+.stat-box.clickable:hover { box-shadow: 0 4px 14px rgba(16,24,40,.10); }
+.stat-box h3 { margin: 0; font-size: 20px; }
+.stat-box p { margin: 4px 0 0 0; color: #6B7280; font-size: 13px; }
+
+/* ===== Dashboard cards ===== */
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 16px; }
+.card { background: #fff; border: 1px solid #E5E7EB; border-radius: 14px; padding: 20px; box-shadow: 0 1px 3px rgba(16,24,40,.06); min-width: 0; }
+.card h3.title { margin: 0; font-size: 20px; font-weight: 700; color: #111827; }
+.c-sales { grid-column: span 4; }
+.c-rating { grid-column: span 4; }
+.c-today { grid-column: span 4; }
+.c-product { grid-column: span 4; }
+.c-orders { grid-column: span 8; }
+
+/* Sales */
+.sales-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.period-group { display: flex; gap: 4px; background: #F3F4F6; padding: 3px; border-radius: 8px; }
+.period-btn { border: 0; background: transparent; color: #6B7280; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.period-btn.active { background: #2563EB; color: #fff; }
+.sales-amount { font-size: 32px; font-weight: 800; margin: 14px 0 2px; }
+.sales-sub { font-size: 12px; color: #6B7280; }
+.sales-sub .up { color: #10B981; font-weight: 700; }
+.sales-sub .down { color: #DC2626; font-weight: 700; }
+.chart-wrap { position: relative; height: 160px; margin-top: 10px; }
+
+/* Rating */
+.rating-body { display: flex; flex-direction: column; align-items: flex-start; margin-top: 14px; gap: 8px; }
+.rating-main { display: flex; align-items: center; gap: 10px; }
+.rating-star-big { font-size: 40px; color: #F59E0B; line-height: 1; }
+.rating-num { font-size: 40px; font-weight: 800; line-height: 1; }
+.stars { font-size: 20px; letter-spacing: 2px; color: #F59E0B; }
+.stars .off { color: #F59E0B; }
+.rating-badge.down { background: #DC2626; }
+.review-count { font-size: 12px; color: #6B7280; }
+.rating-badge { display: inline-block; background: #10B981; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; }
+.rating-badge.na { background: #9CA3AF; }
+
+/* Today sale */
+.today-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.today-date { font-size: 11px; font-weight: 700; color: #6B7280; background: #F3F4F6; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.today-total { font-size: 32px; font-weight: 800; margin: 14px 0 4px; }
+.today-sub { font-size: 12px; color: #6B7280; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+.chip.up { background: #D1FAE5; color: #047857; }
+.chip.down { background: #FEE2E2; color: #B91C1C; }
+.chip.flat { background: #F3F4F6; color: #6B7280; }
+.split-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #E5E7EB; margin: 18px 0 12px; }
+.split-bar span { display: block; height: 100%; transition: width .4s; }
+.split-online { background: #2563EB; }
+.split-cash { background: #10B981; }
+.pay-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pay-tile { border: 1px solid #E5E7EB; border-radius: 12px; padding: 12px; min-width: 0; }
+.pay-tile .top { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6B7280; font-weight: 600; }
+.pay-ico { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex: 0 0 auto; }
+.pay-ico.online { background: #DBEAFE; }
+.pay-ico.cash { background: #D1FAE5; }
+.pay-tile .amt { font-size: 20px; font-weight: 800; margin-top: 8px; }
+.pay-tile .pct { font-size: 11px; color: #6B7280; margin-top: 2px; }
+.today-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #E5E7EB; font-size: 12px; color: #6B7280; }
+.today-foot b { color: #111827; display: block; font-size: 14px; margin-top: 2px; }
+
+/* Product donut */
+.donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 12px; }
+.donut-canvas { position: relative; width: 230px; height: 230px; flex: 0 0 auto; }
+.legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 14px; width: 100%; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+.legend-item .pct { margin-left: auto; font-weight: 700; }
+.empty-note { color: #6B7280; font-size: 13px; text-align: center; margin-top: 8px; }
+
+/* Recent orders */
+.orders-tools { display: flex; gap: 10px; margin: 14px 0 6px; flex-wrap: wrap; }
+.orders-tools input[type=text], .orders-tools select { border: 1px solid #E5E7EB; border-radius: 8px; padding: 9px 12px; font-size: 13px; background: #fff; color: #111827; }
+.orders-tools { align-items: center; }
+.search-box { position: relative; flex: 1; min-width: 150px; max-width: 260px; }
+.search-box span { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9CA3AF; font-size: 13px; pointer-events: none; }
+.search-box input[type=text] { width: 100%; padding-left: 30px; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable i { font-style: normal; color: #9CA3AF; margin-left: 2px; }
+.table-scroll { width: 100%; }
+table { width: 100%; border-collapse: collapse; background-color: white; }
+th { text-align: left; font-size: 12px; color: #6B7280; font-weight: 700; padding: 10px 8px; border-bottom: 1px solid #E5E7EB; background: #fff; }
+td { padding: 12px 8px; font-size: 14px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+.cust-cell { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: #2563EB; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex: 0 0 auto; }
+.cust-link { color: #111827; font-weight: 700; cursor: pointer; text-decoration: none; }
+.cust-link:hover { text-decoration: underline; color: #2563EB; }
+.sub { display: none; font-size: 12px; color: #6B7280; }
+.contact { color: #6B7280; font-size: 13px; }
+.badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }
+.badge-paid { background: #D1FAE5; color: #047857; }
+.badge-pending { background: #FEF3C7; color: #B45309; }
+.badge-rejected { background: #FEE2E2; color: #B91C1C; }
+.badge-confirmed { background: #DBEAFE; color: #1D4ED8; }
+.act-btn.green { color: #047857; border-color: #A7F3D0; background: #ECFDF5; }
+.rating-link { font-size: 12px; color: #2563EB; text-decoration: none; font-weight: 700; }
+.rating-link:hover { text-decoration: underline; }
+.act-btn { border: 1px solid #E5E7EB; background: #fff; color: #2563EB; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.act-btn:hover { background: #EFF6FF; }
+
+/* ===== Functional extras ===== */
+.rating-place { font-size: 12px; color: #6B7280; }
+.legend-item { cursor: pointer; padding: 3px 4px; border-radius: 6px; }
+.legend-item:hover { background: #F3F4F6; }
+.legend-item.active { background: #EFF6FF; outline: 1px solid #2563EB; }
+.cols-wrap { position: relative; }
+.cols-menu { display: none; position: absolute; right: 0; top: 100%; margin-top: 4px; background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 8px 12px; box-shadow: 0 4px 14px rgba(16,24,40,.12); z-index: 20; min-width: 150px; }
+.cols-menu.show { display: block; }
+.cols-menu label { display: flex; gap: 8px; align-items: center; font-size: 13px; padding: 4px 0; cursor: pointer; }
+.orders-tools button.tool-btn { border: 1px solid #E5E7EB; background: #fff; border-radius: 8px; padding: 9px 12px; font-size: 13px; cursor: pointer; }
+.more-wrap { text-align: center; margin-top: 10px; display: none; }
+.act-group { display: flex; gap: 6px; flex-wrap: nowrap; }
+.act-group .act-btn { padding: 5px 8px; white-space: nowrap; }
+td.contact { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+td.col-date, td.col-status, td.col-amount { white-space: nowrap; }
+.rating-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.filter-note { font-size: 12px; color: #6B7280; margin-top: 6px; display: none; }
+.hide-contact .col-contact, .hide-items .col-items, .hide-date .col-date, .hide-status .col-status, .hide-amount .col-amount, .hide-act .col-act { display: none !important; }
+
+/* ===== Mobile hamburger (unchanged) ===== */
+.menu-toggle { display: none; position: fixed; top: 12px; left: 12px; width: 44px; height: 44px; padding: 9px; border: 0; border-radius: 8px; background: #1B2A6B; z-index: 1100; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.menu-toggle span { display: block; width: 25px; height: 3px; margin: 5px auto; border-radius: 3px; background: #fff; transition: .2s; }
+.menu-toggle.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.menu-toggle.active span:nth-child(2) { opacity: 0; }
+.menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.sidebar-overlay { display: none; }
+
+/* ===== Tablet ===== */
+@media (max-width: 1100px) {
+  .c-sales { grid-column: span 12; }
+  .c-rating, .c-today { grid-column: span 6; }
+  .c-product { grid-column: span 12; }
+  .c-orders { grid-column: span 12; }
+}
+
+@media (max-width: 768px) {
+  body { font-size: 16px; overflow-x: hidden; }
+  .menu-toggle { display: block; }
+  .sidebar { width: 240px; left: -260px; padding-top: 20px; z-index: 1050; transition: left .25s ease; box-shadow: 4px 0 15px rgba(0,0,0,.20); overflow-y: auto; }
+  .sidebar.open { left: 0; }
+  .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; }
+  .sidebar-overlay.show { display: block; }
+  .sidebar h2 { font-size: 23px; margin-bottom: 25px; }
+  .sidebar a { padding: 14px 20px; font-size: 16px; }
+  .main { margin-left: 0; padding: 10px; padding-top: 64px; width: auto; }
+  .topbar { padding: 14px 12px; min-height: 48px; }
+  .topbar h1 { font-size: 24px; }
+  #user-name { font-size: 15px; }
+  #shop-name { font-size: 13px !important; }
+  #logout-btn { padding: 9px 12px; font-size: 14px; }
+  .stats-row { gap: 10px; margin-top: 12px; }
+  .stat-box { min-width: calc(50% - 5px); padding: 14px; }
+  .grid { gap: 12px; margin-top: 12px; }
+  .card { padding: 16px; }
+  .c-rating, .c-today { grid-column: span 12; }
+  .sales-amount { font-size: 28px; }
+  .col-contact { display: none; }
+  .sub { display: block; }
+  /* orders become small cards on phones so nothing scrolls sideways */
+  .table-scroll { overflow: visible; }
+  table, tbody { display: block; }
+  thead { display: none; }
+  tbody tr { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  tbody td { display: block; border: 0; padding: 0; }
+  tbody td:first-child, tbody td.col-act, tbody td.col-items, tbody td.col-date { grid-column: 1 / -1; }
+  tbody td.col-amount { text-align: right; }
+  .act-group { flex-wrap: wrap; }
+}
+
+@media (max-width: 430px) {
+  .stat-box { min-width: 100%; }
+  .topbar { align-items: flex-start; }
+  .topbar > div { text-align: right; }
+  .topbar h1 { font-size: 22px; }
+  .donut-canvas { width: 180px; height: 180px; }
+  .col-items { display: none; }
+}
+
+/* ===== FRALEN AI FLOATING CHAT ===== */
+#fralen-ai-launcher{position:fixed;right:22px;bottom:22px;width:64px;height:64px;border:0;border-radius:50%;background:#2563eb;color:#fff;cursor:pointer;z-index:9999;box-shadow:0 8px 25px rgba(37,99,235,.35);font-size:28px;}
+#fralen-ai-chat{position:fixed;right:22px;bottom:98px;width:370px;height:520px;max-width:calc(100vw - 30px);background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 15px 50px rgba(0,0,0,.22);border:1px solid #e5e7eb;z-index:9998;display:none;flex-direction:column;}
+#fralen-ai-chat.open{display:flex;}
+.fralen-ai-header{background:#2563eb;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;}
+.fralen-ai-title{font-size:16px;font-weight:700;} .fralen-ai-status{font-size:11px;opacity:.9;margin-top:2px;}
+#fralen-ai-close{border:0;background:transparent;color:#fff;font-size:24px;cursor:pointer;}
+#fralen-ai-messages{flex:1;overflow-y:auto;padding:15px;background:#f8fafc;}
+.fralen-ai-message{max-width:85%;padding:10px 12px;margin-bottom:10px;border-radius:12px;font-size:13px;line-height:1.45;white-space:pre-wrap;word-break:break-word;}
+.fralen-ai-message.bot{background:#fff;border:1px solid #e5e7eb;color:#111827;} .fralen-ai-message.user{margin-left:auto;background:#2563eb;color:#fff;}
+#fralen-ai-input-area{display:flex;gap:8px;padding:10px;border-top:1px solid #e5e7eb;background:#fff;}
+#fralen-ai-input{flex:1;border:1px solid #d1d5db;border-radius:10px;padding:10px;outline:none;min-width:0;}
+#fralen-ai-send{width:45px;border:0;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer;}
+#fralen-ai-send:disabled{opacity:.55;cursor:not-allowed;}
+@media(max-width:600px){#fralen-ai-launcher{right:15px;bottom:15px;width:58px;height:58px;}#fralen-ai-chat{right:10px;bottom:82px;width:calc(100vw - 20px);height:500px;}}
+</style>
+</head>
+<body>
+<button id="menu-toggle" class="menu-toggle" aria-label="Open menu" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+<div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+<div class="sidebar">
+  <h2>FRALEN</h2>
+  <a href="dashboard.html">🏠 Dashboard</a>
+  <a href="product-menu-sub-bar.html">🛍️ Products</a>
+  <a href="inventory.html">📦 Inventory</a>
+  <a href="purchase.html">🛒 Purchase</a>
+  <a href="customers.html">👥 Customers</a>
+  <a href="eye-test-reminders.html">👁️ Eye Test Reminders</a>
+  <a href="create-order.html">➕ Add New Sale</a>
+  <a href="sales-history.html">🧾 Sales History</a>
+  <a href="reports.html">📊 Reports</a>
+  <a href="expenses.html">💰 Expenses</a>
+  <a href="data-import.html">📊 Import Data</a>
+  <a href="review-assistant.html">⭐ Review Assistant</a>
+  <a href="loyalty.html">🎁 Loyalty</a>
+  <a href="fralen-ai.html">🤖 Fralen-ai</a>
+  <a href="Features/measurements.html">🤖 Measurement</a>
+  <a href="settings.html">⚙️ Settings</a>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h1>Dashboard</h1>
+    <div>
+      <span id="user-name">Admin</span>
+      <span id="shop-name" style="margin-left:10px;color:#6B7280;font-size:13px;"></span>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div id="payment-banner" style="display:none;background:#FEF3C7;color:#B45309;padding:10px 20px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;border-radius:10px;margin-top:12px" onclick="window.location.href='payment.html'">
+    ⏳ Payment verification pending — click to check status / submit
+  </div>
+
+  <div class="stats-row" style="display:none">
+    <div class="stat-box clickable" onclick="window.location.href='customers.html'">
+      <h3 id="stat-customers">0</h3><p>Total Customers</p>
+    </div>
+    <div class="stat-box clickable" onclick="window.location.href='sales-history.html'">
+      <h3 id="stat-today-sales">Rs. 0</h3><p id="stat-today-orders">0 orders today</p>
+    </div>
+    <div class="stat-box clickable" onclick="window.location.href='sales-history.html?status=pending'">
+      <h3 id="stat-pending-orders">0</h3><p>Pending Orders</p>
+    </div>
+    <div class="stat-box clickable" onclick="window.location.href='sales-history.html?status=pending'">
+      <h3 id="stat-balance-due">Rs. 0</h3><p>Balance Due</p>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Sales -->
+    <div class="card c-sales">
+      <div class="sales-head">
+        <h3 class="title">Sales</h3>
+        <div class="period-group" id="period-group">
+          <button class="period-btn active" data-period="7">7D</button>
+          <button class="period-btn" data-period="20">20D</button>
+          <button class="period-btn" data-period="month">1M</button>
+        </div>
+      </div>
+      <div class="sales-amount" id="sales-amount">Rs. 0</div>
+      <div class="sales-sub" id="sales-sub">Total this period</div>
+      <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+    </div>
+
+    <!-- Rating on Google map (read-only, live from Google Maps Platform) -->
+    <div class="card c-rating">
+      <h3 class="title">Rating on Google map</h3>
+      <div class="rating-body">
+        <div class="rating-main">
+          <span class="rating-star-big">★</span>
+          <span class="rating-num" id="rating-num">--</span>
+        </div>
+        <div class="stars" id="rating-stars"></div>
+        <div class="review-count" id="rating-reviews">Connecting to Google Maps…</div>
+        <span class="rating-badge na" id="rating-badge">Connecting…</span>
+        <div class="rating-place" id="rating-place"></div>
+        <div class="rating-actions">
+          <a class="rating-link" id="rating-maps-link" href="#" target="_blank" rel="noopener" style="display:none">View on Google Maps ↗</a>
+          <a class="rating-link" href="review-assistant.html">⭐ Get more reviews</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today sale -->
+    <div class="card c-today" style="cursor:pointer" onclick="window.location.href='sales-history.html'">
+      <div class="today-head">
+        <h3 class="title">Today sale</h3>
+        <span class="today-date" id="today-date"></span>
+      </div>
+      <div class="today-total" id="today-amount">Rs. 0</div>
+      <div class="today-sub">
+        <span id="today-orders">0 orders</span>
+        <span class="chip flat" id="today-chip">–</span>
+      </div>
+      <div class="split-bar" title="Online vs Cash received today">
+        <span class="split-online" id="bar-online" style="width:0"></span><span class="split-cash" id="bar-cash" style="width:0"></span>
+      </div>
+      <div class="pay-tiles">
+        <div class="pay-tile">
+          <div class="top"><span class="pay-ico online">💳</span>Online received</div>
+          <div class="amt" id="today-online">Rs. 0</div>
+          <div class="pct" id="today-online-pct">0% of received</div>
+        </div>
+        <div class="pay-tile">
+          <div class="top"><span class="pay-ico cash">💵</span>Cash received</div>
+          <div class="amt" id="today-cash">Rs. 0</div>
+          <div class="pct" id="today-cash-pct">0% of received</div>
+        </div>
+      </div>
+      <div class="today-foot">
+        <div>Received today<b id="today-received">Rs. 0</b></div>
+        <div style="text-align:right">Balance due (today's orders)<b id="today-due">Rs. 0</b></div>
+      </div>
+    </div>
+
+    <!-- Product sales -->
+    <div class="card c-product">
+      <h3 class="title">Product sales</h3>
+      <div class="donut-wrap">
+        <div class="donut-canvas"><canvas id="productChart"></canvas></div>
+        <div class="legend" id="product-legend"></div>
+      </div>
+      <div class="empty-note" id="product-empty" style="display:none">No product sales yet</div>
+    </div>
+
+    <!-- Recent orders -->
+    <div class="card c-orders">
+      <h3 class="title">Recent orders</h3>
+      <div class="orders-tools">
+        <div class="search-box"><span>🔍</span><input type="text" id="orders-search" placeholder="Search users..."></div>
+        <select id="orders-status">
+          <option value="all">Status</option>
+          <option value="paid">Paid</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+        </select>
+        <div class="cols-wrap" style="margin-left:auto">
+          <button type="button" class="tool-btn" id="cols-btn">Columns ▾</button>
+          <div class="cols-menu" id="cols-menu">
+            <label><input type="checkbox" data-col="contact" checked> Contact</label>
+            <label><input type="checkbox" data-col="items" checked> Items</label>
+            <label><input type="checkbox" data-col="date" checked> Date</label>
+            <label><input type="checkbox" data-col="status" checked> Status</label>
+            <label><input type="checkbox" data-col="amount" checked> Amount</label>
+            <label><input type="checkbox" data-col="act" checked> Actions</label>
+          </div>
+        </div>
+      </div>
+      <div class="filter-note" id="filter-note"></div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th class="sortable" data-sort="name">Customer <i>↕</i></th><th class="col-contact sortable" data-sort="contact">Email <i>↕</i></th><th class="col-items">Items</th><th class="col-date sortable" data-sort="date">Date <i>↕</i></th><th class="col-status sortable" data-sort="status">Status <i>↕</i></th><th class="col-amount sortable" data-sort="amount">Amount <i>↕</i></th><th class="col-act">Actions</th></tr>
+          </thead>
+          <tbody id="recent-orders-tbody">
+            <tr><td colspan="7" style="text-align:center;">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="more-wrap" id="more-wrap"><button type="button" class="act-btn" id="more-btn">Show more</button></div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+(function () {
+  const toggle = document.getElementById("menu-toggle");
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+
+  function closeMenu() {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("show");
+    toggle.classList.remove("active");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Open menu");
+  }
+
+  function openMenu() {
+    sidebar.classList.add("open");
+    overlay.classList.add("show");
+    toggle.classList.add("active");
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-label", "Close menu");
+  }
+
+  toggle.addEventListener("click", function () {
+    if (sidebar.classList.contains("open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  overlay.addEventListener("click", closeMenu);
+
+  // On mobile, tapping any menu item closes the menu.
+  sidebar.querySelectorAll("a").forEach(function (link) {
+    link.addEventListener("click", closeMenu);
+  });
+})();
+</script>
+
+<script type="module">
+import { getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { auth, signOut, requireAuth, tenantCollection, profileDoc } from "./firebase-config.js";
+import { printInvoice } from "./invoice-print.js";
+import { shareReceiptOnWhatsApp } from "./receipt-image.js";
+
+var salesChart = null;
+var productChart = null;
+var currentUid = null;
+var allOrders = [];
+var currentPeriod = "7";
+var ordersLimit = 5;
+var catFilter = null;
+var profileData = {};
+var sortKey = "date";
+var sortDir = -1;
+
+// requireAuth() handles the "not logged in -> back to index.html" redirect,
+// and hands us the logged-in user (this shop's owner) once ready.
+requireAuth(async function (user) {
+  currentUid = user.uid;
+  document.getElementById("user-name").textContent = (user.email || "Admin").split("@")[0];
+
+  // Show which shop this is, from users/{uid} profile.
+  try {
+    var profileSnap = await getDoc(profileDoc(currentUid));
+    if (profileSnap.exists() && profileSnap.data().shopName) {
+      document.getElementById("shop-name").textContent = "· " + profileSnap.data().shopName;
+    }
+    if (profileSnap.exists() && profileSnap.data().paymentStatus === "pending") {
+      document.getElementById("payment-banner").style.display = "block";
+    }
+    profileData = profileSnap.exists() ? profileSnap.data() : {};
+  } catch (e) { /* profile is optional for older accounts */ }
+
+  loadGoogleRating(profileData);
+  loadDashboardData();
+});
+
+document.getElementById("logout-btn").addEventListener("click", async function () {
+  await signOut(auth);
+  window.location.href = "Login-page.html";
+});
+
+function isToday(dateString) {
+  if (!dateString) return false;
+  var d = new Date(dateString);
+  var now = new Date();
+  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
+
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+function payableOf(o) { return (o.totals && o.totals.payable) ? o.totals.payable : 0; }
+function pendingOf(o) { return (o.totals && o.totals.pending) ? o.totals.pending : 0; }
+function money(n) { return "Rs. " + Math.round(n).toLocaleString("en-IN"); }
+function dayStart(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+
+/* ---------- Google rating: live from Google Maps Platform (read-only) ---------- */
+// Paste your Google Maps Platform API key below. In Google Cloud Console enable
+// "Maps JavaScript API" and "Places API (New)", and restrict the key to your website
+// domain (HTTP referrers). The shop's Place ID is read from the shop profile
+// (googlePlaceId) when present; otherwise the shop is found automatically by name.
+var GOOGLE_MAPS_API_KEY = "AIzaSyA3JAd0SUk2IQU1-a7oUlyeqmdNwUo_DvI";
+var RATING_CACHE_MS = 6 * 60 * 60 * 1000; // re-check Google at most every 6 hours
+
+function paintStars(rating) {
+  var full = Math.round(rating || 0), h = "";
+  for (var i = 1; i <= 5; i++) h += i <= full ? "★" : "<span class='off'>☆</span>";
+  document.getElementById("rating-stars").innerHTML = h;
+}
+
+function showRatingUnavailable(msg, badge) {
+  document.getElementById("rating-num").textContent = "--";
+  paintStars(0);
+  document.getElementById("rating-reviews").textContent = msg;
+  var b = document.getElementById("rating-badge");
+  b.textContent = badge || "Not connected";
+  b.className = "rating-badge na";
+  document.getElementById("rating-place").textContent = "";
+  document.getElementById("rating-maps-link").style.display = "none";
+}
+
+function showRating(d) {
+  if (!d.rating) { showRatingUnavailable("No Google ratings yet", "Google Maps"); return; }
+  document.getElementById("rating-num").textContent = Number(d.rating).toFixed(1);
+  paintStars(d.rating);
+  document.getElementById("rating-reviews").textContent = (d.count || 0).toLocaleString("en-IN") + " Google reviews";
+  var b = document.getElementById("rating-badge");
+  b.className = "rating-badge";
+  if (d.prev != null && d.prev !== d.rating) {
+    var diff = d.rating - d.prev;
+    b.textContent = (diff > 0 ? "↑ +" : "↓ ") + diff.toFixed(1) + " since last check";
+    if (diff < 0) b.classList.add("down");
+  } else {
+    b.textContent = "Live · Google Maps";
+  }
+  document.getElementById("rating-place").textContent = [d.name, d.address].filter(Boolean).join(" · ");
+  var link = document.getElementById("rating-maps-link");
+  if (d.url) { link.href = d.url; link.style.display = ""; } else { link.style.display = "none"; }
+}
+
+function loadMapsScript() {
+  // Official Google inline bootstrap: defines google.maps.importLibrary immediately,
+  // then loads the real API in the background.
+  return new Promise(function (resolve) {
+    (function (g) {
+      var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__",
+        m = document, b = window;
+      b = b[c] || (b[c] = {});
+      var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams();
+      var u = function () {
+        return h || (h = new Promise(function (f, n) {
+          a = m.createElement("script");
+          e.set("libraries", Array.from(r).join(","));
+          for (k in g) e.set(k.replace(/[A-Z]/g, function (t) { return "_" + t[0].toLowerCase(); }), g[k]);
+          e.set("callback", c + ".maps." + q);
+          a.src = "https://maps.googleapis.com/maps/api/js?" + e;
+          d[q] = f;
+          a.onerror = function () { h = null; n(new Error(p + " could not load.")); };
+          m.head.append(a);
+        }));
+      };
+      if (!d[l]) d[l] = function (f) {
+        var n = Array.prototype.slice.call(arguments, 1);
+        r.add(f);
+        return u().then(function () { return d[l].apply(d, [f].concat(n)); });
+      };
+    })({ key: GOOGLE_MAPS_API_KEY, v: "weekly" });
+    resolve();
+  });
+}
+
+function withTimeout(promise, ms, msg) {
+  return Promise.race([promise, new Promise(function (_, rej) { setTimeout(function () { rej(new Error(msg)); }, ms); })]);
+}
+
+async function loadGoogleRating(p) {
+  p = p || {};
+  var cacheKey = "fralen_gmp_" + currentUid, cached = null;
+  try { cached = JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch (e) {}
+
+  // If the owner saved a Place ID that differs from what was cached, drop the old (wrong) cache.
+  if (cached && p.googlePlaceId && cached.placeId !== p.googlePlaceId) cached = null;
+
+  // The cache only avoids paying for a Google call on every page view; it is never user-editable.
+  if (cached && Date.now() - cached.at < RATING_CACHE_MS) { showRating(cached); return; }
+  if (!GOOGLE_MAPS_API_KEY) {
+    if (cached) showRating(cached); else showRatingUnavailable("Google Maps key not added yet");
+    return;
+  }
+
+  try {
+    await loadMapsScript();
+    var lib = await withTimeout(google.maps.importLibrary("places"), 15000, "Google did not respond (key, billing or referrer problem)");
+    var Place = lib.Place, place = null;
+    var fields = ["id", "displayName", "formattedAddress", "rating", "userRatingCount", "googleMapsURI"];
+    var pid = p.googlePlaceId || p.placeId;
+
+    if (pid) {
+      place = new Place({ id: pid });
+      await place.fetchFields({ fields: fields });
+    } else {
+      var q = [p.shopName, p.address].filter(Boolean).join(" ");
+      if (!q) throw new Error("Shop name missing, cannot find it on Google Maps");
+      var res = await Place.searchByText({ textQuery: q, fields: fields, maxResultCount: 1 });
+      if (!res.places || !res.places.length) throw new Error("Shop not found on Google Maps");
+      place = res.places[0];
+    }
+
+    var d = {
+      rating: place.rating, count: place.userRatingCount, name: place.displayName,
+      address: place.formattedAddress, url: place.googleMapsURI, placeId: place.id, at: Date.now(),
+      prev: cached ? (cached.rating !== place.rating ? cached.rating : cached.prev) : null
+    };
+    try { localStorage.setItem(cacheKey, JSON.stringify(d)); } catch (e) {}
+    showRating(d);
+  } catch (err) {
+    console.log("Google rating error: ", err);
+    var why = String((err && err.message) || err || "").slice(0, 140);
+    if (cached) showRating(cached); else showRatingUnavailable("Could not reach Google Maps" + (why ? " (" + why + ")" : ""));
+  }
+}
+// Google calls this when the key is rejected (referrer, billing, API not enabled)
+window.gm_authFailure = function () {
+  showRatingUnavailable("Google rejected the key (check referrer, billing, enabled APIs)", "Key error");
+};
+showRatingUnavailable("Connecting to Google Maps…", "Connecting…");
+
+// NOTE: There is still no separate "customers" collection. Every customer,
+// along with their order count / spend / pending balance, is derived from
+// THIS SHOP's own "orders" subcollection: users/{uid}/orders.
+// Because it's scoped under uid, Shop A never sees Shop B's orders here.
+async function loadDashboardData() {
+  try {
+    var orderSnapshot = await getDocs(tenantCollection(currentUid, "orders"));
+
+    var todaySales = 0, todayOrders = 0, pendingOrders = 0, balanceDue = 0;
+    var customerMobiles = {};
+    allOrders = [];
+
+    orderSnapshot.forEach(function (docItem) {
+      var order = docItem.data();
+      order.id = docItem.id;
+      allOrders.push(order);
+
+      var payable = payableOf(order);
+      var pending = pendingOf(order);
+
+      var mobileKey = (order.mobile || "").trim();
+      if (mobileKey) customerMobiles[mobileKey] = true;
+
+      if (isToday(order.createdAt)) { todaySales += payable; todayOrders += 1; }
+      if (pending > 0) { pendingOrders += 1; balanceDue += pending; }
+    });
+
+    var totalCustomers = Object.keys(customerMobiles).length;
+    document.getElementById("stat-customers").textContent = totalCustomers;
+    document.getElementById("stat-today-sales").textContent = "Rs. " + todaySales;
+    document.getElementById("stat-today-orders").textContent = todayOrders + " orders today";
+    document.getElementById("stat-pending-orders").textContent = pendingOrders;
+    document.getElementById("stat-balance-due").textContent = "Rs. " + balanceDue;
+
+    renderToday();
+    renderSales();
+    renderProducts();
+    renderOrders();
+  } catch (error) {
+    console.log("Error loading dashboard data: ", error);
+  }
+}
+
+/* ---------- Today sale: total / online / cash ---------- */
+// Same payment log that create-order.html and sales-history.html write:
+// order.payments = [{ amount, mode: "Cash" | "Online", date }].
+// Older orders without a log count their advance as Cash (same rule as sales-history.html).
+function paymentsOf(order) {
+  if (Array.isArray(order.payments) && order.payments.length) return order.payments;
+  var adv = (order.totals && order.totals.advance) ? order.totals.advance : 0;
+  return adv > 0 ? [{ amount: adv, mode: "Cash", date: order.createdAt }] : [];
+}
+
+function renderToday() {
+  var now = new Date(), yest = new Date(now);
+  yest.setDate(yest.getDate() - 1);
+  var yKey = dayKey(yest);
+  var sales = 0, orders = 0, due = 0, ySales = 0, online = 0, cash = 0;
+
+  allOrders.forEach(function (o) {
+    if (isToday(o.createdAt)) { sales += payableOf(o); orders += 1; due += pendingOf(o); }
+    else if (o.createdAt && dayKey(new Date(o.createdAt)) === yKey) { ySales += payableOf(o); }
+    paymentsOf(o).forEach(function (p) {
+      if (!isToday(p.date)) return;
+      if (p.mode === "Online") online += num(p.amount); else cash += num(p.amount);
+    });
+  });
+
+  var received = online + cash;
+  document.getElementById("today-date").textContent = now.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  document.getElementById("today-amount").textContent = money(sales);
+  document.getElementById("today-orders").textContent = orders + (orders === 1 ? " order today" : " orders today");
+
+  var chip = document.getElementById("today-chip");
+  if (ySales > 0) {
+    var pct = ((sales - ySales) / ySales) * 100;
+    chip.textContent = (pct >= 0 ? "▲ " : "▼ ") + Math.abs(pct).toFixed(0) + "% vs yesterday";
+    chip.className = "chip " + (pct >= 0 ? "up" : "down");
+  } else {
+    chip.textContent = sales > 0 ? "No sales yesterday" : "No sales yet";
+    chip.className = "chip flat";
+  }
+
+  var onPct = received ? (online / received * 100) : 0;
+  var caPct = received ? (cash / received * 100) : 0;
+  document.getElementById("bar-online").style.width = onPct + "%";
+  document.getElementById("bar-cash").style.width = caPct + "%";
+  document.getElementById("today-online").textContent = money(online);
+  document.getElementById("today-cash").textContent = money(cash);
+  document.getElementById("today-online-pct").textContent = onPct.toFixed(0) + "% of received";
+  document.getElementById("today-cash-pct").textContent = caPct.toFixed(0) + "% of received";
+  document.getElementById("today-received").textContent = money(received);
+  document.getElementById("today-due").textContent = money(due);
+}
+
+/* ---------- Sales card + line graph ---------- */
+function periodDays(p) {
+  if (p === "month") {
+    var t = dayStart(new Date());
+    var s = new Date(t); s.setMonth(s.getMonth() - 1);
+    return Math.round((t - s) / 86400000) + 1;
+  }
+  return parseInt(p, 10);
+}
+
+function renderSales() {
+  var days = periodDays(currentPeriod);
+  var today = dayStart(new Date());
+  var totals = {};
+  allOrders.forEach(function (o) {
+    if (!o.createdAt) return;
+    var d = new Date(o.createdAt);
+    if (isNaN(d)) return;
+    var k = dayKey(d);
+    totals[k] = (totals[k] || 0) + payableOf(o);
+  });
+
+  var labels = [], data = [], cur = 0, prev = 0;
+  var wk = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var mn = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  for (var i = days - 1; i >= 0; i--) {
+    var d = new Date(today); d.setDate(d.getDate() - i);
+    var v = totals[dayKey(d)] || 0;
+    cur += v; data.push(v);
+    labels.push(days <= 7 ? wk[d.getDay()] + " " + d.getDate() : d.getDate() + " " + mn[d.getMonth()]);
+  }
+  for (var j = days; j < days * 2; j++) {
+    var pd = new Date(today); pd.setDate(pd.getDate() - j);
+    prev += totals[dayKey(pd)] || 0;
+  }
+
+  document.getElementById("sales-amount").textContent = money(cur);
+  var sub = document.getElementById("sales-sub");
+  if (prev > 0) {
+    var pct = ((cur - prev) / prev) * 100;
+    var cls = pct >= 0 ? "up" : "down";
+    sub.innerHTML = "Total this period · <span class='" + cls + "'>" + (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%</span> from last period";
+  } else {
+    sub.textContent = "Total this period";
+  }
+
+  if (salesChart) salesChart.destroy();
+  salesChart = new Chart(document.getElementById("salesChart"), {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Sales",
+        data: data,
+        borderColor: "#2563EB",
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function (c) { return "Rs. " + Math.round(c.parsed.y).toLocaleString("en-IN"); } } }
+      },
+      scales: { x: { display: false, grid: { display: false } }, y: { display: false, grid: { display: false }, beginAtZero: true } },
+      interaction: { intersect: false, mode: "index" }
+    }
+  });
+}
+
+document.getElementById("period-group").addEventListener("click", function (e) {
+  var btn = e.target.closest(".period-btn");
+  if (!btn) return;
+  currentPeriod = btn.getAttribute("data-period");
+  document.querySelectorAll(".period-btn").forEach(function (b) { b.classList.toggle("active", b === btn); });
+  renderSales();
+});
+
+/* ---------- Product sales donut ---------- */
+var CATS = [
+  { key: "Frames", color: "#2563EB" },
+  { key: "Lenses", color: "#F59E0B" },
+  { key: "Contact Lenses", color: "#DC2626" },
+  { key: "Sunglasses", color: "#10B981" },
+  { key: "Accessories", color: "#8B5CF6" },
+  { key: "Eye Drops", color: "#06B6D4" },
+  { key: "Other", color: "#9CA3AF" }
+];
+
+// create-order.html saves each item as { type, name, price, gstPct, discPct, total }
+// with type = Frames / Lenses / Sunglasses / Contact Lenses / Accessories / Eye Drops.
+function categorize(p) {
+  var t = String(p.type || "").trim().toLowerCase();
+  for (var i = 0; i < CATS.length; i++) {
+    if (CATS[i].key.toLowerCase() === t) return CATS[i].key;
+  }
+  return "Other";
+}
+
+function itemAmount(p, fallback) {
+  var a = num(p.total);
+  return a > 0 ? a : fallback;
+}
+
+var donutLabelPlugin = {
+  id: "donutLabels",
+  afterDatasetsDraw: function (chart) {
+    var ds = chart.data.datasets[0], total = ds.data.reduce(function (a, b) { return a + b; }, 0);
+    if (!total || ds._empty) return;
+    var ctx = chart.ctx, meta = chart.getDatasetMeta(0);
+    ctx.save();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 11px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    meta.data.forEach(function (arc, i) {
+      var pct = ds.data[i] / total * 100;
+      if (pct < 6) return;
+      var p = arc.getCenterPoint();
+      ctx.fillText(pct.toFixed(1) + "%", p.x, p.y);
+    });
+    ctx.restore();
+  }
+};
+
+function renderProducts() {
+  var sums = {};
+  CATS.forEach(function (c) { sums[c.key] = 0; });
+  allOrders.forEach(function (o) {
+    var items = Array.isArray(o.products) ? o.products : [];
+    var fb = items.length ? payableOf(o) / items.length : 0;
+    items.forEach(function (p) { sums[categorize(p || {})] += itemAmount(p || {}, fb); });
+  });
+
+  var cats = CATS.filter(function (c) { return sums[c.key] > 0 || (c.key !== "Other"); });
+  if (!sums["Other"]) cats = cats.filter(function (c) { return c.key !== "Other"; });
+  var total = cats.reduce(function (a, c) { return a + sums[c.key]; }, 0);
+
+  var legend = "";
+  cats.forEach(function (c) {
+    var pct = total ? (sums[c.key] / total * 100) : 0;
+    legend += "<div class='legend-item" + (catFilter === c.key ? " active" : "") + "' data-cat='" + esc(c.key) + "'><span class='legend-dot' style='background:" + c.color + "'></span>" + esc(c.key) + "<span class='pct'>" + pct.toFixed(1) + "%</span></div>";
+  });
+  document.getElementById("product-legend").innerHTML = legend;
+  document.getElementById("product-empty").style.display = total ? "none" : "block";
+
+  var dsData = total ? cats.map(function (c) { return sums[c.key]; }) : [1];
+  var dsColors = total ? cats.map(function (c) { return c.color; }) : ["#E5E7EB"];
+  if (productChart) productChart.destroy();
+  productChart = new Chart(document.getElementById("productChart"), {
+    type: "doughnut",
+    data: { labels: total ? cats.map(function (c) { return c.key; }) : ["No data"], datasets: [{ data: dsData, backgroundColor: dsColors, borderWidth: 2, borderColor: "#fff", _empty: !total }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: "58%",
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: !!total, callbacks: { label: function (c) { return c.label + ": Rs. " + Math.round(c.parsed).toLocaleString("en-IN"); } } }
+      }
+    },
+    plugins: [donutLabelPlugin]
+  });
+}
+
+/* ---------- Recent orders ---------- */
+function renderOrders() {
+  var q = document.getElementById("orders-search").value.trim().toLowerCase();
+  var st = document.getElementById("orders-status").value;
+
+  var list = allOrders.filter(function (o) {
+    var pending = pendingOf(o) > 0;
+    if (catFilter) {
+      var its = Array.isArray(o.products) ? o.products : [];
+      var hasCat = its.some(function (p) { return categorize(p || {}) === catFilter; });
+      if (!hasCat) return false;
+    }
+    if (st === "paid" && (pending || o.status === "confirmed")) return false;
+    if (st === "pending" && !pending) return false;
+    if (st === "confirmed" && o.status !== "confirmed") return false;
+    if (q) {
+      var hay = ((o.customerName || "") + " " + (o.mobile || "") + " " + (o.email || "")).toLowerCase();
+      if (hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+
+  list.sort(function (a, b) {
+    var x, y;
+    if (sortKey === "name") { x = (a.customerName || "").toLowerCase(); y = (b.customerName || "").toLowerCase(); }
+    else if (sortKey === "contact") { x = String(a.email || a.mobile || "").toLowerCase(); y = String(b.email || b.mobile || "").toLowerCase(); }
+    else if (sortKey === "status") { x = pendingOf(a) > 0 ? 1 : 0; y = pendingOf(b) > 0 ? 1 : 0; }
+    else if (sortKey === "amount") { x = payableOf(a); y = payableOf(b); }
+    else { x = new Date(a.createdAt).getTime() || 0; y = new Date(b.createdAt).getTime() || 0; }
+    return x < y ? -sortDir : (x > y ? sortDir : 0);
+  });
+
+  document.querySelectorAll(".c-orders th.sortable").forEach(function (th) {
+    th.querySelector("i").textContent = th.getAttribute("data-sort") === sortKey ? (sortDir > 0 ? "↑" : "↓") : "↕";
+  });
+
+  var note = document.getElementById("filter-note");
+  if (catFilter) {
+    note.style.display = "block";
+    note.innerHTML = "Showing orders with <b>" + esc(catFilter) + "</b>. Tap the category again to clear.";
+  } else {
+    note.style.display = "none";
+  }
+
+  var recent = list.slice(0, ordersLimit);
+  document.getElementById("more-wrap").style.display = list.length > ordersLimit ? "block" : "none";
+  var tbody = document.getElementById("recent-orders-tbody");
+
+  if (recent.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;'>No orders found</td></tr>";
+    return;
+  }
+
+  var rows = "";
+  for (var i = 0; i < recent.length; i++) {
+    var order = recent[i];
+    var itemCount = order.products ? order.products.length : 0;
+    var amount = payableOf(order);
+    var dateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-";
+    var pending = pendingOf(order);
+    var status = order.status === "confirmed" ? "Confirmed" : (pending > 0 ? "Pending" : "Paid");
+    var badgeClass = order.status === "confirmed" ? "badge-confirmed" : (pending > 0 ? "badge-pending" : "badge-paid");
+    var custName = order.customerName || "-";
+    var custMobile = order.mobile || "";
+    var contact = order.email || custMobile || "-";
+    var parts = (custName && custName !== "-") ? custName.trim().split(/\s+/) : [];
+    var initial = parts.length ? (parts[0].charAt(0) + (parts[1] ? parts[1].charAt(0) : "")).toUpperCase() : "?";
+    var avColors = ["#2563EB", "#10B981", "#F59E0B", "#8B5CF6", "#DC2626", "#06B6D4"];
+    var hash = 0;
+    for (var h = 0; h < custName.length; h++) hash += custName.charCodeAt(h);
+    var avColor = avColors[hash % avColors.length];
+    var href = "customer-history.html?mobile=" + encodeURIComponent(custMobile || "unknown");
+
+    rows += "<tr>";
+    rows += "<td><div class='cust-cell'><span class='avatar' style='background:" + avColor + "'>" + esc(initial) + "</span><div>";
+    rows += "<span class='cust-link' onclick=\"window.location.href='" + href + "'\">" + esc(custName) + "</span>";
+    rows += "<div class='sub'>" + esc(contact) + "</div></div></div></td>";
+    rows += "<td class='col-contact contact'>" + esc(contact) + "</td>";
+    rows += "<td class='col-items'>" + itemCount + " item(s)</td>";
+    rows += "<td class='col-date'>" + dateStr + "</td>";
+    rows += "<td class='col-status'><span class='badge " + badgeClass + "'>" + status + "</span></td>";
+    rows += "<td class='col-amount'><b>Rs. " + amount + "</b></td>";
+    rows += "<td class='col-act'><div class='act-group'>";
+    if (order.status !== "confirmed" && pending <= 0) rows += "<button class='act-btn green' onclick=\"window.confirmOrder('" + order.id + "')\">✓ Confirm</button>";
+    if (pending > 0) rows += "<button class='act-btn' onclick=\"window.location.href='sales-history.html?status=pending'\">Add Payment</button>";
+    rows += "<button class='act-btn' onclick=\"window.location.href='" + href + "'\">View</button>";
+    rows += "<button class='act-btn' title='Print invoice' onclick=\"window.printOrder('" + order.id + "')\">🖨️</button>";
+    rows += "<button class='act-btn' title='Send on WhatsApp' onclick=\"window.sendOrderOnWhatsApp('" + order.id + "')\">📲</button>";
+    rows += "</div></td>";
+    rows += "</tr>";
+  }
+  tbody.innerHTML = rows;
+}
+
+// Same actions as sales-history.html, reused here.
+window.confirmOrder = async function (orderId) {
+  var order = allOrders.find(function (o) { return o.id === orderId; });
+  if (!order || !currentUid) return;
+  if (pendingOf(order) > 0) {
+    alert("Pehle pending balance clear karo, phir order confirm hoga.");
+    return;
+  }
+  if (!confirm("Is order ko confirm karna hai?")) return;
+  try {
+    var orderRef = doc(tenantCollection(currentUid, "orders"), orderId);
+    await updateDoc(orderRef, { status: "confirmed", confirmedAt: new Date().toISOString() });
+    order.status = "confirmed";
+    renderOrders();
+  } catch (e) {
+    alert("Confirm fail hua: " + e.message);
+  }
+};
+
+window.printOrder = function (orderId) {
+  var order = allOrders.find(function (o) { return o.id === orderId; });
+  if (order) printInvoice(order, profileData);
+};
+
+window.sendOrderOnWhatsApp = async function (orderId) {
+  var order = allOrders.find(function (o) { return o.id === orderId; });
+  if (!order) return;
+  await shareReceiptOnWhatsApp(order.customerName, order.mobile, order, profileData.shopName || "FRALEN Optical");
+};
+
+function resetAndRender() { ordersLimit = 5; renderOrders(); }
+document.getElementById("orders-search").addEventListener("input", resetAndRender);
+document.getElementById("orders-status").addEventListener("change", resetAndRender);
+document.querySelector(".c-orders thead").addEventListener("click", function (e) {
+  var th = e.target.closest("th.sortable");
+  if (!th) return;
+  var k = th.getAttribute("data-sort");
+  if (sortKey === k) {
+    sortDir = -sortDir;
+  } else {
+    sortKey = k;
+    sortDir = (k === "date" || k === "amount") ? -1 : 1;
+  }
+  ordersLimit = 5;
+  renderOrders();
+});
+
+document.getElementById("more-btn").addEventListener("click", function () {
+  ordersLimit += 5;
+  renderOrders();
+});
+
+// Tap a product category to filter Recent orders; tap again to clear.
+document.getElementById("product-legend").addEventListener("click", function (e) {
+  var item = e.target.closest(".legend-item");
+  if (!item) return;
+  var c = item.getAttribute("data-cat");
+  catFilter = (catFilter === c) ? null : c;
+  ordersLimit = 5;
+  renderProducts();
+  renderOrders();
+});
+
+// Columns show/hide (remembered on this device)
+var colKeys = ["contact", "items", "date", "status", "amount", "act"];
+function applyCols() {
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem("fralen_dash_cols") || "{}"); } catch (e) {}
+  colKeys.forEach(function (k) {
+    var on = saved[k] === undefined ? (k !== "items" && k !== "date") : saved[k];
+    document.querySelector(".c-orders").classList.toggle("hide-" + k, !on);
+    var cb = document.querySelector("#cols-menu input[data-col='" + k + "']");
+    if (cb) cb.checked = on;
+  });
+}
+document.getElementById("cols-btn").addEventListener("click", function (e) {
+  e.stopPropagation();
+  document.getElementById("cols-menu").classList.toggle("show");
+});
+document.getElementById("cols-menu").addEventListener("click", function (e) { e.stopPropagation(); });
+document.getElementById("cols-menu").addEventListener("change", function () {
+  var saved = {};
+  colKeys.forEach(function (k) {
+    saved[k] = document.querySelector("#cols-menu input[data-col='" + k + "']").checked;
+  });
+  try { localStorage.setItem("fralen_dash_cols", JSON.stringify(saved)); } catch (e) {}
+  applyCols();
+});
+document.addEventListener("click", function () { document.getElementById("cols-menu").classList.remove("show"); });
+applyCols();
+
+</script>
+
+<!-- ===== FRALEN AI FLOATING CHAT ===== -->
+<button id="fralen-ai-launcher" type="button" aria-label="Open FRALEN AI">🤖</button>
+<div id="fralen-ai-chat" aria-hidden="true">
+  <div class="fralen-ai-header">
+    <div><div class="fralen-ai-title">🤖 FRALEN AI</div><div class="fralen-ai-status">Your Business AI Assistant</div></div>
+    <button id="fralen-ai-close" type="button" aria-label="Close">×</button>
+  </div>
+  <div id="fralen-ai-messages">
+    <div class="fralen-ai-message bot">👋 Namaste! Main FRALEN AI hoon.
+
+Aap sales, staff performance, products aur expenses ke baare mein kuch bhi pooch sakte hain.</div>
+  </div>
+  <div id="fralen-ai-input-area">
+    <input id="fralen-ai-input" type="text" maxlength="2000" placeholder="Ask FRALEN AI..." autocomplete="off">
+    <button id="fralen-ai-send" type="button" aria-label="Send">➤</button>
+  </div>
+</div>
+
+<script type="module">
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { auth } from "./firebase-config.js";
+
+const launcher=document.getElementById("fralen-ai-launcher");
+const chat=document.getElementById("fralen-ai-chat");
+const closeBtn=document.getElementById("fralen-ai-close");
+const input=document.getElementById("fralen-ai-input");
+const sendBtn=document.getElementById("fralen-ai-send");
+const messages=document.getElementById("fralen-ai-messages");
+const functions=getFunctions(undefined,"asia-south1");
+const fralenAI=httpsCallable(functions,"fralenAI");
+
+launcher.addEventListener("click",()=>{chat.classList.add("open");chat.setAttribute("aria-hidden","false");input.focus();});
+closeBtn.addEventListener("click",()=>{chat.classList.remove("open");chat.setAttribute("aria-hidden","true");});
+function addMessage(text,type){const el=document.createElement("div");el.className="fralen-ai-message "+type;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;return el;}
+async function askAI(question){question=String(question||"").trim();if(!question||sendBtn.disabled)return;addMessage(question,"user");input.value="";sendBtn.disabled=true;const loading=addMessage("FRALEN AI soch raha hai...","bot");try{if(!auth.currentUser)throw new Error("Please login again.");const result=await fralenAI({question});loading.remove();const data=result.data||{};if(!data.success)throw new Error(data.error||"AI response nahi mila.");addMessage(data.answer||"Answer available nahi hai.","bot");}catch(error){console.error("FRALEN AI ERROR:",error);loading.remove();addMessage("Sorry, FRALEN AI abhi response nahi de pa raha. Please thodi der baad try karein.","bot");}finally{sendBtn.disabled=false;input.focus();}}
+sendBtn.addEventListener("click",()=>askAI(input.value));
+input.addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();askAI(input.value);}});
+</script>
+</body>
+</html>
