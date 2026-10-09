@@ -40,7 +40,7 @@ const db = getFirestore(app);
 // (the isAdmin() function there) — that's what actually enforces
 // read-only cross-shop access. This constant is only used here to
 // decide where a signed-in admin gets redirected after login.
-const ADMIN_UID = process.env.ADMIN_UID?.split(',') || []; ;
+const ADMIN_UID ="Yh77mpl85MZli95Sd5wmGtPRHrt2";
 
 function isAdminUser(user) {
   return !!user && user.uid === ADMIN_UID;
