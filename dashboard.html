@@ -503,7 +503,7 @@ function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDa
 // "Maps JavaScript API" and "Places API (New)", and restrict the key to your website
 // domain (HTTP referrers). The shop's Place ID is read from the shop profile
 // (googlePlaceId) when present; otherwise the shop is found automatically by name.
-var GOOGLE_MAPS_API_KEY = "AIzaSyA3JAd0SUk2IQU1-a7oUlyeqmdNwUo_DvI";
+var GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 var RATING_CACHE_MS = 6 * 60 * 60 * 1000; // re-check Google at most every 6 hours
 
 function paintStars(rating) {
