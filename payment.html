@@ -63,7 +63,7 @@
 
     <div class="plan-box">
       <div class="plan-name">Monthly Subscription</div>
-      <div class="plan-amount">₹999 <span>/ month</span></div>
+      <div class="plan-amount">₹1 <span>/ month</span></div>
     </div>
 
     <button class="rzp-btn" id="pay-btn" type="button">
@@ -233,7 +233,7 @@ async function startPayment() {
         ondismiss: function () {
           if (!paymentAlreadyPaid) {
             showMessage("Payment window closed. You can try again.", "info");
-            setPayButton(true, "💳 Pay ₹999 Securely with Razorpay");
+            setPayButton(true, "💳 Pay ₹1 Securely with Razorpay");
           }
         },
       },
@@ -251,7 +251,7 @@ async function startPayment() {
           : "Payment failed. Please try again.",
         "error"
       );
-      setPayButton(true, "💳 Pay ₹999 Securely with Razorpay");
+      setPayButton(true, "💳 Pay ₹1 Securely with Razorpay");
     });
 
     razorpay.open();
@@ -263,7 +263,7 @@ async function startPayment() {
         : "Unable to start payment. Please try again.",
       "error"
     );
-    setPayButton(true, "💳 Pay ₹999 Securely with Razorpay");
+    setPayButton(true, "💳 Pay ₹1 Securely with Razorpay");
   }
 }
 
