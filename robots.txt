@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shaikhnasrullah.github.io/FRALEN-OPTICAL-CRM/sitemap.xml
+Sitemap: https://www.fralencrm.in/sitemap.xml
