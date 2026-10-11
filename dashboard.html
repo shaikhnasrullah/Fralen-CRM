@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B2A6B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>FRALEN CRM - Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
@@ -154,38 +158,70 @@ td.col-date, td.col-status, td.col-amount { white-space: nowrap; }
 .menu-toggle.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 .sidebar-overlay { display: none; }
 
-/* ===== Tablet ===== */
+/* ===== Responsive layout (PC / tablet / phone / installed app) ===== */
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
+
+/* Sidebar: fits any screen height. If the screen is very short it scrolls inside itself,
+   so Settings / Measurement are always reachable without zooming the browser out. */
+.sidebar { height: 100vh; height: 100dvh; padding-top: clamp(10px, 2vh, 20px); padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.35) transparent; }
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.3); border-radius: 6px; }
+.sidebar h2 { margin: 0 0 clamp(8px, 2.2vh, 24px); font-size: clamp(18px, 3vh, 24px); flex: 0 0 auto; }
+.sidebar a { flex: 0 0 auto; padding: clamp(6px, 1.25vh, 12px) 20px; font-size: clamp(13px, 1.9vh, 16px); line-height: 1.3; }
+
+/* Main area */
+.main { margin-left: 200px; padding: clamp(10px, 1.6vw, 24px); padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+.main > * { max-width: 1680px; margin-left: auto; margin-right: auto; }
+.topbar { flex-wrap: wrap; gap: 8px 12px; }
+.topbar h1 { font-size: clamp(18px, 2.2vw, 22px); }
+.topbar > div { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+#shop-name { margin-left: 0 !important; overflow-wrap: anywhere; }
+.card { padding: clamp(14px, 1.5vw, 20px); }
+.card h3.title { font-size: clamp(17px, 1.6vw, 20px); }
+.sales-amount, .today-total { font-size: clamp(24px, 2.4vw, 32px); }
+.sales-head { flex-wrap: wrap; }
+.donut-canvas { --d: clamp(170px, 22vw, 230px); width: var(--d); height: var(--d); }
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.orders-tools .search-box { flex: 1 1 200px; }
+
+/* Laptops / small desktops: Product sales + Recent orders get the full row */
+@media (max-width: 1440px) {
+  .c-product, .c-orders { grid-column: span 12; }
+  .donut-wrap { flex-direction: row; justify-content: center; gap: 12px 40px; }
+  .legend { width: min(100%, 440px); }
+}
+
+/* Tablet */
 @media (max-width: 1100px) {
   .c-sales { grid-column: span 12; }
   .c-rating, .c-today { grid-column: span 6; }
-  .c-product { grid-column: span 12; }
-  .c-orders { grid-column: span 12; }
 }
 
-@media (max-width: 768px) {
-  body { font-size: 16px; overflow-x: hidden; }
-  .menu-toggle { display: block; }
-  .sidebar { width: 240px; left: -260px; padding-top: 20px; z-index: 1050; transition: left .25s ease; box-shadow: 4px 0 15px rgba(0,0,0,.20); overflow-y: auto; }
-  .sidebar.open { left: 0; }
+/* Phones + small tablets: sidebar becomes a slide-in drawer */
+@media (max-width: 900px) {
+  .menu-toggle { display: block; top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
+  .sidebar { width: min(270px, 82vw); transform: translateX(-105%); visibility: hidden; transition: transform .25s ease, visibility 0s .25s; z-index: 1050; padding-top: calc(clamp(10px, 2vh, 20px) + env(safe-area-inset-top, 0px)); }
+  .sidebar.open { transform: none; visibility: visible; transition: transform .25s ease, visibility 0s; box-shadow: 4px 0 15px rgba(0,0,0,.20); }
   .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; }
   .sidebar-overlay.show { display: block; }
-  .sidebar h2 { font-size: 23px; margin-bottom: 25px; }
-  .sidebar a { padding: 14px 20px; font-size: 16px; }
-  .main { margin-left: 0; padding: 10px; padding-top: 64px; width: auto; }
-  .topbar { padding: 14px 12px; min-height: 48px; }
-  .topbar h1 { font-size: 24px; }
-  #user-name { font-size: 15px; }
-  #shop-name { font-size: 13px !important; }
-  #logout-btn { padding: 9px 12px; font-size: 14px; }
+  .sidebar h2 { font-size: 23px; }
+  .sidebar a { padding: clamp(11px, 1.8vh, 14px) 20px; font-size: 16px; }
+  .main { margin-left: 0; padding-top: calc(64px + env(safe-area-inset-top, 0px)); padding-left: calc(10px + env(safe-area-inset-left, 0px)); padding-right: calc(10px + env(safe-area-inset-right, 0px)); }
+  .grid { gap: 12px; margin-top: 12px; }
   .stats-row { gap: 10px; margin-top: 12px; }
   .stat-box { min-width: calc(50% - 5px); padding: 14px; }
-  .grid { gap: 12px; margin-top: 12px; }
-  .card { padding: 16px; }
+  /* 16px inputs stop iPhone from zooming the page on focus */
+  input[type=text], select { font-size: 16px; }
+}
+
+/* Phones: orders become small cards, nothing scrolls sideways */
+@media (max-width: 700px) {
   .c-rating, .c-today { grid-column: span 12; }
-  .sales-amount { font-size: 28px; }
+  .donut-wrap { flex-direction: column; }
+  .legend { width: 100%; }
   .col-contact { display: none; }
   .sub { display: block; }
-  /* orders become small cards on phones so nothing scrolls sideways */
   .table-scroll { overflow: visible; }
   table, tbody { display: block; }
   thead { display: none; }
@@ -194,15 +230,28 @@ td.col-date, td.col-status, td.col-amount { white-space: nowrap; }
   tbody td:first-child, tbody td.col-act, tbody td.col-items, tbody td.col-date { grid-column: 1 / -1; }
   tbody td.col-amount { text-align: right; }
   .act-group { flex-wrap: wrap; }
+  .orders-tools .search-box { flex: 1 1 100%; max-width: none; }
+  .orders-tools select { flex: 1 1 120px; }
+  .cols-wrap { margin-left: 0 !important; }
 }
 
 @media (max-width: 430px) {
   .stat-box { min-width: 100%; }
-  .topbar { align-items: flex-start; }
-  .topbar > div { text-align: right; }
-  .topbar h1 { font-size: 22px; }
-  .donut-canvas { width: 180px; height: 180px; }
-  .col-items { display: none; }
+  .topbar h1 { font-size: 20px; }
+  .pay-tile { padding: 10px; }
+  .pay-tile .amt { font-size: 17px; }
+}
+@media (max-width: 380px) {
+  .legend { grid-template-columns: 1fr; }
+}
+
+/* Touch screens: bigger tap targets */
+@media (pointer: coarse) {
+  .act-btn { padding: 9px 12px; min-height: 40px; }
+  .act-group .act-btn { padding: 9px 12px; }
+  .period-btn { padding: 8px 12px; }
+  .orders-tools button.tool-btn, .orders-tools select, .orders-tools input[type=text] { min-height: 42px; }
+  .legend-item { padding: 8px 6px; }
 }
 
 /* ===== FRALEN AI FLOATING CHAT ===== */
@@ -220,6 +269,14 @@ td.col-date, td.col-status, td.col-amount { white-space: nowrap; }
 #fralen-ai-send{width:45px;border:0;border-radius:10px;background:#2563eb;color:#fff;cursor:pointer;}
 #fralen-ai-send:disabled{opacity:.55;cursor:not-allowed;}
 @media(max-width:600px){#fralen-ai-launcher{right:15px;bottom:15px;width:58px;height:58px;}#fralen-ai-chat{right:10px;bottom:82px;width:calc(100vw - 20px);height:500px;}}
+/* ===== FRALEN AI widget: notch / short-screen friendly ===== */
+#fralen-ai-launcher { right: calc(22px + env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+#fralen-ai-chat { right: calc(22px + env(safe-area-inset-right, 0px)); bottom: calc(98px + env(safe-area-inset-bottom, 0px)); height: min(520px, calc(100vh - 130px)); height: min(520px, calc(100dvh - 130px)); }
+#fralen-ai-input { font-size: 16px; }
+@media (max-width: 600px) {
+  #fralen-ai-launcher { right: calc(15px + env(safe-area-inset-right, 0px)); bottom: calc(15px + env(safe-area-inset-bottom, 0px)); }
+  #fralen-ai-chat { right: 10px; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); width: calc(100vw - 20px); height: min(520px, calc(100vh - 100px)); height: min(520px, calc(100dvh - 100px)); }
+}
 </style>
 </head>
 <body>
@@ -503,7 +560,7 @@ function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDa
 // "Maps JavaScript API" and "Places API (New)", and restrict the key to your website
 // domain (HTTP referrers). The shop's Place ID is read from the shop profile
 // (googlePlaceId) when present; otherwise the shop is found automatically by name.
-var GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+var GOOGLE_MAPS_API_KEY = "AIzaSyA3JAd0SUk2IQU1-a7oUlyeqmdNwUo_DvI"; //not working .env we have to put in function after days dekha jayega nassu
 var RATING_CACHE_MS = 6 * 60 * 60 * 1000; // re-check Google at most every 6 hours
 
 function paintStars(rating) {
@@ -663,10 +720,9 @@ async function loadDashboardData() {
     document.getElementById("stat-pending-orders").textContent = pendingOrders;
     document.getElementById("stat-balance-due").textContent = "Rs. " + balanceDue;
 
-    renderToday();
-    renderSales();
-    renderProducts();
-    renderOrders();
+    [renderToday, renderSales, renderProducts, renderOrders].forEach(function (fn) {
+      try { fn(); } catch (err) { console.log(fn.name + " failed: ", err); }
+    });
   } catch (error) {
     console.log("Error loading dashboard data: ", error);
   }
@@ -960,7 +1016,7 @@ function renderOrders() {
     var hash = 0;
     for (var h = 0; h < custName.length; h++) hash += custName.charCodeAt(h);
     var avColor = avColors[hash % avColors.length];
-    var href = "customer-history.html?mobile=" + encodeURIComponent(custMobile || "unknown");
+    var href = "customer-history.html?mobile=" + encodeURIComponent(custMobile || "unknown").replace(/'/g, "%27");
 
     rows += "<tr>";
     rows += "<td><div class='cust-cell'><span class='avatar' style='background:" + avColor + "'>" + esc(initial) + "</span><div>";
@@ -970,7 +1026,7 @@ function renderOrders() {
     rows += "<td class='col-items'>" + itemCount + " item(s)</td>";
     rows += "<td class='col-date'>" + dateStr + "</td>";
     rows += "<td class='col-status'><span class='badge " + badgeClass + "'>" + status + "</span></td>";
-    rows += "<td class='col-amount'><b>Rs. " + amount + "</b></td>";
+    rows += "<td class='col-amount'><b>" + money(amount) + "</b></td>";
     rows += "<td class='col-act'><div class='act-group'>";
     if (order.status !== "confirmed" && pending <= 0) rows += "<button class='act-btn green' onclick=\"window.confirmOrder('" + order.id + "')\">✓ Confirm</button>";
     if (pending > 0) rows += "<button class='act-btn' onclick=\"window.location.href='sales-history.html?status=pending'\">Add Payment</button>";
