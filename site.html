@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Optical Shop</title>
+<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;color:#111827;--c:#2563eb}a{color:var(--c)}.w{max-width:960px;margin:auto;padding:0 16px}
+header{display:flex;align-items:center;gap:12px;padding:14px 16px;max-width:960px;margin:auto}header img{height:46px;border-radius:6px}header b{font-size:20px}
+.hero{background:var(--c) center/cover;color:#fff;padding:70px 16px;text-align:center}.hero h1{margin:0 0 8px;font-size:clamp(26px,5vw,42px);text-shadow:0 2px 8px rgba(0,0,0,.4)}.hero p{margin:0;font-size:18px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.bold .hero{padding:110px 16px}.minimal .hero{background:none!important;color:var(--c);padding:40px 16px;text-shadow:none}.minimal .hero h1,.minimal .hero p{text-shadow:none}
+.btn{display:inline-block;background:var(--c);color:#fff!important;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin:6px 6px 0 0}.hero .btn{background:#fff;color:var(--c)!important}
+section{padding:26px 0;border-bottom:1px solid #eee}h2{color:var(--c);margin:0 0 10px}.chips span{display:inline-block;background:color-mix(in srgb,var(--c) 12%,#fff);color:var(--c);padding:7px 14px;border-radius:20px;margin:4px 6px 4px 0;font-weight:600;font-size:14px}
+footer{text-align:center;font-size:12px;color:#888;padding:20px}.nf{padding:80px 16px;text-align:center}</style></head><body><div id="app"></div>
+<script type="module">
+import{db}from'./firebase-config.js';import{doc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const A=document.getElementById('app'),s=new URLSearchParams(location.search).get('s')||'';
+const E=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};  // textContent only: owner text can never inject HTML
+const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
+function btn(t,h){const a=E('a','btn',t);a.href=h;a.rel='noopener';a.target='_blank';return a;}
+function sec(t,...n){const x=E('section');x.append(E('h2','',t),...n);return x;}
+try{const sg=(await getDoc(doc(db,'shopSlugs',s))).data();if(!sg)throw 0;
+  const d=(await getDoc(doc(db,'shopSites',sg.uid))).data();
+  if(!d||!d.published||d.slug!==s||d.ownerUid!==sg.uid)throw 0;
+  document.title=d.name;document.body.style.setProperty('--c',/^#[0-9a-f]{6}$/i.test(d.color)?d.color:'#2563eb');document.body.className=['bold','minimal'].includes(d.template)?d.template:'';
+  const h=E('header');if(d.logo&&d.logo.startsWith('data:image/')){const i=E('img');i.src=d.logo;i.alt='';h.append(i);}h.append(E('b','',d.name));A.append(h);
+  const hero=E('div','hero');if(d.hero&&d.hero.startsWith('data:image/'))hero.style.backgroundImage=`linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url(${d.hero})`;
+  hero.append(E('h1','',d.name));if(d.tagline)hero.append(E('p','',d.tagline));const act=E('div');
+  if(d.phone){act.append(btn('📞 Call',`tel:${d.phone}`),btn('💬 WhatsApp',`https://wa.me/${d.phone.length===10?'91'+d.phone:d.phone}`));}hero.append(act);A.append(hero);
+  const w=E('div','w');
+  if((d.services||[]).length){const c=E('div','chips');d.services.forEach(x=>c.append(E('span','',x)));w.append(sec('Our Services',c));}
+  if(d.brands){const c=E('div','chips');d.brands.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20).forEach(x=>c.append(E('span','',x)));w.append(sec('Featured Brands',c));}
+  const ct=[];if(d.address)ct.push(E('p','','📍 '+d.address));if(d.hours)ct.push(E('p','','🕒 '+d.hours));if(d.email){const p=E('p','','✉️ ');const a=E('a','',d.email);a.href='mailto:'+d.email;p.append(a);ct.push(p);}
+  const sl=E('div');[['Instagram',d.instagram],['Facebook',d.facebook],['Google Maps',d.google]].forEach(([n,u])=>{if(safe(u))sl.append(btn(n,u));});ct.push(sl);
+  if(d.address)ct.push(btn('🗺️ Get directions','https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(d.name+' '+d.address)));
+  w.append(sec('Visit Us',...ct));A.append(w,E('footer','','Website by FRALEN CRM'));
+}catch{A.append(E('div','nf','This website is not available.'));}
+</script></body></html>
