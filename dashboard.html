@@ -254,6 +254,19 @@ body { min-height: 100vh; min-height: 100dvh; overflow-x: hidden; }
   .legend-item { padding: 8px 6px; }
 }
 
+
+/* ===== Phone top bar: hamburger inside the bar, Logout on the same row, no empty gap ===== */
+#logout-btn { padding: 9px 16px; min-height: 40px; border-radius: 8px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+@media (max-width: 900px) {
+  .main { padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+  .menu-toggle { top: calc(20px + env(safe-area-inset-top, 0px)); left: calc(18px + env(safe-area-inset-left, 0px)); width: 44px; height: 44px; }
+  .topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 10px 12px 10px 72px; }
+  .topbar > div { display: contents; }
+  .topbar h1 { order: 1; flex: 1 1 calc(100% - 110px); margin: 0; line-height: 44px; }
+  #logout-btn { order: 2; margin-left: auto; }
+  #user-name { order: 3; font-weight: 600; font-size: 14px; }
+  #shop-name { order: 4; font-size: 13px; }
+}
 /* ===== FRALEN AI FLOATING CHAT ===== */
 #fralen-ai-launcher{position:fixed;right:22px;bottom:22px;width:64px;height:64px;border:0;border-radius:50%;background:#2563eb;color:#fff;cursor:pointer;z-index:9999;box-shadow:0 8px 25px rgba(37,99,235,.35);font-size:28px;}
 #fralen-ai-chat{position:fixed;right:22px;bottom:98px;width:370px;height:520px;max-width:calc(100vw - 30px);background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 15px 50px rgba(0,0,0,.22);border:1px solid #e5e7eb;z-index:9998;display:none;flex-direction:column;}
@@ -682,8 +695,10 @@ async function loadGoogleRating(p) {
   var cacheKey = "fralen_gmp_" + currentUid, cached = null;
   try { cached = JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch (e) {}
 
-  // If the owner saved a Place ID that differs from what was cached, drop the old (wrong) cache.
-  if (cached && p.googlePlaceId && cached.placeId !== p.googlePlaceId) cached = null;
+  // Cache is only valid for the SAME shop name + address + Place ID. If the owner changes any of them
+  // in Settings, the old (wrong) result is dropped and Google is asked again.
+  var sig = [p.googlePlaceId || p.placeId || "", p.shopName || "", p.address || ""].join("|").toLowerCase();
+  if (cached && cached.sig !== sig) cached = null;
 
   // The cache only avoids paying for a Google call on every page view; it is never user-editable.
   if (cached && Date.now() - cached.at < RATING_CACHE_MS) { showRating(cached); return; }
@@ -712,7 +727,7 @@ async function loadGoogleRating(p) {
 
     var d = {
       rating: place.rating, count: place.userRatingCount, name: place.displayName,
-      address: place.formattedAddress, url: place.googleMapsURI, placeId: place.id, at: Date.now(),
+      address: place.formattedAddress, url: place.googleMapsURI, placeId: place.id, sig: sig, at: Date.now(),
       prev: cached ? (cached.rating !== place.rating ? cached.rating : cached.prev) : null
     };
     try { localStorage.setItem(cacheKey, JSON.stringify(d)); } catch (e) {}
@@ -1183,9 +1198,8 @@ applyCols();
     <button id="fralen-ai-close" type="button" aria-label="Close">×</button>
   </div>
   <div id="fralen-ai-messages">
-    <div class="fralen-ai-message bot">👋 Namaste! Main FRALEN AI hoon.
-
-Aap sales, staff performance, products aur expenses ke baare mein kuch bhi pooch sakte hain.</div>
+    <div class="fralen-ai-message bot">👋Namaste! I am FRALEN AI.
+Feel free to ask me anything about sales, staff performance, products, or expenses..</div>
   </div>
   <div id="fralen-ai-input-area">
     <input id="fralen-ai-input" type="text" maxlength="2000" placeholder="Ask FRALEN AI..." autocomplete="off">
