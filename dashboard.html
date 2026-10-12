@@ -511,49 +511,68 @@ var sortDir = -1;
 
 // requireAuth() handles the "not logged in -> back to index.html" redirect,
 // and hands us the logged-in user (this shop's owner) once ready.
+
 requireAuth(async function (user) {
   currentUid = user.uid;
-  document.getElementById("user-name").textContent = (user.email || "Admin").split("@")[0];
 
-  // Show which shop this is, from users/{uid} profile.
+  document.getElementById("user-name").textContent =
+    (user.email || "Admin").split("@")[0];
+
   try {
-    var profileSnap = await getDoc(profileDoc(currentUid));
-    if (profileSnap.exists() && profileSnap.data().shopName) {
-      document.getElementById("shop-name").textContent = "· " + profileSnap.data().shopName;
+    const profileSnap = await getDoc(profileDoc(currentUid));
+
+    if (!profileSnap.exists()) {
+      window.location.replace("payment.html");
+      return;
     }
-    if (profileSnap.exists() && profileSnap.data().paymentStatus === "pending") {
-      document.getElementById("payment-banner").style.display = "block";
+
+    profileData = profileSnap.data() || {};
+
+    // Existing users: free access, set by admin only.
+    const isExistingFreeUser = profileData.freeAccess === true;
+
+    // New users: verified trial or paid subscription.
+    const paymentStatus = String(
+      profileData.paymentStatus || ""
+    ).toLowerCase();
+
+    const subscriptionStatus = String(
+      profileData.subscriptionStatus || ""
+    ).toLowerCase();
+
+    const hasSubscriptionId = Boolean(
+      profileData.razorpaySubscriptionId
+    );
+
+    const isSubscriptionAllowed =
+      hasSubscriptionId &&
+      ["trial", "paid"].includes(paymentStatus) &&
+      ["authenticated", "active", "trial"].includes(subscriptionStatus);
+
+    if (!isExistingFreeUser && !isSubscriptionAllowed) {
+      window.location.replace("payment.html");
+      return;
     }
-    profileData = profileSnap.exists() ? profileSnap.data() : {};
-  } catch (e) { /* profile is optional for older accounts */ }
 
-  loadGoogleRating(profileData);
-  loadDashboardData();
+    if (profileData.shopName) {
+      document.getElementById("shop-name").textContent =
+        "· " + profileData.shopName;
+    }
+
+    document.getElementById("payment-banner").style.display = "none";
+
+    loadGoogleRating(profileData);
+    await loadDashboardData();
+
+  } catch (error) {
+    console.error("Dashboard access check failed:", error);
+    alert(
+      "Account verify nahi ho paya. Internet check karke dobara login karein."
+    );
+    await signOut(auth);
+    window.location.replace("Login-page.html");
+  }
 });
-
-document.getElementById("logout-btn").addEventListener("click", async function () {
-  await signOut(auth);
-  window.location.href = "Login-page.html";
-});
-
-function isToday(dateString) {
-  if (!dateString) return false;
-  var d = new Date(dateString);
-  var now = new Date();
-  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-}
-
-function esc(s) {
-  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-  });
-}
-function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
-function payableOf(o) { return (o.totals && o.totals.payable) ? o.totals.payable : 0; }
-function pendingOf(o) { return (o.totals && o.totals.pending) ? o.totals.pending : 0; }
-function money(n) { return "Rs. " + Math.round(n).toLocaleString("en-IN"); }
-function dayStart(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
 
 /* ---------- Google rating: live from Google Maps Platform (read-only) ---------- */
 // Paste your Google Maps Platform API key below. In Google Cloud Console enable
