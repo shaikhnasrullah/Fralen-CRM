@@ -1,279 +1,747 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FRALEN CRM — Complete Your Payment</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet"/>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --navy: #1B2A6B; --navy-light: #2A3F8F;
-    --accent: #4F6BF0; --accent-soft: #EEF1FE;
-    --gray: #6B7280; --border: #C5D3E8;
-    --green: #10B981; --orange: #F59E0B; --red: #EF4444;
-  }
-  body { font-family: 'Inter', sans-serif; background: #F0F2FA; min-height: 100vh; padding: 20px; }
-  .wrap { max-width: 460px; margin: 0 auto; }
-  .head { text-align: center; margin-bottom: 20px; }
-  .head .logo { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 900; color: var(--navy); letter-spacing: 3px; }
-  .head .logo span { color: var(--accent); }
-  .head p { font-size: 13px; color: var(--gray); margin-top: 4px; }
-  .card { background: white; border-radius: 18px; padding: 24px 22px; box-shadow: 0 8px 40px rgba(27,42,107,0.10); margin-bottom: 16px; }
-  .plan-box { background: var(--navy); border-radius: 14px; padding: 18px; text-align: center; color: white; margin-bottom: 18px; }
-  .plan-box .plan-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #C7D2FE; }
-  .plan-box .plan-amount { font-size: 30px; font-weight: 900; margin-top: 4px; }
-  .plan-box .plan-amount span { font-size: 14px; font-weight: 500; color: #C7D2FE; }
-  .rzp-btn {
-    width: 100%; padding: 14px; background: #072654; color: white; border: none; border-radius: 10px;
-    font-size: 14.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .rzp-btn:hover { background: #0a3572; }
-  .rzp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .rzp-note { font-size: 11.5px; color: var(--gray); text-align: center; margin-top: 10px; line-height: 1.5; }
-  .msg { font-size: 12.5px; margin-top: 14px; display: none; text-align: center; }
-  .msg.ok { color: var(--green); display: block; background: #ECFDF5; padding: 10px; border-radius: 8px; }
-  .msg.error { color: var(--red); display: block; background: #FEF2F2; padding: 10px; border-radius: 8px; }
-  .msg.info { color: var(--navy); display: block; background: var(--accent-soft); padding: 10px; border-radius: 8px; }
-  .status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 14px; }
-  .status-pending { background: #FEF3C7; color: #B45309; }
-  .status-paid { background: #D1FAE5; color: #047857; }
-  .helpline { background: white; border-radius: 14px; padding: 18px; text-align: center; box-shadow: 0 4px 20px rgba(27,42,107,0.06); }
-  .helpline .hl-title { font-size: 12.5px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
-  .helpline .hl-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; color: #374151; margin-bottom: 6px; }
-  .helpline a { color: var(--accent); text-decoration: none; font-weight: 600; }
-  .helpline .hl-24x7 { font-size: 11px; color: var(--green); font-weight: 700; background: #D1FAE5; padding: 2px 9px; border-radius: 20px; display: inline-block; margin-top: 6px; }
-  .dashboard-btn {
-    width: 100%; padding: 13px; border-radius: 10px; font-size: 14.5px; font-weight: 700;
-    cursor: pointer; border: none; margin-top: 12px; background: var(--accent-soft); color: var(--accent);
-  }
-  .dashboard-btn:hover { background: #DCE4FF; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+
+  <title>FRALEN CRM — Subscription & Payment</title>
+  <meta
+    name="description"
+    content="Start your FRALEN CRM 15-day trial and manage your optical shop."
+  />
+
+  <link rel="icon" href="fralen-favicon.ico" sizes="any" />
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #3730a3;
+      --background: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #15803d;
+      --danger: #b91c1c;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(circle at top left, #dbeafe, transparent 42%),
+        var(--background);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 470px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
+    .brand-name {
+      font-size: 29px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #312e81;
+    }
+
+    .brand-subtitle {
+      margin-top: 7px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.09);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 7px 11px;
+      border-radius: 30px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 25px;
+      line-height: 1.25;
+      margin: 0 0 9px;
+    }
+
+    .intro {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .plan {
+      border: 1px solid #c7d2fe;
+      border-radius: 15px;
+      padding: 20px;
+      background: linear-gradient(135deg, #f8faff, #eef2ff);
+    }
+
+    .plan-name {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .plan-amount {
+      margin-top: 12px;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    .plan-amount span {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+
+    .billing-summary {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #4338ca;
+      line-height: 1.6;
+    }
+
+    .features {
+      list-style: none;
+      padding: 0;
+      margin: 22px 0;
+    }
+
+    .features li {
+      display: flex;
+      gap: 10px;
+      margin: 13px 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #334155;
+    }
+
+    .check {
+      color: var(--success);
+      font-weight: 800;
+    }
+
+    .pay-btn,
+    .secondary-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      padding: 15px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .pay-btn {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .pay-btn:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .pay-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .secondary-btn {
+      margin-top: 10px;
+      color: #334155;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+    }
+
+    .secondary-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .secure-note {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .status {
+      display: none;
+      margin: 16px 0 0;
+      padding: 12px 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .status.info {
+      display: block;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .status.success {
+      display: block;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .status.error {
+      display: block;
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .account-box {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+      margin-top: 20px;
+    }
+
+    .footer a {
+      color: #4338ca;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 420px) {
+      .card {
+        padding: 22px 18px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .plan-amount {
+        font-size: 34px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <main class="page">
+    <header class="brand">
+      <div class="brand-name">FRALEN CRM</div>
+      <div class="brand-subtitle">
+        Smart Optical Shop Management Software
+      </div>
+    </header>
 
-<div class="wrap">
-  <div class="head">
-    <div class="logo">FRAL<span>EN</span> CRM</div>
-    <p>Complete your payment to activate your account</p>
-  </div>
+    <section class="card">
+      <div class="eyebrow">YOUR SUBSCRIPTION</div>
 
-  <div class="card">
-    <div id="status-area"></div>
+      <h1>Start your 15-day free trial</h1>
 
-    <div class="plan-box">
-      <div class="plan-name">Monthly Subscription</div>
-      <div class="plan-amount">₹1 <span>/ month</span></div>
-    </div>
+      <p class="intro">
+        Manage your optical shop's customers, orders, prescriptions,
+        purchases, inventory and sales reports in one place.
+      </p>
 
-    <button class="rzp-btn" id="pay-btn" type="button">
-      💳 Pay ₹1 Securely with Razorpay
-    </button>
+      <div class="plan">
+        <div class="plan-name">FRALEN CRM Monthly Subscription</div>
 
-    <div class="rzp-note">
-      UPI, cards and net banking are supported through Razorpay's secure checkout.
-      Your payment is automatically verified after successful payment.
-    </div>
+        <div class="plan-amount">
+          ₹499 <span>/ month</span>
+        </div>
 
-    <div class="msg" id="msg"></div>
+        <div class="billing-summary">
+          ₹1 authorization today · 15-day trial · ₹499/month thereafter
+        </div>
+      </div>
 
-    <button class="dashboard-btn" type="button"
-      onclick="window.location.href='dashboard.html'">
-      Continue to Dashboard
-    </button>
-  </div>
+      <ul class="features">
+        <li><span class="check">✓</span><span>15-day trial before recurring billing begins</span></li>
+        <li><span class="check">✓</span><span>Customer and prescription management</span></li>
+        <li><span class="check">✓</span><span>Inventory, purchases and order management</span></li>
+        <li><span class="check">✓</span><span>Sales reports and shop management tools</span></li>
+        <li><span class="check">✓</span><span>Secure payment verification</span></li>
+      </ul>
 
-  <div class="helpline">
-    <div class="hl-title">Need Help?</div>
-    <div class="hl-row">📞 <a href="tel:9304477821">9304477821</a> <span class="hl-24x7">24×7</span></div>
-    <div class="hl-row">✉️ <a href="mailto:fralencrm@gmail.com">fralencrm@gmail.com</a></div>
-  </div>
-</div>
+      <button class="pay-btn" id="pay-btn" type="button" disabled>
+        Checking your account...
+      </button>
 
-<!-- Razorpay Checkout SDK -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      <button class="secondary-btn" id="dashboard-btn" type="button">
+        Continue to Dashboard
+      </button>
 
-<script type="module">
-import {app, requireAuth, profileDoc} from "./firebase-config.js";
-import {
-  getDoc,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  getFunctions,
-  httpsCallable,
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+      <div id="status" class="status" role="status" aria-live="polite"></div>
 
-const functions = getFunctions(app, "us-central1");
-const createRazorpayOrder = httpsCallable(functions, "createRazorpayOrder");
-const verifyRazorpayPayment = httpsCallable(functions, "verifyRazorpayPayment");
+      <div class="account-box">
+        <strong>Signed-in account:</strong>
+        <div id="account-email">Checking login...</div>
+        <div id="subscription-info"></div>
+      </div>
 
-const payBtn = document.getElementById("pay-btn");
-const msg = document.getElementById("msg");
-const statusArea = document.getElementById("status-area");
+      <div class="secure-note">
+        Payments are processed securely through Razorpay.
+        Review the recurring payment terms before authorizing.
+      </div>
+    </section>
 
-let currentUser = null;
-let paymentAlreadyPaid = false;
+    <footer class="footer">
+      Need help?
+      <a href="mailto:fralencrm@gmail.com">fralencrm@gmail.com</a>
+      <br />
+      Support:
+      <a href="tel:+919304477821">93044 77821</a>
+      <br />
+      © <span id="year"></span> FRALEN CRM
+    </footer>
+  </main>
 
-function showMessage(text, type) {
-  msg.textContent = text;
-  msg.className = `msg ${type}`;
-}
+  <script type="module">
+    import { app } from "./firebase-config.js";
 
-function setPayButton(enabled, text) {
-  payBtn.disabled = !enabled;
-  payBtn.textContent = text;
-}
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-async function loadStatus() {
-  if (!currentUser) return;
+    import {
+      getFirestore,
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  try {
-    const snap = await getDoc(profileDoc(currentUser.uid));
+    import {
+      getFunctions,
+      httpsCallable
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
 
-    if (!snap.exists()) return;
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const functions = getFunctions(app, "us-central1");
 
-    const data = snap.data();
+    const createRazorpaySubscription = httpsCallable(
+      functions,
+      "createRazorpaySubscription"
+    );
 
-    if (data.paymentStatus === "paid") {
-      paymentAlreadyPaid = true;
-      statusArea.innerHTML =
-        `<div class="status-badge status-paid">✅ Payment Active</div>`;
-      showMessage("Your FRALEN CRM subscription is already active.", "ok");
-      setPayButton(false, "✅ Payment Already Completed");
-      return;
+    const verifyRazorpaySubscription = httpsCallable(
+      functions,
+      "verifyRazorpaySubscription"
+    );
+
+    const payButton = document.getElementById("pay-btn");
+    const dashboardButton = document.getElementById("dashboard-btn");
+    const statusBox = document.getElementById("status");
+    const accountEmail = document.getElementById("account-email");
+    const subscriptionInfo = document.getElementById("subscription-info");
+
+    let currentUser = null;
+    let currentProfile = null;
+    let paymentInProgress = false;
+
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+
+    function showStatus(message, type = "info") {
+      statusBox.textContent = message;
+      statusBox.className = `status ${type}`;
     }
 
-    if (data.paymentStatus === "pending") {
-      statusArea.innerHTML =
-        `<div class="status-badge status-pending">⏳ Payment Pending</div>`;
-    }
-  } catch (error) {
-    console.error("Payment status check failed:", error);
-  }
-}
-
-async function startPayment() {
-  if (!currentUser || paymentAlreadyPaid) return;
-
-  setPayButton(false, "Creating secure payment...");
-
-  try {
-    showMessage("Creating your secure Razorpay order...", "info");
-
-    // The server creates the order and decides the amount.
-    const orderResult = await createRazorpayOrder();
-    const order = orderResult.data;
-
-    if (!order || !order.orderId || !order.keyId) {
-      throw new Error("Invalid payment order received from server.");
+    function clearStatus() {
+      statusBox.textContent = "";
+      statusBox.className = "status";
     }
 
-    const options = {
-      key: order.keyId,
-      amount: order.amount,
-      currency: order.currency,
-      name: "FRALEN CRM",
-      description: "FRALEN CRM Monthly Subscription",
-      order_id: order.orderId,
-      prefill: {
-        name: currentUser.displayName || "",
-        email: currentUser.email || "",
-      },
-      notes: {
-        firebaseUid: currentUser.uid,
-      },
-      theme: {
-        color: "#1B2A6B",
-      },
+    function setButton(label, disabled = false) {
+      payButton.textContent = label;
+      payButton.disabled = disabled;
+    }
 
-      handler: async function (response) {
-        try {
-          setPayButton(false, "Verifying payment...");
-          showMessage("Payment received. Verifying securely...", "info");
+    function formatDate(value) {
+      if (!value) return "";
 
-          // The backend verifies the Razorpay signature, order,
-          // amount and captured status before marking the user as paid.
-          const verifyResult = await verifyRazorpayPayment({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          });
+      let date;
 
-          if (verifyResult.data && verifyResult.data.paymentStatus === "paid") {
-            paymentAlreadyPaid = true;
-            statusArea.innerHTML =
-              `<div class="status-badge status-paid">✅ Payment Successful</div>`;
+      if (typeof value === "number") {
+        date = new Date(value * 1000);
+      } else if (typeof value.toDate === "function") {
+        date = value.toDate();
+      } else {
+        date = new Date(value);
+      }
 
-            showMessage(
-              "✅ Payment verified successfully. Your account is now active.",
-              "ok"
-            );
+      if (Number.isNaN(date.getTime())) return "";
 
-            setPayButton(false, "✅ Payment Completed");
+      return date.toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      });
+    }
 
-            setTimeout(() => {
-              window.location.href = "dashboard.html";
-            }, 1200);
-
-            return;
-          }
-
-          throw new Error("Payment verification did not return a paid status.");
-        } catch (error) {
-          console.error("Payment verification error:", error);
-          showMessage(
-            "Payment was received, but automatic verification failed. Please contact support and keep your Razorpay payment ID.",
-            "error"
-          );
-          setPayButton(true, "🔄 Retry Verification");
-        }
-      },
-
-      modal: {
-        ondismiss: function () {
-          if (!paymentAlreadyPaid) {
-            showMessage("Payment window closed. You can try again.", "info");
-            setPayButton(true, "💳 Pay ₹1 Securely with Razorpay");
-          }
-        },
-      },
-    };
-
-    showMessage("Opening secure Razorpay checkout...", "info");
-
-    const razorpay = new window.Razorpay(options);
-
-    razorpay.on("payment.failed", function (response) {
-      console.error("Razorpay payment failed:", response.error);
-      showMessage(
-        response.error && response.error.description
-          ? response.error.description
-          : "Payment failed. Please try again.",
-        "error"
+    function isSubscriptionInProgress(profile) {
+      return Boolean(
+        profile?.razorpaySubscriptionId &&
+        [
+          "created",
+          "authenticated",
+          "active",
+          "trial",
+          "pending",
+          "halted",
+          "paused"
+        ].includes(profile.subscriptionStatus)
       );
-      setPayButton(true, "💳 Pay ₹1 Securely with Razorpay");
+    }
+
+    function updateSubscriptionDisplay(profile) {
+      const paymentStatus = profile?.paymentStatus || "not_started";
+      const subscriptionStatus = profile?.subscriptionStatus || "not_started";
+
+      const trialEnd = formatDate(profile?.trialEndsAt);
+      const nextBilling = formatDate(profile?.nextBillingAt);
+
+      const lines = [
+        `Payment status: ${paymentStatus}`,
+        `Subscription status: ${subscriptionStatus}`
+      ];
+
+      if (trialEnd) {
+        lines.push(`Trial ends: ${trialEnd}`);
+      }
+
+      if (nextBilling) {
+        lines.push(`Next billing: ${nextBilling}`);
+      }
+
+      subscriptionInfo.textContent = lines.join(" · ");
+    }
+
+    async function loadProfile(user) {
+      const profileRef = doc(db, "users", user.uid);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        throw new Error(
+          "Your FRALEN CRM profile was not found. Please contact support."
+        );
+      }
+
+      currentProfile = profileSnap.data();
+      updateSubscriptionDisplay(currentProfile);
+
+      return currentProfile;
+    }
+
+    function dashboardAccessAllowed(profile) {
+      const paymentStatus = profile?.paymentStatus;
+      const subscriptionStatus = profile?.subscriptionStatus;
+
+      return (
+        paymentStatus === "paid" ||
+        paymentStatus === "trial" ||
+        (
+          ["active", "authenticated", "trial"].includes(subscriptionStatus) &&
+          Boolean(profile?.razorpaySubscriptionId)
+        )
+      );
+    }
+
+    async function refreshAccount() {
+      if (!currentUser) return;
+
+      currentProfile = await loadProfile(currentUser);
+
+      if (dashboardAccessAllowed(currentProfile)) {
+        setButton("Subscription Already Set Up", true);
+
+        showStatus(
+          "Your subscription or trial is already active. You can continue to your dashboard.",
+          "success"
+        );
+
+        return;
+      }
+
+      if (isSubscriptionInProgress(currentProfile)) {
+        setButton("Subscription Already Exists", true);
+
+        showStatus(
+          "A subscription already exists for this account. If you have not completed authorization, contact support before trying again.",
+          "info"
+        );
+
+        return;
+      }
+
+      setButton("Start 15-Day Trial — ₹1 Authorization", false);
+      clearStatus();
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+
+      if (!user) {
+        accountEmail.textContent = "Not signed in";
+        setButton("Please Sign In First", true);
+
+        showStatus(
+          "Please sign in to your FRALEN CRM account before starting the subscription.",
+          "error"
+        );
+
+        return;
+      }
+
+      accountEmail.textContent = user.email || user.uid;
+      setButton("Loading subscription...", true);
+
+      try {
+        await refreshAccount();
+      } catch (error) {
+        console.error("Account loading failed:", error);
+
+        setButton("Unable to Load Account", true);
+
+        showStatus(
+          error.message || "Unable to load your account. Please refresh the page.",
+          "error"
+        );
+      }
     });
 
-    razorpay.open();
-  } catch (error) {
-    console.error("Unable to start payment:", error);
-    showMessage(
-      error && error.message
-        ? error.message
-        : "Unable to start payment. Please try again.",
-      "error"
-    );
-    setPayButton(true, "💳 Pay ₹1 Securely with Razorpay");
-  }
-}
+    dashboardButton.addEventListener("click", () => {
+      window.location.href = "dashboard.html";
+    });
 
-payBtn.addEventListener("click", startPayment);
+    payButton.addEventListener("click", async () => {
+      if (!currentUser) {
+        showStatus("Please sign in first.", "error");
+        return;
+      }
 
-requireAuth(async (user) => {
-  currentUser = user;
-  await loadStatus();
-});
-</script>
+      if (paymentInProgress) return;
 
+      paymentInProgress = true;
+      setButton("Preparing Secure Checkout...", true);
+      clearStatus();
+
+      try {
+        // Reload the profile before creating a subscription.
+        currentProfile = await loadProfile(currentUser);
+
+        if (dashboardAccessAllowed(currentProfile)) {
+          showStatus(
+            "Your subscription is already active. Continue to your dashboard.",
+            "success"
+          );
+
+          setButton("Subscription Already Set Up", true);
+          return;
+        }
+
+        if (isSubscriptionInProgress(currentProfile)) {
+          showStatus(
+            "A subscription already exists for this account. Please contact support if you need help completing it.",
+            "info"
+          );
+
+          setButton("Subscription Already Exists", true);
+          return;
+        }
+
+        // Create the subscription securely through Firebase Functions.
+        const response = await createRazorpaySubscription();
+        const result = response.data;
+
+        if (result.alreadySubscribed) {
+          showStatus(
+            "A subscription already exists for this account. Refresh the page to check its status.",
+            "info"
+          );
+
+          setButton("Subscription Already Exists", true);
+          return;
+        }
+
+        if (!result.success || !result.subscriptionId || !result.keyId) {
+          throw new Error("Unable to create a subscription. Please try again.");
+        }
+
+        if (!window.Razorpay) {
+          throw new Error(
+            "Razorpay Checkout could not load. Check your internet connection and try again."
+          );
+        }
+
+        setButton("Waiting for Razorpay...", true);
+
+        const checkoutOptions = {
+          key: result.keyId,
+          subscription_id: result.subscriptionId,
+          name: "FRALEN CRM",
+          description: "₹1 authorization, 15-day trial, then ₹499/month",
+          image: "https://fralencrm.in/favicon.ico",
+
+          prefill: {
+            email: currentUser.email || "",
+            name:
+              currentProfile.fullName ||
+              currentProfile.name ||
+              currentUser.displayName ||
+              ""
+          },
+
+          notes: {
+            firebaseUid: currentUser.uid,
+            product: "FRALEN CRM Monthly Subscription"
+          },
+
+          theme: {
+            color: "#4f46e5"
+          },
+
+          retry: {
+            enabled: true
+          },
+
+          modal: {
+            ondismiss: () => {
+              paymentInProgress = false;
+
+              setButton("Start 15-Day Trial — ₹1 Authorization", false);
+
+              showStatus(
+                "Checkout was closed. If you completed a payment, refresh the page to check the status before trying again.",
+                "info"
+              );
+            }
+          },
+
+          handler: async (paymentResponse) => {
+            setButton("Verifying Payment...", true);
+
+            try {
+              const verification = await verifyRazorpaySubscription({
+                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                razorpay_subscription_id:
+                  paymentResponse.razorpay_subscription_id,
+                razorpay_signature: paymentResponse.razorpay_signature
+              });
+
+              if (!verification.data?.success) {
+                throw new Error(
+                  "Payment verification is not complete. Please contact support."
+                );
+              }
+
+              showStatus(
+                "Authorization verified. Your subscription is being updated. Opening your dashboard...",
+                "success"
+              );
+
+              // Give Firestore/webhook a moment to update the profile.
+              window.setTimeout(() => {
+                window.location.href = "dashboard.html";
+              }, 1200);
+            } catch (error) {
+              console.error("Subscription verification failed:", error);
+
+              showStatus(
+ 
+                error.message ||
+                  "Payment verification failed. Do not pay again immediately. Contact support with your payment details.",
+                "error"
+              );
+
+              setButton("Refresh Status / Contact Support", false);
+            } finally {
+              paymentInProgress = false;
+            }
+          }
+        };
+
+        const checkout = new window.Razorpay(checkoutOptions);
+
+        checkout.on("payment.failed", (event) => {
+          console.error("Razorpay payment failed:", event.error);
+
+          showStatus(
+            event.error?.description ||
+              "Payment was not successful. Please check your payment method or contact support.",
+            "error"
+          );
+
+          paymentInProgress = false;
+          setButton("Try Again", false);
+        });
+
+        checkout.open();
+      } catch (error) {
+        console.error("Subscription checkout failed:", error);
+
+        showStatus(
+          error.message ||
+            "Unable to start checkout. Please refresh the page and try again.",
+          "error"
+        );
+
+        paymentInProgress = false;
+
+        try {
+          await refreshAccount();
+        } catch {
+          setButton("Try Again", false);
+        }
+      }
+    });
+  </script>
 </body>
 </html>
+```
