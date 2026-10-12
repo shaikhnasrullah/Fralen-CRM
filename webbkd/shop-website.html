@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shop Website - FRALEN CRM</title>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}:root{--navy:#1B2A6B;--navy-light:#2A3F8F;--accent:#4F6BF0;--gray:#6B7280;--border:#C5D3E8;--green:#10B981;--red:#EF4444}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#111827;min-height:100vh;padding-bottom:30px}
+.topbar{background:var(--navy);padding:14px 20px;display:flex;align-items:center;justify-content:space-between}.topbar-logo{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:#fff;letter-spacing:3px}.topbar-logo span{color:#7B93FF}
+.back-btn{background:rgba(255,255,255,.15);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.page-title{background:#fff;padding:14px 20px;font-size:18px;font-weight:700;color:var(--navy);border-bottom:2px solid var(--accent)}
+.w{padding:16px;max-width:640px;margin:0 auto}.s{font-size:13px;color:var(--gray);margin-bottom:12px}
+.c{background:#fff;border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:14px}h2{font-size:15px;color:var(--navy);margin-bottom:10px}
+label{display:block;font-size:12.5px;font-weight:700;color:#374151;margin:12px 0 6px}
+input[type=text],input[type=email],input[type=tel],input[type=url],textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;font:14px 'Inter',sans-serif;outline:none}input:focus,textarea:focus{border-color:var(--accent)}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}@media(max-width:600px){.g{grid-template-columns:1fr}}
+.chk label{display:inline-flex;align-items:center;gap:6px;font-weight:500;margin:4px 14px 4px 0}.sw{display:flex;gap:10px;flex-wrap:wrap}.sw label{margin:0}
+.sw input{display:none}.sw span{display:block;width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--border)}.sw input:checked+span{box-shadow:0 0 0 3px var(--navy)}
+.t{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.t label{margin:0}.t input{display:none}.t div{border:2px solid var(--border);border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:600;cursor:pointer}.t input:checked+div{border-color:var(--accent);background:#EEF1FE}
+button{background:var(--navy);color:#fff;border:0;padding:12px 18px;border-radius:10px;font:700 14px 'Inter',sans-serif;cursor:pointer}button:hover{background:var(--navy-light)}button.l{background:#EEF1FE;color:var(--navy)}button:disabled{opacity:.5}
+img.p{max-height:70px;margin-top:6px;border-radius:6px;display:block}.m{font-size:13px;margin:10px 0;font-weight:600;text-align:center}.e{color:var(--red)}.o{color:var(--green)}.h{display:none}.n{font-size:11.5px;color:var(--gray);margin-top:4px}</style></head><body><div class="topbar"><div class="topbar-logo">FRAL<span>EN</span> CRM</div><button class="back-btn" onclick="location.href='../dashboard.html'">← Dashboard</button>
+</div><div class="page-title">🌐 Shop Website</div><div class="w"><div class="s">Fill your details, pick a template, publish. Your website is hosted by FRALEN CRM.</div>
+<div class="c"><h2>1. Basic &amp; Branding</h2><label>Shop / Brand Name *</label><input type="text" id="name" maxlength="60" placeholder="Sharma Opticals">
+<label>Tagline</label><input type="text" id="tagline" maxlength="90" placeholder="Your Vision, Our Passion">
+<label>Logo (PNG/JPG) <span class="n">— taken from Settings; upload only to change</span></label><input type="file" id="logo" accept="image/*"><img class="p" id="logoP" alt="">
+<label>Hero / Store photo</label><input type="file" id="hero" accept="image/*"><img class="p" id="heroP" alt=""><div class="n">Photos are compressed automatically.</div></div>
+<div class="c"><h2>2. Contact &amp; Location</h2><div class="g"><div><label>Phone / WhatsApp</label><input type="tel" id="phone" maxlength="15" placeholder="9876543210"></div><div><label>Email</label><input type="email" id="email" maxlength="80"></div></div>
+<label>Full address</label><textarea id="address" rows="2" maxlength="250"></textarea><label>Working hours</label><input type="text" id="hours" maxlength="120" placeholder="Mon–Sat 10:00 AM – 8:00 PM, Sunday closed"></div>
+<div class="c"><h2>3. Social links</h2><label>Instagram</label><input type="url" id="instagram" placeholder="https://instagram.com/..."><label>Facebook</label><input type="url" id="facebook" placeholder="https://facebook.com/...">
+<label>Google Business / Maps link</label><input type="url" id="google" placeholder="https://maps.app.goo.gl/..."></div>
+<div class="c"><h2>4. Optical shop options</h2><label>Colour theme</label><div class="sw" id="sw"></div><label>Services offered</label><div class="chk" id="svc"></div>
+<label>Featured brands (comma separated)</label><input type="text" id="brands" maxlength="200" placeholder="Ray-Ban, Fastrack, Oakley, FRALEN"></div>
+<div class="c"><h2>5. Choose template</h2><div class="t" id="tpl"></div>
+<div id="pub" class="h"><label>Your website address</label><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="n">fralencrm.in/site.html?s=</span><input type="text" id="slug" maxlength="40" style="flex:1;min-width:140px" placeholder="sharma-opticals"></div>
+<div class="n">Letters, numbers and hyphen only (min 3).</div><div style="margin-top:10px"><button id="publish">🚀 Publish on FRALEN hosting</button> <button class="l" id="unpub">Unpublish</button></div></div>
+<div class="m" id="msg"></div><div class="h" id="live"><a id="liveA" target="_blank" rel="noopener">Open website</a> · <a href="#" id="copy">Copy link</a></div></div>
+<button class="l" id="save">Save draft</button></div>
+<script type="module">
+import{requireAuth,db,profileDoc,tenantDoc}from'../firebase-config.js';
+import{doc,getDoc,setDoc,deleteDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const $=i=>document.getElementById(i),SV=['Computerized Eye Testing','Branded Eyeglasses & Frames','Sunglasses','Contact Lenses & Solutions'];
+const CO=[['#2563eb','Blue'],['#111827','Premium Black'],['#16a34a','Green'],['#9f1239','Maroon']],TP=[['classic','Classic'],['bold','Bold hero'],['minimal','Minimal']];
+$('sw').innerHTML=CO.map(([c,n],i)=>`<label title="${n}"><input type="radio" name="col" value="${c}" ${i?'':'checked'}><span style="background:${c}"></span></label>`).join('');
+$('svc').innerHTML=SV.map(s=>`<label><input type="checkbox" value="${s}"> ${s}</label>`).join('');
+$('tpl').innerHTML=TP.map(([v,n])=>`<label><input type="radio" name="tpl" value="${v}"><div>${n}</div></label>`).join('');
+let uid,old=null,logo='',hero='';
+const say=(t,bad)=>{$('msg').textContent=t;$('msg').className='m '+(bad?'e':'o');};
+const v=i=>$(i).value.trim(),url=u=>!u||/^https?:\/\//i.test(u),slugify=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40);
+const shrink=(f,max,type,q)=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(i.src);ok(c.toDataURL(type,q));};i.onerror=()=>no(new Error('bad image'));i.src=URL.createObjectURL(f);});
+$('logo').onchange=async e=>{try{logo=await shrink(e.target.files[0],320,'image/png');$('logoP').src=logo;}catch{say('Could not read that logo image.',1);}};
+$('hero').onchange=async e=>{try{hero=await shrink(e.target.files[0],1400,'image/jpeg',.72);$('heroP').src=hero;}catch{say('Could not read that photo.',1);}};
+document.querySelectorAll('[name=tpl]').forEach(r=>r.onchange=()=>{$('pub').classList.remove('h');if(!v('slug'))$('slug').value=slugify(v('name'));});
+function collect(pub){return{ownerUid:uid,template:(document.querySelector('[name=tpl]:checked')||{}).value||'',color:document.querySelector('[name=col]:checked').value,name:v('name'),tagline:v('tagline'),logo,hero,phone:v('phone').replace(/\D/g,''),email:v('email'),address:v('address'),hours:v('hours'),instagram:v('instagram'),facebook:v('facebook'),google:v('google'),services:[...document.querySelectorAll('#svc input:checked')].map(x=>x.value),brands:v('brands'),published:pub,slug:v('slug'),updatedAt:new Date().toISOString()};}
+function check(d){if(!d.name)return'Shop name is required.';for(const k of['instagram','facebook','google'])if(!url(d[k]))return'Links must start with https://';if(d.email&&!/^\S+@\S+\.\S+$/.test(d.email))return'Email looks wrong.';return'';}
+// Private working copy: users/{uid}/shopSite/draft (covered by your existing owner-only rule).
+// Public copy: shopSites/{uid} (like reviewPages/{uid}); friendly address: shopSlugs/{slug} -> uid.
+const draftRef=()=>tenantDoc(uid,'shopSite','draft'),pubRef=()=>doc(db,'shopSites',uid);
+$('save').onclick=async()=>{const d=collect(!!(old&&old.published)),er=check(d);if(er)return say(er,1);
+  try{await setDoc(draftRef(),d);if(old&&old.published){await setDoc(pubRef(),d);}say('Saved.');}catch(e){say('Could not save: '+e.message,1);}};
+$('publish').onclick=async()=>{const d=collect(true),slug=d.slug,er=check(d)||(!d.template?'Choose a template first.':'')||(!/^[a-z0-9-]{3,40}$/.test(slug)?'Website address: 3–40 letters, numbers or hyphen.':'');if(er)return say(er,1);
+  $('publish').disabled=true;try{const ex=await getDoc(doc(db,'shopSlugs',slug));if(ex.exists()&&ex.data().uid!==uid)throw new Error('That address is taken. Try another.');
+    await setDoc(doc(db,'shopSlugs',slug),{uid});await setDoc(pubRef(),d);await setDoc(draftRef(),d);
+    if(old&&old.slug&&old.slug!==slug){try{await deleteDoc(doc(db,'shopSlugs',old.slug));}catch{}}
+    old=d;live(slug);say('Published! Your website is live.');}catch(e){say(e.message,1);}$('publish').disabled=false;};
+$('unpub').onclick=async()=>{if(!old)return;try{await deleteDoc(pubRef());await setDoc(draftRef(),{...old,published:false});old.published=false;$('live').classList.add('h');say('Website unpublished.');}catch(e){say(e.message,1);}};
+function live(slug){const u=location.origin+'/site.html?s='+slug;$('liveA').href=u;$('live').classList.remove('h');$('copy').onclick=ev=>{ev.preventDefault();navigator.clipboard?.writeText(u);say('Link copied.');};}
+function fill(d){for(const k of['name','tagline','phone','email','address','hours','instagram','facebook','google','brands'])$(k).value=d[k]||'';logo=d.logo||'';hero=d.hero||'';$('logoP').src=logo;$('heroP').src=hero;
+  document.querySelectorAll('#svc input').forEach(x=>x.checked=(d.services||[]).includes(x.value));const c=document.querySelector(`[name=col][value="${d.color}"]`);if(c)c.checked=true;
+  const t=document.querySelector(`[name=tpl][value="${d.template}"]`);if(t){t.checked=true;$('pub').classList.remove('h');}$('slug').value=d.slug||'';}
+requireAuth(async u=>{uid=u.uid;try{const p=(await getDoc(profileDoc(uid))).data()||{},dr=await getDoc(draftRef());
+  if(dr.exists()){old=dr.data();fill(old);if(old.published)live(old.slug);}
+  else{$('name').value=p.shopName||'';$('phone').value=p.phone||'';$('address').value=p.address||'';logo=p.logoDataUrl||'';$('logoP').src=logo;}}catch(e){say('Could not load your saved website: '+e.message,1);}});
+</script></body></html>
