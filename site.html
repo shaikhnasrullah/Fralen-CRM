@@ -1,32 +1,60 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Optical Shop</title>
-<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui,sans-serif;color:#111827;--c:#2563eb}a{color:var(--c)}.w{max-width:960px;margin:auto;padding:0 16px}
-header{display:flex;align-items:center;gap:12px;padding:14px 16px;max-width:960px;margin:auto}header img{height:46px;border-radius:6px}header b{font-size:20px}
-.hero{background:var(--c) center/cover;color:#fff;padding:70px 16px;text-align:center}.hero h1{margin:0 0 8px;font-size:clamp(26px,5vw,42px);text-shadow:0 2px 8px rgba(0,0,0,.4)}.hero p{margin:0;font-size:18px;text-shadow:0 2px 8px rgba(0,0,0,.4)}
-.bold .hero{padding:110px 16px}.minimal .hero{background:none!important;color:var(--c);padding:40px 16px;text-shadow:none}.minimal .hero h1,.minimal .hero p{text-shadow:none}
-.btn{display:inline-block;background:var(--c);color:#fff!important;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600;margin:6px 6px 0 0}.hero .btn{background:#fff;color:var(--c)!important}
-section{padding:26px 0;border-bottom:1px solid #eee}h2{color:var(--c);margin:0 0 10px}.chips span{display:inline-block;background:color-mix(in srgb,var(--c) 12%,#fff);color:var(--c);padding:7px 14px;border-radius:20px;margin:4px 6px 4px 0;font-weight:600;font-size:14px}
-footer{text-align:center;font-size:12px;color:#888;padding:20px}.nf{padding:80px 16px;text-align:center}</style></head><body><div id="app"></div>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:'DM Sans',sans-serif;color:#1c2333;background:#fff;--c:#2563eb;--bg2:#f3f7ff;--card:#fff;--tx:#1c2333;--mu:#5b6478;--r:14px}
+h1,h2,h3{font-family:'DM Serif Display',serif;font-weight:400;margin:0}a{color:var(--c)}.w{max-width:1040px;margin:auto;padding:0 18px}
+nav{position:sticky;top:0;z-index:20;background:var(--card);box-shadow:0 1px 8px rgba(0,0,0,.08)}nav .w{display:flex;align-items:center;gap:14px;height:64px}nav img{height:40px;border-radius:6px}nav b{font-size:19px;flex:1}nav .l{display:flex;gap:16px;font-size:14px}nav .l a{color:var(--tx);text-decoration:none}
+.btn{display:inline-block;background:var(--c);color:#fff!important;padding:12px 22px;border-radius:var(--r);text-decoration:none;font-weight:700;font-size:15px;border:0;cursor:pointer}.btn.o{background:transparent;color:var(--c)!important;border:2px solid var(--c)}.sm{padding:8px 14px;font-size:13px}
+.hero{position:relative;background:var(--c) center/cover;color:#fff;padding:96px 0;text-shadow:0 2px 10px rgba(0,0,0,.35)}.hero h1{font-size:clamp(34px,6vw,58px);max-width:640px;line-height:1.1}.hero p{font-size:19px;max-width:560px;margin:12px 0 22px}.hero .btn.o{color:#fff!important;border-color:#fff}
+.hi{display:none}section{padding:46px 0}section:nth-of-type(even){background:var(--bg2)}h2{font-size:30px;color:var(--tx);margin-bottom:6px}.sub{color:var(--mu);margin:0 0 22px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07)}.card h3{font-size:20px;margin-bottom:12px}
+.chips span{display:inline-block;border:1.5px solid var(--c);color:var(--c);padding:8px 16px;border-radius:30px;margin:4px 6px 4px 0;font-weight:700}
+.rv{display:flex;flex-direction:column;gap:10px}.st{color:#f5a524;letter-spacing:2px}details{background:var(--card);border-radius:var(--r);padding:14px 18px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.06)}summary{font-weight:700;cursor:pointer}details p{color:var(--mu);margin:8px 0 0}
+iframe{width:100%;height:320px;border:0;border-radius:var(--r);margin-top:14px}.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
+footer{background:#10162b;color:#cbd2e6;padding:36px 0 90px;font-size:14px}footer a{color:#fff}footer h3{color:#fff;font-size:18px;margin-bottom:8px}footer p{margin:6px 0}.cp{text-align:center;font-size:12px;margin-top:22px;opacity:.7}
+.fab{position:fixed;right:16px;bottom:16px;z-index:30;background:#25d366;color:#fff;padding:14px 20px;border-radius:40px;font-weight:700;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.3)}.nf{padding:90px 16px;text-align:center}.ann{background:var(--c);color:#fff;text-align:center;padding:8px 14px;font-size:13px}
+/* 2 Dark Luxe */.t-luxe{--bg2:#161618;--card:#1d1d20;--tx:#f2efe8;--mu:#a8a39a;background:#0f0f10;color:var(--tx)}.t-luxe nav{box-shadow:0 1px 0 #333}.t-luxe .hero{background-color:#0f0f10}
+/* 3 Fresh */.t-fresh{--r:28px;--bg2:#f1faf4}.t-fresh .hero{text-align:center}.t-fresh .hero h1,.t-fresh .hero p{margin-left:auto;margin-right:auto}
+/* 4 Boutique */.t-boutique{--bg2:#f6efe4;--card:#fffdf9;--r:2px;background:#faf6f0}.t-boutique .hero{text-align:center;padding:120px 0}.t-boutique .hero h1,.t-boutique .hero p{margin-left:auto;margin-right:auto}.t-boutique .card{box-shadow:none;border:1px solid #e3d9c8}
+/* 5 Bold Split */.t-split .hero{display:grid;background:var(--c)!important;padding:0}.t-split .hero .w{padding:60px 18px}.t-split .hi{display:block;width:100%;height:100%;min-height:260px;object-fit:cover}@media(min-width:800px){.t-split .hero{grid-template-columns:1fr 1fr}.t-split .hero .w{padding:90px 30px}}
+@media(max-width:640px){nav .l,.cl{display:none}}</style></head><body><div id="app"></div>
 <script type="module">
 import{db}from'./firebase-config.js';import{doc,getDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const A=document.getElementById('app'),s=new URLSearchParams(location.search).get('s')||'';
-const E=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};  // textContent only: owner text can never inject HTML
-const safe=u=>/^https?:\/\//i.test(u||'')?u:'';
-function btn(t,h){const a=E('a','btn',t);a.href=h;a.rel='noopener';a.target='_blank';return a;}
-function sec(t,...n){const x=E('section');x.append(E('h2','',t),...n);return x;}
+// textContent only: owner-typed text can never inject HTML into this public page.
+const E=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+const safe=u=>/^https?:\/\//i.test(u||'')?u:'',img=u=>/^data:image\/(png|jpe?g|webp);base64,/.test(u||'')?u:'';
+function L(t,h,c){const a=E('a',c||'btn',t);a.href=h;a.rel='noopener';if(/^https/.test(h))a.target='_blank';return a;}
+function sec(id,t,sub,...n){const x=E('section');x.id=id;const w=E('div','w');w.append(E('h2','',t));if(sub)w.append(E('p','sub',sub));w.append(...n);x.append(w);return x;}
 try{const sg=(await getDoc(doc(db,'shopSlugs',s))).data();if(!sg)throw 0;
-  const d=(await getDoc(doc(db,'shopSites',sg.uid))).data();
-  if(!d||!d.published||d.slug!==s||d.ownerUid!==sg.uid)throw 0;
-  document.title=d.name;document.body.style.setProperty('--c',/^#[0-9a-f]{6}$/i.test(d.color)?d.color:'#2563eb');document.body.className=['bold','minimal'].includes(d.template)?d.template:'';
-  const h=E('header');if(d.logo&&d.logo.startsWith('data:image/')){const i=E('img');i.src=d.logo;i.alt='';h.append(i);}h.append(E('b','',d.name));A.append(h);
-  const hero=E('div','hero');if(d.hero&&d.hero.startsWith('data:image/'))hero.style.backgroundImage=`linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url(${d.hero})`;
-  hero.append(E('h1','',d.name));if(d.tagline)hero.append(E('p','',d.tagline));const act=E('div');
-  if(d.phone){act.append(btn('📞 Call',`tel:${d.phone}`),btn('💬 WhatsApp',`https://wa.me/${d.phone.length===10?'91'+d.phone:d.phone}`));}hero.append(act);A.append(hero);
-  const w=E('div','w');
-  if((d.services||[]).length){const c=E('div','chips');d.services.forEach(x=>c.append(E('span','',x)));w.append(sec('Our Services',c));}
-  if(d.brands){const c=E('div','chips');d.brands.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20).forEach(x=>c.append(E('span','',x)));w.append(sec('Featured Brands',c));}
-  const ct=[];if(d.address)ct.push(E('p','','📍 '+d.address));if(d.hours)ct.push(E('p','','🕒 '+d.hours));if(d.email){const p=E('p','','✉️ ');const a=E('a','',d.email);a.href='mailto:'+d.email;p.append(a);ct.push(p);}
-  const sl=E('div');[['Instagram',d.instagram],['Facebook',d.facebook],['Google Maps',d.google]].forEach(([n,u])=>{if(safe(u))sl.append(btn(n,u));});ct.push(sl);
-  if(d.address)ct.push(btn('🗺️ Get directions','https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(d.name+' '+d.address)));
-  w.append(sec('Visit Us',...ct));A.append(w,E('footer','','Website by FRALEN CRM'));
+  const d=(await getDoc(doc(db,'shopSites',sg.uid))).data();if(!d||!d.published||d.slug!==s||d.ownerUid!==sg.uid)throw 0;
+  document.title=d.name;const T=['luxe','fresh','boutique','split'].includes(d.template)?d.template:'optic';
+  document.body.className='t-'+T;document.body.style.setProperty('--c',/^#[0-9a-f]{6}$/i.test(d.color)?d.color:'#2563eb');
+  const num=(d.whatsapp||d.phone||'').replace(/\D/g,''),wn=num.length===10?'91'+num:num;
+  // Every "Order Now" goes straight to the OWNER's WhatsApp with a ready message.
+  const wa=m=>wn?`https://wa.me/${wn}?text=${encodeURIComponent(m)}`:'#';
+  const order=(what,c)=>L('🛒 Order Now',wa(`Hello ${d.name}, I want to order: ${what}`),c);
+  const nav=E('nav'),nw=E('div','w');if(img(d.logo)){const i=E('img');i.src=d.logo;i.alt='';nw.append(i);}nw.append(E('b','',d.name));
+  const nl=E('div','l');[['Services','#svc'],['Reviews','#rev'],['FAQ','#faq'],['Visit','#visit']].forEach(([n,h])=>nl.append(L(n,h,'x')));nw.append(nl);if(d.phone)nw.append(L('📞 Call','tel:'+d.phone.replace(/\D/g,''),'btn o sm cl'));nw.append(order('your frames / eye care','btn sm'));nav.append(nw);
+  if(d.address||d.hours)A.append(E('div','ann',[d.address&&'📍 '+d.address,d.hours&&'🕒 '+d.hours].filter(Boolean).join('   ·   ')));A.append(nav);
+  const hero=E('div','hero'),hw=E('div','w');if(img(d.hero)){if(T==='split'){const i=E('img','hi');i.src=d.hero;i.alt='';hero.append(hw,i);}else hero.style.backgroundImage=`linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url(${d.hero})`;}
+  hw.append(E('h1','',d.tagline||d.name),E('p','',d.tagline?d.name:'Eye care & eyewear'));const ha=E('div');ha.append(order('frames / glasses'),' ',L('📅 Book Eye Test',wa('Hello, I want to book an eye test.'),'btn o'));hw.append(ha);if(!hero.contains(hw))hero.append(hw);A.append(hero);
+  const body=[];
+  if((d.services||[]).length){const g=E('div','g');d.services.forEach(x=>{const c=E('div','card');c.append(E('h3','',x),order(x,'btn sm'));g.append(c);});body.push(sec('svc','Our Services','Walk in or order on WhatsApp.',g));}
+  {const g=E('div','g');[['1. Choose','Pick frames or a service and tap Order Now.'],['2. We confirm','We reply on WhatsApp with availability and price.'],['3. Eye check','Visit the shop for an eye test or fitting if needed.'],['4. Collect','Collect your glasses when we tell you they are ready.']].forEach(([a,b])=>{const c=E('div','card');c.append(E('h3','',a),E('p','sub',b));g.append(c);});body.push(sec('how','How It Works','',g));}
+  if(d.brands){const c=E('div','chips');d.brands.split(',').map(x=>x.trim()).filter(Boolean).slice(0,20).forEach(x=>c.append(E('span','',x)));body.push(sec('brands','Featured Brands','',c,E('br'),order('a frame from your brands')));}
+  const rv=(d.reviews||[]).filter(r=>r&&r.text),rb=E('div','rv'),pid=/^[\w-]{10,}$/.test(d.googlePlaceId||'')?d.googlePlaceId:'';
+  if(rv.length){const g=E('div','g');rv.slice(0,3).forEach(r=>{const c=E('div','card');c.append(E('div','st','★★★★★'),E('p','',r.text),E('b','','— '+(r.name||'Customer')));g.append(c);});rb.append(g);}
+  const ra=E('div');if(pid)ra.append(L('⭐ See our Google reviews',`https://search.google.com/local/reviews?placeid=${pid}`,'btn o'),' ',L('✍️ Write a review',`https://search.google.com/local/writereview?placeid=${pid}`));rb.append(ra);
+  if(rv.length||pid)body.push(sec('rev','Customer Reviews','What our customers say.',rb));
+  const fq=[['Do I need an appointment?','No. Walk in during working hours, or message us on WhatsApp to book a time.'],['How do I order?','Tap any "Order Now" button. It opens WhatsApp with a ready message to our shop.'],['Can I get my eyes tested here?','Tap "Book Eye Test" to ask us on WhatsApp about eye testing and timings.']];
+  body.push(sec('faq','Frequently Asked Questions','',...fq.map(([q,a])=>{const x=E('details');x.append(E('summary','',q),E('p','',a));return x;})));
+  const v=[];if(d.address)v.push(E('p','','📍 '+d.address));if(d.hours)v.push(E('p','','🕒 '+d.hours));if(d.phone)v.push(E('p','','📞 '+d.phone));
+  const vb=E('div');[['Instagram',d.instagram],['Facebook',d.facebook],['Google Maps',d.google]].forEach(([n,u])=>{if(safe(u))vb.append(L(n,u,'btn o sm'),' ');});v.push(vb);
+  if(d.address){const f=E('iframe');f.src='https://www.google.com/maps?q='+encodeURIComponent(d.name+' '+d.address)+'&output=embed';f.loading='lazy';f.title='Map';v.push(f);}
+  body.push(sec('visit','Visit Us','',...v));A.append(...body);
+  const ft=E('footer'),fw=E('div','w'),cl=E('div','cols'),c1=E('div'),c2=E('div');c1.append(E('h3','',d.name),E('p','',d.tagline||''),E('p','',d.address||''));
+  c2.append(E('h3','','Contact'));if(d.phone)c2.append(E('p','',d.phone));if(d.email){const p=E('p');const a=E('a','',d.email);a.href='mailto:'+d.email;p.append(a);c2.append(p);}
+  cl.append(c1,c2);fw.append(cl,E('div','cp','© '+new Date().getFullYear()+' '+d.name+' · Website by FRALEN CRM'));ft.append(fw);A.append(ft);
+  const fab=L('💬 WhatsApp',wa('Hello '+d.name),'fab');A.append(fab);
 }catch{A.append(E('div','nf','This website is not available.'));}
 </script></body></html>
