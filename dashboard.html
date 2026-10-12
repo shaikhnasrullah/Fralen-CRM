@@ -574,6 +574,30 @@ requireAuth(async function (user) {
   }
 });
 
+document.getElementById("logout-btn").addEventListener("click", async function () {
+  await signOut(auth);
+  window.location.href = "Login-page.html";
+});
+
+/* ---------- Helper functions (restored: the dashboard calls these everywhere) ---------- */
+function isToday(dateString) {
+  if (!dateString) return false;
+  var d = new Date(dateString);
+  var now = new Date();
+  return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+function payableOf(o) { return (o.totals && o.totals.payable) ? o.totals.payable : 0; }
+function pendingOf(o) { return (o.totals && o.totals.pending) ? o.totals.pending : 0; }
+function money(n) { return "Rs. " + Math.round(n).toLocaleString("en-IN"); }
+function dayStart(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function dayKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+
 /* ---------- Google rating: live from Google Maps Platform (read-only) ---------- */
 // Paste your Google Maps Platform API key below. In Google Cloud Console enable
 // "Maps JavaScript API" and "Places API (New)", and restrict the key to your website
