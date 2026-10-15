@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fralen AI Creative Studio</title>
+<style>
+:root{--navy:#0f1f3d;--amber:#f5a623;--line:#e1e5ee;--bg:#f6f7fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.4 system-ui,sans-serif;color:#1d2433}
+header{display:flex;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;padding:.8rem 1rem;border-bottom:3px solid var(--amber)}
+header b{color:var(--amber);font-size:1.1rem}header span{display:block;font-size:.8rem;color:#c3cde0}
+.app{display:grid;grid-template-columns:340px 1fr;gap:1rem;padding:1rem;max-width:1200px;margin:auto}
+.panel{background:#fff;border:1px solid var(--line);border-radius:8px;padding:1rem;align-self:start}
+.panel h3{margin:.8rem 0 .4rem;font-size:.85rem;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+.panel h3:first-child{margin-top:0}
+label{display:block;font-size:.8rem;margin:.5rem 0 .15rem;color:#5b6578}
+input[type=text],textarea,select{width:100%;padding:.5rem;border:1px solid #c9cfdc;border-radius:6px;font:inherit}
+textarea{resize:vertical;min-height:54px}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{padding:.4rem .6rem;border:2px solid var(--line);border-radius:999px;background:#fff;cursor:pointer;font-size:.8rem}
+.chip.on{border-color:var(--navy);background:var(--navy);color:#fff}
+.stage{display:flex;flex-direction:column;align-items:center;gap:.8rem}
+.cvwrap{background:#dfe3ec;border-radius:8px;padding:.8rem;width:100%;display:flex;justify-content:center}
+canvas{max-width:100%;max-height:78vh;height:auto;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.2);touch-action:none;cursor:grab}
+.btns{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+button.b{padding:.6rem 1rem;border-radius:6px;border:2px solid var(--navy);background:#fff;color:var(--navy);font:600 .9rem system-ui;cursor:pointer}
+button.b.p{background:var(--navy);color:#fff}
+#msg{font-size:.8rem;color:#5b6578;min-height:1.2em}
+@media(max-width:820px){.app{grid-template-columns:1fr}}
+</style></head><body>
+<header><div><b>🎨 Fralen AI Creative Studio</b><span>Create. Customize. Promote. Grow.</span></div><a href="dashboard.html" style="color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.3);padding:.4rem .8rem;border-radius:6px;font-size:.85rem">← Dashboard</a></header>
+<div class="app">
+<div class="panel">
+<h3>My designs</h3>
+<label>Design name</label><input type="text" id="dName" placeholder="e.g. Diwali sale">
+<div class="btns" style="margin:.5rem 0;justify-content:flex-start"><button class="b p" id="dSave">Save design</button><button class="b" id="dNew">New</button></div>
+<label>Saved designs</label><select id="dList"><option value="">Loading...</option></select>
+<div class="btns" style="margin:.5rem 0;justify-content:flex-start"><button class="b" id="dOpen">Open</button><button class="b" id="dDel">Delete</button></div>
+<div id="dMsg" style="font-size:.8rem;color:#5b6578"></div>
+<label>Use one of my products</label><select id="pList"><option value="">Select product</option></select>
+<h3>Layout style</h3><div class="chips" id="styles"></div><h3>Colour theme</h3><div class="chips" id="tpls"></div>
+<h3>Size</h3><div class="chips" id="sizes"></div>
+<h3>Content</h3>
+<label>Shop name</label><input type="text" id="shop">
+<label>Headline</label><input type="text" id="headline">
+<label>Offer label</label><input type="text" id="offer">
+<label>Details</label><textarea id="details"></textarea>
+<label>Subline</label><input type="text" id="sub"><label>Button text</label><input type="text" id="cta"><label>Features (comma separated)</label><input type="text" id="feats"><label>Tagline</label><input type="text" id="tag"><label>Phone</label><input type="text" id="phone">
+<label>Address</label><input type="text" id="address">
+<label>Valid till</label><input type="text" id="valid" placeholder="e.g. 31 Oct 2026">
+<h3>AI Artwork</h3>
+<label>Art direction</label><select id="aiStyle"><option value="A">A: Lifestyle model</option><option value="B">B: Oversized eyewear concept</option><option value="C">C: Luxury cinematic</option><option value="D">D: Product collection</option><option value="E">E: Urban lifestyle</option><option value="F">F: Festival / seasonal</option></select>
+<label>Occasion</label><select id="aiOcc"><option value="">None</option><option value="diwali">Diwali</option><option value="eid">Eid</option><option value="newyear">New Year</option><option value="summer">Summer</option><option value="school">Back to school</option><option value="opening">Grand opening</option></select>
+<label><input type="checkbox" id="aiModel" checked> Include a model</label>
+<label>Extra instructions</label><textarea id="aiNotes" placeholder="e.g. tortoiseshell frames, warm beige tones"></textarea>
+<div class="btns" style="margin-top:.5rem"><button class="b p" id="aiGen">Generate artwork</button><button class="b" id="aiCancel" hidden>Cancel</button></div>
+<div id="aiMsg" style="font-size:.8rem;color:#5b6578;margin-top:.4rem"></div>
+<h3>Images</h3>
+<label>Shop logo (PNG/JPG, max 5 MB)</label><input type="file" id="logo" accept="image/png,image/jpeg,image/webp">
+<label>Background / hero photo</label><input type="file" id="bg" accept="image/png,image/jpeg,image/webp"><label>Product or model photo (transparent PNG is best)</label><input type="file" id="prod" accept="image/png,image/jpeg,image/webp">
+</div>
+<div class="stage">
+<div class="cvwrap"><canvas id="cv"></canvas></div>
+<div class="btns">
+<button class="b p" id="png">Download PNG</button>
+<button class="b" id="jpg">Download JPEG</button>
+<button class="b" id="share">Share</button>
+<button class="b" id="reset">Reset positions</button>
+</div>
+<div id="msg">Tip: drag the headline, offer, product or footer on the poster to move it.</div>
+</div></div>
+<script type="module">
+import { requireAuth, app, tenantCollection, tenantDoc, profileDoc } from "./firebase-config.js";
+import { getDoc, getDocs, setDoc, deleteDoc, doc, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-functions.js";
+import { getStorage, ref as sref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+var SIZES={sq:["Square 1080×1080",1080,1080],po:["Portrait 1080×1350",1080,1350],st:["Story 1080×1920",1080,1920],ls:["Banner 1920×1080",1920,1080]};
+var T={
+gold:{n:"Black & Gold",bg:["#0b0b0b","#2a2210"],tx:"#f5e6b8",ac:"#d4af37",ab:"#0b0b0b",f:"Georgia,serif"},
+blue:{n:"Modern Blue",bg:["#0f3d91","#1f6fe0"],tx:"#ffffff",ac:"#ffffff",ab:"#0f3d91",f:"system-ui,sans-serif"},
+red:{n:"Bold Red Sale",bg:["#b3001b","#ff3b30"],tx:"#ffffff",ac:"#ffd60a",ab:"#8a0014",f:"Impact,'Arial Black',sans-serif"},
+white:{n:"Minimalist White",bg:["#ffffff","#eef1f6"],tx:"#111111",ac:"#111111",ab:"#ffffff",f:"system-ui,sans-serif"},
+crimson:{n:"Crimson Tech",bg:["#1a0006","#8a0f1f"],tx:"#ffffff",ac:"#ffd9a0",ab:"#1a0006",f:"system-ui,sans-serif"},
+sky:{n:"Sky Blue",bg:["#b4d3ec","#8fb8d9"],tx:"#ffffff",ac:"#0f3d91",ab:"#ffffff",f:"system-ui,sans-serif"},
+beige:{n:"Elegant Beige",bg:["#efe3d0","#d9c3a3"],tx:"#4a3420",ac:"#8a5a2b",ab:"#ffffff",f:"Georgia,serif"}};
+var L={sq:{hl:.14,off:.33,py:.47,ph:.27,det:.79,ft:.89},po:{hl:.13,off:.31,py:.42,ph:.3,det:.76,ft:.9},st:{hl:.14,off:.3,py:.4,ph:.3,det:.74,ft:.9},ls:{hl:.2,off:.56,py:.12,ph:.7,det:.72,ft:.88}};
+var KEY="fralen_studio_v3",F=["shop","headline","offer","details","phone","address","valid","sub","cta","feats","tag"],STY={photo:"Photo Overlay",bigtype:"Big Type",split:"Split + Button",tech:"Tech Features",clean:"Clean Tagline",classic:"Classic Offer"};
+var s={tpl:"gold",size:"sq",shop:"Eye Shades",headline:"Grand Eyewear Sale",offer:"FLAT 30% OFF",details:"On all frames and lenses. Free eye check-up.",phone:"",address:"Sakinaka Pipeline, Mumbai 400072",valid:"",style:"photo",sub:"Unveil a clearer world. Craftsmanship and precision.",cta:"Visit Today",feats:"Free Eye Test, Premium Frames, Lens Offers, Easy EMI",tag:"See the world more clearly.",off:{}};
+var img={logo:null,prod:null,bg:null},hits={},exporting=false,cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+function $(i){return document.getElementById(i)}
+var saveT;function save(){clearTimeout(saveT);saveT=setTimeout(saveDraft,1500)}
+function msg(t){$("msg").textContent=t}
+function chips(id,obj,key,lab){var h=$(id);h.innerHTML="";Object.keys(obj).forEach(function(k){var b=document.createElement("button");b.className="chip"+(s[key]===k?" on":"");b.textContent=lab(obj[k]);b.onclick=function(){s[key]=k;if(key==="size"||key==="style")s.off={};save();chips(id,obj,key,lab);draw()};h.appendChild(b)})}
+chips("tpls",T,"tpl",function(t){return t.n});chips("styles",STY,"style",function(t){return t});chips("sizes",SIZES,"size",function(t){return t[0]});
+F.forEach(function(k){var e=$(k);e.value=s[k];e.oninput=function(){s[k]=e.value;save();draw()}});
+function load(id,key){$(id).onchange=function(){var f=this.files[0];if(!f)return;
+if(!/^image\/(png|jpeg|webp)$/.test(f.type)){msg("Only PNG, JPG or WebP images allowed.");return}
+if(f.size>5*1048576){msg("Image is larger than 5 MB.");return}
+var i=new Image();i.onload=function(){img[key]=i;files[key]=f;delete assets[key];if(key==="bg")artPath=null;msg("Image added.");draw()};i.onerror=function(){msg("Could not read this image.")};i.src=URL.createObjectURL(f)}}
+load("logo","logo");load("bg","bg");load("prod","prod");
+function wrap(t,mw){var out=[],ln="";String(t||"").split(/\s+/).forEach(function(w){var x=ln?ln+" "+w:w;if(ctx.measureText(x).width>mw&&ln){out.push(ln);ln=w}else ln=x});if(ln)out.push(ln);return out}
+function txt(t,x,y,mw,sz,wt,col,al,fam){ctx.font=wt+" "+sz+"px "+fam;ctx.fillStyle=col;ctx.textAlign=al;ctx.textBaseline="top";var lines=wrap(t,mw),lh=sz*1.2;
+lines.forEach(function(l,i){ctx.fillText(l,x,y+i*lh)});return lines.length*lh}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function el(id,fn){var o=s.off[id]||{x:0,y:0};ctx.save();ctx.translate(o.x,o.y);var b=fn();ctx.restore();hits[id]=[b[0]+o.x,b[1]+o.y,b[2],b[3]]}
+function drawClassic(){var d=SIZES[s.size],W=d[1],H=d[2],t=T[s.tpl],l=L[s.size],land=W>H,u=Math.min(W,H)/1080;hits={};
+cv.width=W;cv.height=H;var g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,t.bg[0]);g.addColorStop(1,t.bg[1]);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ctx.strokeStyle=t.ac;ctx.globalAlpha=.5;ctx.lineWidth=4*u;ctx.strokeRect(30*u,30*u,W-60*u,H-60*u);ctx.globalAlpha=1;
+var mx=land?.07*W:.08*W,mw=land?.5*W:.84*W,al=land?"left":"center",ax=land?mx:W/2;
+// brand
+if(img.logo){var lh=90*u,lw=img.logo.width*lh/img.logo.height;ctx.drawImage(img.logo,land?mx:(W-lw)/2,.06*H,lw,lh)}
+else txt(s.shop,ax,.06*H,mw,44*u,"bold",t.ac,al,t.f);
+el("headline",function(){var y=l.hl*H,h=txt(s.headline,ax,y,mw,(land?96:92)*u,"bold",t.tx,al,t.f);return[mx,y,mw,h]});
+el("offer",function(){var sz=64*u;ctx.font="bold "+sz+"px "+t.f;var w=Math.min(ctx.measureText(s.offer).width+80*u,mw),h=sz*1.7,x=land?mx:(W-w)/2,y=l.off*H;
+ctx.fillStyle=t.ac;rr(x,y,w,h,h/2);ctx.fill();txt(s.offer,x+w/2,y+(h-sz*1.2)/2,w-40*u,sz,"bold",t.ab,"center",t.f);return[x,y,w,h]});
+el("product",function(){var bw=land?.32*W:.7*W,bx=land?.62*W:(W-bw)/2,by=l.py*H,bh=l.ph*H;
+if(img.prod){var r=Math.min(bw/img.prod.width,bh/img.prod.height),w=img.prod.width*r,h=img.prod.height*r;ctx.drawImage(img.prod,bx+(bw-w)/2,by+(bh-h)/2,w,h)}
+else if(!exporting){ctx.setLineDash([14,10]);ctx.strokeStyle=t.tx;ctx.globalAlpha=.5;ctx.lineWidth=3;rr(bx,by,bw,bh,20);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=.6;txt("Upload product photo",bx+bw/2,by+bh/2-14*u,bw-20,30*u,"normal",t.tx,"center",t.f);ctx.globalAlpha=1}
+return[bx,by,bw,bh]});
+el("details",function(){var y=l.det*H,h=txt(s.details,ax,y,mw,36*u,"normal",t.tx,al,t.f);return[mx,y,mw,h]});
+el("footer",function(){var y=l.ft*H,p=[s.phone,s.address].filter(Boolean).join("  |  "),h=0;
+if(p)h+=txt(p,ax,y,mw,28*u,"bold",t.ac,al,t.f);if(s.valid)h+=txt("Valid till: "+s.valid,ax,y+h+4*u,mw,26*u,"normal",t.tx,al,t.f);return[mx,y,mw,Math.max(h,30)]});
+if(s.size==="ls"||true){}
+}
+
+function ha(h,a){var n=parseInt(h.slice(1),16);return"rgba("+(n>>16)+","+(n>>8&255)+","+(n&255)+","+a+")"}
+function glasses(x,y,w,h,c){var t=c.t,lw=Math.min(w*.33,h*1.3),lh=lw*.72,cx=x+w/2,cy=y+h/2,gap=lw*.16,sw=Math.max(lw*.07,6);ctx.save();
+ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(cx,cy+lh*.8,lw*1.2,lh*.1,0,0,7);ctx.fill();
+[-1,1].forEach(function(d){var lx=cx+d*(lw/2+gap/2)-lw/2,g=ctx.createLinearGradient(lx,cy-lh/2,lx+lw,cy+lh/2);g.addColorStop(0,"rgba(255,255,255,.4)");g.addColorStop(1,"rgba(255,255,255,.05)");
+rr(lx,cy-lh/2,lw,lh,lh*.42);ctx.fillStyle=g;ctx.fill();ctx.lineWidth=sw;ctx.strokeStyle=t.ac;ctx.stroke();ctx.lineWidth=sw*.5;ctx.strokeStyle="rgba(255,255,255,.75)";ctx.beginPath();ctx.arc(lx+lw*.32,cy,lh*.28,Math.PI*1.1,Math.PI*1.45);ctx.stroke()});
+ctx.lineWidth=sw;ctx.strokeStyle=t.ac;ctx.beginPath();ctx.moveTo(cx-gap/2-1,cy-lh*.15);ctx.quadraticCurveTo(cx,cy-lh*.4,cx+gap/2+1,cy-lh*.15);ctx.stroke();
+var ex=lw+gap/2;ctx.beginPath();ctx.moveTo(cx-ex,cy-lh*.3);ctx.lineTo(cx-ex-lw*.35,cy-lh*.38);ctx.moveTo(cx+ex,cy-lh*.3);ctx.lineTo(cx+ex+lw*.35,cy-lh*.38);ctx.stroke();ctx.restore()}
+function cover(im,x,y,w,h){var r=Math.max(w/im.width,h/im.height),iw=im.width*r,ih=im.height*r;ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(im,x+(w-iw)/2,y+(h-ih)/2,iw,ih);ctx.restore()}
+function fitImg(im,x,y,w,h){var r=Math.min(w/im.width,h/im.height),iw=im.width*r,ih=im.height*r;ctx.drawImage(im,x+(w-iw)/2,y+(h-ih)/2,iw,ih)}
+function setup(){var d=SIZES[s.size];hits={};cv.width=d[1];cv.height=d[2];return{W:d[1],H:d[2],u:Math.min(d[1],d[2])/1080,t:T[s.tpl]}}
+function bgFill(c){var g=ctx.createLinearGradient(0,0,c.W,c.H);g.addColorStop(0,c.t.bg[0]);g.addColorStop(1,c.t.bg[1]);ctx.fillStyle=g;ctx.fillRect(0,0,c.W,c.H);if(img.bg)cover(img.bg,0,0,c.W,c.H);else{var r=ctx.createRadialGradient(c.W*.65,c.H*.35,0,c.W*.65,c.H*.35,c.W*.65);r.addColorStop(0,ha(c.t.ac,.3));r.addColorStop(1,ha(c.t.ac,0));ctx.fillStyle=r;ctx.fillRect(0,0,c.W,c.H);ctx.strokeStyle=ha(c.t.ac,.2);ctx.lineWidth=3*c.u;[.22,.34].forEach(function(k){ctx.beginPath();ctx.arc(c.W*.82,c.H*.18,c.W*k,0,7);ctx.stroke()})}}
+function brand(c,x,y,al){var h=90*c.u;if(img.logo){var w=img.logo.width*h/img.logo.height;ctx.drawImage(img.logo,al==="right"?x-w:al==="center"?x-w/2:x,y,w,h)}else txt(s.shop,x,y+20*c.u,c.W*.6,44*c.u,"bold",c.t.ac,al,c.t.f)}
+function hero(c,id,x,y,w,h){el(id,function(){if(img.prod)fitImg(img.prod,x,y,w,h);else glasses(x,y,w,h,c);return[x,y,w,h]})}
+function box(id,t,x,y,mw,sz,wt,col,al,fam){var hh=0;el(id,function(){hh=txt(t,x,y,mw,sz,wt,col,al,fam);return[al==="right"?x-mw:al==="center"?x-mw/2:x,y,mw,Math.max(hh,20)]});return hh}
+function feats(c,y,h,strip){var t=c.t,W=c.W,u=c.u;el("features",function(){var it=s.feats.split(",").map(function(a){return a.trim()}).filter(Boolean).slice(0,5),x=.08*W,w=.84*W;
+if(strip){ctx.fillStyle="rgba(255,255,255,.12)";rr(x,y,w,h,24*u);ctx.fill();ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=2;ctx.stroke()}
+var cw=w/Math.max(it.length,1);it.forEach(function(a,i){var cx=x+cw*(i+.5);if(strip){ctx.fillStyle=t.ac;ctx.beginPath();ctx.arc(cx,y+h*.28,8*u,0,7);ctx.fill()}else if(i){ctx.fillStyle=t.tx;ctx.globalAlpha=.3;ctx.fillRect(x+cw*i,y+h*.1,2,h*.6);ctx.globalAlpha=1}
+txt(a,cx,y+h*(strip?.42:.2),cw-16*u,24*u,"normal",t.tx,"center",t.f)});return[x,y,w,h]})}
+function stPhoto(c){var W=c.W,H=c.H,u=c.u,t=c.t;bgFill(c);if(!img.bg)glasses(W>H?.45*W:.08*W,.1*H,W>H?.5*W:.84*W,W>H?.5*H:.4*H,c);var g=ctx.createLinearGradient(0,H*.4,0,H);g.addColorStop(0,"rgba(0,0,0,0)");g.addColorStop(1,"rgba(0,0,0,.78)");ctx.fillStyle=g;ctx.fillRect(0,H*.4,W,H*.6);
+brand(c,.05*W,.03*H,"left");var y=(H>W?.64:.56)*H,x=.95*W,mw=.72*W,h=box("headline",s.headline.toUpperCase(),x,y,mw,(H>W?92:80)*u,"bold","#fff","right",t.f);
+box("sub",s.sub,x,y+h+14*u,mw,32*u,"normal","#fff","right",t.f);box("footer",s.address,.05*W,.92*H,.5*W,30*u,"normal","#fff","left",t.f);box("phone",s.phone,.95*W,.93*H,.4*W,36*u,"bold","#fff","right",t.f)}
+function stBig(c){var W=c.W,H=c.H,u=c.u,t=c.t,land=W>H,w=s.headline.toUpperCase(),fam="Impact,'Arial Narrow',sans-serif";bgFill(c);ctx.font="900 100px "+fam;var sz=Math.min(100*.88*W/Math.max(ctx.measureText(w).width,1),.5*H);
+el("headline",function(){ctx.font="900 "+sz+"px "+fam;ctx.fillStyle=t.tx;ctx.textAlign="center";ctx.textBaseline="top";var y=(land?.06:.14)*H;ctx.fillText(w,W/2,y);return[.06*W,y,.88*W,sz]});
+if(land)hero(c,"product",.3*W,.1*H,.4*W,.78*H);else hero(c,"product",.12*W,.2*H,.76*W,.58*H);
+if(img.logo)brand(c,.05*W,.03*H,"left");box("brand",s.shop.toUpperCase(),W/2,.87*H,.8*W,56*u,"normal",t.tx,"center","Georgia,serif");box("sub",s.sub,W/2,.94*H,.84*W,26*u,"normal",t.tx,"center",t.f)}
+function stSplit(c){var W=c.W,H=c.H,u=c.u,t=c.t,land=W>H;bgFill(c);brand(c,.95*W,.03*H,"right");hero(c,"product",land?.55*W:.45*W,.1*H,land?.4*W:.52*W,.72*H);
+var ws=s.headline.toUpperCase().split(" "),x=.08*W,mw=(land?.4:.42)*W,y=(land?.3:.36)*H,sz=76*u,h1=box("headline",ws[0],x,y,mw,sz,"bold",t.ac,"left",t.f),h2=box("headline2",ws.slice(1).join(" "),x,y+h1,mw,sz,"bold",t.tx,"left",t.f),hs=box("sub",s.sub,x,y+h1+h2+16*u,mw,32*u,"bold",t.tx,"left",t.f);
+el("cta",function(){var q=32*u,yy=y+h1+h2+hs+40*u;ctx.font="bold "+q+"px "+t.f;var w=ctx.measureText(s.cta.toUpperCase()).width+60*u,h=q*1.8;ctx.strokeStyle=t.ac;ctx.lineWidth=4*u;rr(x,yy,w,h,6*u);ctx.stroke();txt(s.cta.toUpperCase(),x+w/2,yy+(h-q*1.2)/2,w,q,"bold",t.ac,"center",t.f);return[x,yy,w,h]});
+box("footer",[s.phone,s.address].filter(Boolean).join("  |  "),W/2,.93*H,.9*W,28*u,"normal",t.tx,"center",t.f)}
+function stTech(c){var W=c.W,H=c.H,u=c.u,t=c.t,land=W>H;bgFill(c);if(img.bg){ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(0,0,W,H)}
+brand(c,W/2,.02*H,"center");var h=box("headline",s.headline.toUpperCase(),W/2,.14*H,.84*W,(H>W?78:64)*u,"bold",t.tx,"center",t.f);box("sub",s.sub,W/2,.14*H+h+10*u,.8*W,30*u,"normal",t.tx,"center",t.f);
+if(land)hero(c,"product",.3*W,.34*H,.4*W,.44*H);else hero(c,"product",.1*W,.36*H,.8*W,.4*H);feats(c,.8*H,.1*H,true);box("tag",s.tag,W/2,.93*H,.8*W,32*u,"italic",t.tx,"center",t.f)}
+function stClean(c){var W=c.W,H=c.H,u=c.u,t=c.t;bgFill(c);brand(c,.95*W,.03*H,"right");hero(c,"product",.05*W,.14*H,.9*W,.52*H);
+box("headline",s.headline,W/2,.69*H,.84*W,(H>W?96:80)*u,"italic",t.ac,"center","'Brush Script MT','Segoe Script',cursive");feats(c,.91*H,.07*H,false)}
+function draw(){if(s.style==="classic")return drawClassic();var c=setup();({photo:stPhoto,bigtype:stBig,split:stSplit,tech:stTech,clean:stClean})[s.style](c)}
+// drag
+var drag=null;function pt(e){var r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]}
+cv.onpointerdown=function(e){var p=pt(e),ids=Object.keys(hits).reverse();
+for(var i=0;i<ids.length;i++){var b=hits[ids[i]];if(b&&p[0]>=b[0]&&p[0]<=b[0]+b[2]&&p[1]>=b[1]&&p[1]<=b[1]+b[3]){var o=s.off[ids[i]]||{x:0,y:0};drag={id:ids[i],sx:p[0],sy:p[1],ox:o.x,oy:o.y};cv.setPointerCapture(e.pointerId);return}}};
+cv.onpointermove=function(e){if(!drag)return;var p=pt(e);s.off[drag.id]={x:drag.ox+p[0]-drag.sx,y:drag.oy+p[1]-drag.sy};draw()};
+cv.onpointerup=function(){if(drag){drag=null;save()}};
+$("reset").onclick=function(){s.off={};save();draw()};
+function out(type,name){exporting=true;draw();try{cv.toBlob(function(b){exporting=false;draw();if(!b){msg("Export failed. Try a smaller size.");return}
+var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();
+msg("Downloaded "+name+". If nothing happened, long-press the poster and choose Save image.")},type,.92)}catch(e){exporting=false;draw();msg("Browser blocked export of the AI image. Storage CORS must be set once (see SETUP-CREATIVE-STUDIO.md).")}}
+$("png").onclick=function(){out("image/png","poster-"+s.size+".png")};
+$("jpg").onclick=function(){out("image/jpeg","poster-"+s.size+".jpg")};
+$("share").onclick=function(){exporting=true;draw();cv.toBlob(function(b){exporting=false;draw();var f=new File([b],"poster.png",{type:"image/png"});
+if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:s.headline}).catch(function(){});else msg("Sharing not supported on this browser. Use Download instead.")},"image/png")};
+var aiToken=0;
+function aiMsg(t){$("aiMsg").textContent=t}
+function loadImg(u){return new Promise(function(ok,no){var i=new Image();i.crossOrigin="anonymous";i.onload=function(){ok(i)};i.onerror=function(){no(new Error("generated image could not be loaded"))};i.src=u})}
+$("aiCancel").onclick=function(){aiToken++;$("aiGen").disabled=false;this.hidden=true;aiMsg("Cancelled. Your details and previous artwork are kept.")};
+$("aiGen").onclick=async function(){var btn=this;
+if(!window.fralenGenerate){aiMsg("AI provider is not connected yet. Your details are saved. See functions/SETUP.md.");return}
+var tok=++aiToken;btn.disabled=true;$("aiCancel").hidden=false;aiMsg("Generating artwork. This can take up to a minute...");
+try{var url=await window.fralenGenerate({style:$("aiStyle").value,occasion:$("aiOcc").value,model:$("aiModel").checked,product:true,palette:T[s.tpl].n,notes:$("aiNotes").value,aspect:{sq:"square",po:"portrait",st:"story",ls:"landscape"}[s.size],textZone:{photo:"bottom",split:"left",tech:"edges"}[s.style]||"none"});
+if(tok!==aiToken)return;var i=await loadImg(url);if(tok!==aiToken)return;
+var want=SIZES[s.size][1]/SIZES[s.size][2],got=i.naturalWidth/i.naturalHeight;img.bg=i;draw();
+aiMsg(Math.abs(got-want)/want>.25?"Artwork ready. Its shape differs from this poster size, so it is cropped to fit.":"Artwork ready. Edit the text or regenerate.")}
+catch(e){if(tok===aiToken)aiMsg("Generation failed: "+(e.message||"please retry")+". Previous artwork kept.")}
+finally{if(tok===aiToken){btn.disabled=false;$("aiCancel").hidden=true}}};
+// ================= CRM integration =================
+var uid=null,designId=null,files={},assets={},artPath=null,products=[];
+var storage=getStorage(app),gen=httpsCallable(getFunctions(app,"asia-south1"),"generateArtwork");
+window.fralenGenerate=async function(brief){var r=await gen(brief);artPath=r.data.path;delete assets.bg;return getDownloadURL(sref(storage,r.data.path))};
+function dmsg(t){$("dMsg").textContent=t}
+function snap(){return JSON.parse(JSON.stringify(s))}
+function syncFields(){F.forEach(function(k){$(k).value=s[k]||""});chips("tpls",T,"tpl",function(t){return t.n});chips("styles",STY,"style",function(t){return t});chips("sizes",SIZES,"size",function(t){return t[0]})}
+async function saveDraft(){if(!uid)return;try{await setDoc(tenantDoc(uid,"studioDraft","current"),snap())}catch(e){console.warn("draft not saved",e)}}
+async function upAsset(k){var f=files[k];if(f){var path="users/"+uid+"/studio/"+designId+"/"+k+"."+f.type.split("/")[1];await uploadBytes(sref(storage,path),f);assets[k]=path;delete files[k]}return assets[k]||null}
+async function saveDesign(){if(!uid)return;var b=$("dSave");b.disabled=true;dmsg("Saving...");
+try{var isNew=!designId;if(isNew)designId=doc(tenantCollection(uid,"designs")).id;var a={};
+for(var k of ["logo","prod","bg"]){if(k==="logo"&&!files.logo)continue;if(k==="bg"&&artPath)continue;if(img[k]||assets[k]){var p=await upAsset(k);if(p)a[k]=p}}
+var d={name:$("dName").value.trim()||s.headline||"Untitled",schemaVersion:1,state:snap(),assets:a,artPath:artPath||null,updatedAt:serverTimestamp()};
+if(isNew)d.createdAt=serverTimestamp();await setDoc(tenantDoc(uid,"designs",designId),d,{merge:true});dmsg("Design saved.");await loadDesigns(designId)}
+catch(e){dmsg("Could not save: "+(e.message||"try again")+". Your work is still on screen.")}finally{b.disabled=false}}
+async function loadDesigns(sel){try{var q=await getDocs(query(tenantCollection(uid,"designs"),orderBy("updatedAt","desc"),limit(30)));var h=$("dList");h.innerHTML='<option value="">'+(q.empty?"No saved designs yet":"Select a design")+'</option>';
+q.forEach(function(x){var o=document.createElement("option");o.value=x.id;o.textContent=(x.data().name||"Untitled");if(x.id===sel)o.selected=true;h.appendChild(o)})}catch(e){dmsg("Could not load designs.")}}
+async function openDesign(id){if(!id)return;dmsg("Opening...");try{var x=await getDoc(tenantDoc(uid,"designs",id));if(!x.exists()){dmsg("Design not found.");return}var d=x.data();
+s=Object.assign(s,d.state||{});designId=id;files={};assets=d.assets||{};artPath=d.artPath||null;$("dName").value=d.name||"";img.prod=null;img.bg=null;syncFields();
+var jobs=[];Object.keys(assets).forEach(function(k){jobs.push(getDownloadURL(sref(storage,assets[k])).then(loadImg).then(function(i){img[k]=i}))});
+if(artPath)jobs.push(getDownloadURL(sref(storage,artPath)).then(loadImg).then(function(i){img.bg=i}));
+await Promise.allSettled(jobs);draw();dmsg("Opened. Edit and Save design.")}catch(e){dmsg("Could not open this design.")}}
+$("dSave").onclick=saveDesign;
+$("dOpen").onclick=function(){openDesign($("dList").value)};
+$("dNew").onclick=function(){designId=null;files={};assets={};artPath=null;img.prod=null;img.bg=null;s.off={};$("dName").value="";draw();dmsg("New design started.")};
+$("dDel").onclick=async function(){var id=$("dList").value;if(!id||!confirm("Delete this design and its saved images?"))return;
+try{var x=await getDoc(tenantDoc(uid,"designs",id)),d=x.data()||{},paths=Object.values(d.assets||{}).concat(d.artPath?[d.artPath]:[]);
+await deleteDoc(tenantDoc(uid,"designs",id));await Promise.allSettled(paths.map(function(p){return deleteObject(sref(storage,p))}));if(id===designId)designId=null;dmsg("Deleted.");loadDesigns()}catch(e){dmsg("Could not delete.")}};
+$("pList").onchange=function(){var p=products[this.value];if(!p)return;s.details=[p.brand,p.name].filter(Boolean).join(" ")+(p.retailPrice?"  |  Rs. "+p.retailPrice:"");$("details").value=s.details;save();draw()};
+requireAuth(async function(user){uid=user.uid;
+try{var p=(await getDoc(profileDoc(uid))).data()||{};s.shop=p.shopName||s.shop;s.phone=p.phone||s.phone;s.address=p.address||s.address;
+if(p.logoDataUrl)loadImg(p.logoDataUrl).then(function(i){img.logo=i;draw()}).catch(function(){})}catch(e){}
+try{var d=await getDoc(tenantDoc(uid,"studioDraft","current"));if(d.exists())Object.assign(s,d.data())}catch(e){}
+syncFields();draw();loadDesigns();
+try{var q=await getDocs(tenantCollection(uid,"products"));var h=$("pList");q.forEach(function(x){var o=document.createElement("option");products.push(x.data());o.value=products.length-1;o.textContent=x.data().name||"Product";h.appendChild(o)})}catch(e){}});
+draw();
+</script></body></html>
