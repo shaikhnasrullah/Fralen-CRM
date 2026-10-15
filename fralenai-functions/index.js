@@ -3,6 +3,9 @@ const { defineSecret } = require("firebase-functions/params");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const OpenAI = require("openai");
+const { getStorage } = require("firebase-admin/storage");
+const { FieldValue } = require("firebase-admin/firestore");
+const { buildPrompt, SIZE, STYLES } = require("./studioPrompt");
 
 initializeApp();
 
@@ -634,6 +637,72 @@ exports.fralenAI = onCall(
         "internal",
         "FRALEN AI could not process your request."
       );
+    }
+  }
+);
+
+
+/*
+ * ============================================================
+ * CREATIVE STUDIO: AI ARTWORK
+ * Same security model as fralenAI: the uid comes from request.auth.
+ * Generates ARTWORK ONLY (no text/logos). The browser composes the
+ * real shop name, logo, phone, offer text on top.
+ * ============================================================
+ */
+function hasStudioAccess(p) {
+  if (p && p.freeAccess === true) return true;
+  const pay = String((p && p.paymentStatus) || "").toLowerCase();
+  const sub = String((p && p.subscriptionStatus) || "").toLowerCase();
+  return (
+    (pay === "paid" && ["active", "authenticated"].includes(sub)) ||
+    (pay === "trial" && ["active", "authenticated", "trial"].includes(sub))
+  );
+}
+
+exports.generateArtwork = onCall(
+  { region: "asia-south1", secrets: [OPENAI_API_KEY], timeoutSeconds: 180, memory: "1GiB" },
+  async (request) => {
+    const uid = requireUser(request);
+    const b = request.data || {};
+    const profile = (await db.doc("users/" + uid).get()).data() || {};
+    if (!hasStudioAccess(profile)) {
+      throw new HttpsError("permission-denied", "An active subscription is required for AI artwork.");
+    }
+    const aspect = SIZE[b.aspect] ? b.aspect : "square";
+
+    // Monthly quota (admin can change: Firestore doc config/creativeStudio { aiArtworkPerMonth: 10 })
+    const cfg = (await db.doc("config/creativeStudio").get()).data() || {};
+    const limit = Number(cfg.aiArtworkPerMonth) > 0 ? Number(cfg.aiArtworkPerMonth) : 10;
+    const qRef = db.doc("users/" + uid + "/usage/artwork-" + new Date().toISOString().slice(0, 7));
+    await db.runTransaction(async (tx) => {
+      const n = ((await tx.get(qRef)).data() || {}).count || 0;
+      if (n >= limit) throw new HttpsError("resource-exhausted", "Monthly AI artwork limit reached (" + limit + ").");
+      tx.set(qRef, { count: n + 1, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    });
+
+    try {
+      const res = await createOpenAIClient().images.generate({
+        model: process.env.IMAGE_MODEL || "gpt-image-1",
+        prompt: buildPrompt(b),
+        size: SIZE[aspect],
+        n: 1
+      });
+      const b64 = res && res.data && res.data[0] && res.data[0].b64_json;
+      if (!b64) throw new Error("provider returned no image");
+      const png = Buffer.from(b64, "base64");
+      const id = db.collection("_").doc().id;
+      const path = "users/" + uid + "/artwork/" + id + ".png";
+      await getStorage().bucket().file(path).save(png, { contentType: "image/png", resumable: false });
+      await db.doc("users/" + uid + "/assets/" + id).set({
+        assetId: id, storagePath: path, assetType: "ai-artwork", mimeType: "image/png",
+        fileSize: png.length, style: STYLES[b.style] ? b.style : "A", createdAt: FieldValue.serverTimestamp()
+      });
+      return { id, path, aspect };
+    } catch (e) {
+      await qRef.set({ count: FieldValue.increment(-1) }, { merge: true }); // refund on failure
+      console.error("generateArtwork failed:", e && e.message);
+      throw new HttpsError("internal", "Image generation failed. Please try again.");
     }
   }
 );
