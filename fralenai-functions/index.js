@@ -615,9 +615,7 @@ exports.fralenAI = onCall(
             }
           ],
 
-          max_output_tokens: 1200,
-
-          temperature: 0.2
+          max_output_tokens: 4000
         });
 
       return {
