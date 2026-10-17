@@ -13,6 +13,7 @@ onAuthStateChanged,
 signInWithEmailAndPassword,
 createUserWithEmailAndPassword,
 sendPasswordResetEmail,
+sendEmailVerification,
 createUserProfile,
 isAdminUser,
 profileDoc,
@@ -102,6 +103,13 @@ try {
 await createUserProfile(cred.user.uid, { ownerName, shopName, email, phone });
 } catch (profileErr) {
 console.error("Profile creation failed, will self-heal on next page load:", profileErr);
+}
+// Send the "Verify your email" mail. A failure here (e.g. too many
+// requests) must never block signup, so it is caught separately.
+try {
+await sendEmailVerification(cred.user);
+} catch (verifyErr) {
+console.error("Verification email failed:", verifyErr);
 }
 window.location.href = "payment.html";
 } catch (err) {
