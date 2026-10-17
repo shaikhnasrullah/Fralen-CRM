@@ -137,6 +137,45 @@ async function createUserProfile(
 
 
 // =========================================================
+// EMAIL VERIFICATION GATE (new signups only)
+//
+// A user must verify their email only if ALL of these are true:
+//   - email not verified
+//   - not the admin
+//   - no freeAccess (existing/free shops are never blocked)
+//   - no Razorpay subscription yet (existing paying shops are never blocked)
+// Blocked users are signed out and sent to the login page.
+// Returns true if the user was blocked.
+// =========================================================
+
+function verificationRequired(user, profile) {
+  if (!user || user.emailVerified || isAdminUser(user)) return false;
+  const p = profile || {};
+  if (p.freeAccess === true) return false;
+  if (p.razorpaySubscriptionId) return false;
+  return true;
+}
+
+async function enforceEmailVerification(user) {
+  if (!user || user.emailVerified || isAdminUser(user)) return false;
+
+  let profile = {};
+  try {
+    const snap = await getDoc(profileDoc(user.uid));
+    profile = snap.exists() ? snap.data() || {} : {};
+  } catch (e) {
+    console.error("Verification check failed:", e);
+  }
+
+  if (!verificationRequired(user, profile)) return false;
+
+  try { await signOut(auth); } catch (e) { console.error(e); }
+  window.location.replace("index.html?verify=1");
+  return true;
+}
+
+
+// =========================================================
 // AUTH GUARD FOR PROTECTED SHOP PAGES
 //
 // - Redirects signed-out users to index.html.
@@ -188,6 +227,12 @@ function requireAuth(onReady) {
           phone: "",
           createdAt: serverTimestamp(),
         });
+      }
+
+      if (verificationRequired(user, snap.exists() ? snap.data() : {})) {
+        await signOut(auth);
+        window.location.replace("index.html?verify=1");
+        return;
       }
 
       onReady(user);
@@ -252,5 +297,7 @@ export {
   requireAuth,
   requireAdmin,
   isAdminUser,
+  verificationRequired,
+  enforceEmailVerification,
   createUserProfile,
 };
