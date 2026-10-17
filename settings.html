@@ -389,116 +389,96 @@ requireAuth(async (user) => {
       }
 
 
-     
+      renderAccount(p, user);
+    } else {
+      renderAccount({}, user);
+    }
+  } catch (err) {
+    console.error('Settings load failed:', err);
+    const m = document.getElementById('statusMsg');
+    m.className = 'status-msg error';
+    m.textContent = 'Could not load profile: ' + err.message;
+  }
+  renderStaff();
+});
+
 // ---------------- ACCOUNT / SUBSCRIPTION ----------------
+// Reads the fields the backend (functions/index.js) really writes:
+// paymentStatus, subscriptionStatus, razorpaySubscriptionId, razorpayPaymentId,
+// lastRazorpayPaymentId, lastPaymentAmount (paise), lastPaymentAt, trialEndsAt, nextBillingAt.
+function toDate(v) {
+  if (!v) return null;
+  if (typeof v.toDate === 'function') return v.toDate();
+  if (typeof v.seconds === 'number') return new Date(v.seconds * 1000);
+  const d = new Date(v);
+  return isNaN(d) ? null : d;
+}
+function fmtDate(v) {
+  const d = toDate(v);
+  return d ? d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+}
+function badge(cls, text) { return '<span class="badge ' + cls + '">' + text + '</span>'; }
 
-document.getElementById('acc-created').textContent = p.createdAt?.toDate
-  ? p.createdAt.toDate().toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-  : '—';
+function renderAccount(p, user) {
+  const set = (id, v) => { document.getElementById(id).textContent = v; };
+  const html = (id, v) => { document.getElementById(id).innerHTML = v; };
 
-// Account status
-document.getElementById('acc-status').innerHTML =
-  p.status === 'suspended'
-    ? '<span class="badge" style="background:#FEE2E2;color:#B91C1C">⏸️ Suspended</span>'
-    : '<span class="badge badge-verified">✅ Active</span>';
+  set('acc-email', user.email || p.email || '—');
+  set('acc-created', fmtDate(p.createdAt || (user.metadata && user.metadata.creationTime)));
 
-// Subscription type
-document.getElementById('acc-plan').textContent =
-  p.subscriptionPlan ||
-  p.planName ||
-  'Monthly — ₹499';
+  const suspended = p.status === 'suspended' || p.suspended === true || p.isSuspended === true;
+  html('acc-status', suspended
+    ? badge('', '⏸️ Suspended').replace('class="badge "', 'class="badge" style="background:#FEE2E2;color:#B91C1C"')
+    : badge('badge-verified', '✅ Active'));
 
-// Subscription status
-const subStatusEl = document.getElementById('acc-sub-status');
+  const free = p.freeAccess === true;
+  const subStatus = String(p.subscriptionStatus || '').toLowerCase();
+  const payStatus = String(p.paymentStatus || '').toLowerCase();
 
-if (p.subscriptionStatus === 'active') {
-  subStatusEl.innerHTML =
-    '<span class="badge badge-verified">🟢 Active</span>';
-} else if (p.subscriptionStatus === 'cancelled') {
-  subStatusEl.innerHTML =
-    '<span class="badge badge-pending">⚠️ Cancelled</span>';
-} else if (p.subscriptionStatus === 'halted') {
-  subStatusEl.innerHTML =
-    '<span class="badge badge-pending">⏸️ Halted</span>';
-} else {
-  subStatusEl.innerHTML =
-    '<span class="badge badge-none">—</span>';
+  set('acc-plan', free ? 'Free Access'
+    : (p.subscriptionPlan || p.planName || (p.razorpaySubscriptionId ? 'Monthly — ₹' + ((p.subscriptionAmount || 49900) / 100).toLocaleString('en-IN') : '—')));
+
+  const subMap = {
+    active: ['badge-verified', '🟢 Active'],
+    authenticated: ['badge-verified', '🟢 Authenticated'],
+    trial: ['badge-verified', '🟢 Trial'],
+    created: ['badge-pending', '⏳ Created'],
+    pending: ['badge-pending', '⏳ Pending'],
+    halted: ['badge-pending', '⏸️ Halted'],
+    paused: ['badge-pending', '⏸️ Paused'],
+    cancelled: ['badge-pending', '⚠️ Cancelled'],
+    completed: ['badge-none', 'Completed'],
+  };
+  if (free) html('acc-sub-status', badge('badge-verified', '🟢 Free Access'));
+  else if (subMap[subStatus]) html('acc-sub-status', badge(subMap[subStatus][0], subMap[subStatus][1]));
+  else html('acc-sub-status', badge('badge-none', '—'));
+
+  const payMap = {
+    paid: ['badge-verified', '✅ Paid'],
+    verified: ['badge-verified', '✅ Payment Confirmed'],
+    captured: ['badge-verified', '✅ Payment Confirmed'],
+    trial: ['badge-verified', '🎁 Free Trial'],
+    pending: ['badge-pending', '⏳ Payment Pending'],
+    payment_pending: ['badge-pending', '⏳ Payment Pending'],
+    paused: ['badge-pending', '⏸️ Paused'],
+    suspended: ['badge-pending', '⏸️ Suspended'],
+    cancelled: ['badge-pending', '⚠️ Cancelled'],
+  };
+  if (free) html('acc-payment', badge('badge-verified', '✅ Not required'));
+  else if (payMap[payStatus]) html('acc-payment', badge(payMap[payStatus][0], payMap[payStatus][1]));
+  else html('acc-payment', badge('badge-none', 'Not Paid Yet'));
+
+  // amounts from Razorpay are in paise
+  const paise = p.lastPaymentAmount != null ? Number(p.lastPaymentAmount)
+    : (p.authorizationAmount != null ? Number(p.authorizationAmount) : null);
+  set('acc-amount', paise != null && !isNaN(paise) ? '₹' + (paise / 100).toLocaleString('en-IN') : (p.paymentAmount ? '₹' + Number(p.paymentAmount).toLocaleString('en-IN') : '—'));
+
+  set('acc-payment-id', p.lastRazorpayPaymentId || p.razorpayPaymentId || p.paymentId || '—');
+  set('acc-subscription-id', p.razorpaySubscriptionId || p.subscriptionId || '—');
+  set('acc-verified-on', fmtDate(p.lastPaymentAt || p.authorizationVerifiedAt || p.paymentVerifiedAt));
+  set('acc-next-payment', fmtDate(p.nextBillingAt || p.nextPaymentAt || p.trialEndsAt));
 }
 
-// Payment status
-const paymentEl = document.getElementById('acc-payment');
-
-if (p.paymentStatus === 'verified' || p.paymentStatus === 'captured') {
-
-  paymentEl.innerHTML =
-    '<span class="badge badge-verified">✅ Payment Confirmed</span>';
-
-} else if (p.paymentStatus === 'pending') {
-
-  paymentEl.innerHTML =
-    '<span class="badge badge-pending">⏳ Payment Pending</span>';
-
-} else {
-
-  paymentEl.innerHTML =
-    '<span class="badge badge-none">Not Paid Yet</span>';
-}
-
-// Payment amount
-document.getElementById('acc-amount').textContent =
-  p.paymentAmount
-    ? '₹' + Number(p.paymentAmount).toLocaleString('en-IN')
-    : '—';
-
-// Payment ID
-document.getElementById('acc-payment-id').textContent =
-  p.paymentId || '—';
-
-// Razorpay subscription ID
-document.getElementById('acc-subscription-id').textContent =
-  p.subscriptionId || '—';
-
-// Last payment
-if (p.paymentVerifiedAt) {
-
-  const paymentDate = p.paymentVerifiedAt.toDate
-    ? p.paymentVerifiedAt.toDate()
-    : new Date(p.paymentVerifiedAt);
-
-  document.getElementById('acc-verified-on').textContent =
-    paymentDate.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-
-} else {
-
-  document.getElementById('acc-verified-on').textContent = '—';
-}
-
-// Next payment
-if (p.nextPaymentAt) {
-
-  const nextDate = p.nextPaymentAt.toDate
-    ? p.nextPaymentAt.toDate()
-    : new Date(p.nextPaymentAt);
-
-  document.getElementById('acc-next-payment').textContent =
-    nextDate.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-
-} else {
-
-  document.getElementById('acc-next-payment').textContent = '—';
-}
 /* ---------------- STAFF ---------------- */
 function renderStaff() {
   const box = document.getElementById('staff-list');
