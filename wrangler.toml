@@ -1,0 +1,9 @@
+# Markdown content negotiation in front of GitHub Pages. See worker/README.md.
+name = "fralencrm-markdown"
+main = "worker/markdown-negotiation.mjs"
+compatibility_date = "2026-10-01"
+
+routes = [
+  { pattern = "www.fralencrm.in/*", zone_name = "fralencrm.in" },
+  { pattern = "fralencrm.in/*", zone_name = "fralencrm.in" },
+]

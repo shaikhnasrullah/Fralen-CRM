@@ -1,0 +1,10 @@
+{
+  "name": "fralen-crm-site",
+  "private": true,
+  "description": "Tooling and tests for the FRALEN CRM public site (agent readiness).",
+  "scripts": {
+    "build:md": "node scripts/build-markdown.mjs",
+    "test": "node scripts/build-markdown.mjs --check && node --test tests/*.test.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
