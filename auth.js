@@ -16,10 +16,19 @@ sendPasswordResetEmail,
 sendEmailVerification,
 createUserProfile,
 isAdminUser,
+verificationRequired,
 profileDoc,
 signOut,
 } from "./firebase-config.js";
 import { getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// Bounced here because the email is not verified yet.
+if (new URLSearchParams(window.location.search).get('verify') === '1') {
+window.addEventListener('DOMContentLoaded', () => {
+window.showLoginError("Please verify your email first. Check your inbox (and Spam) for the verification link, then sign in.");
+showResendLink();
+});
+}
 
 // Show a message if we just bounced a suspended shop back here.
 if (new URLSearchParams(window.location.search).get('suspended') === '1') {
@@ -39,8 +48,18 @@ let authActionInProgress = false;
 // If someone is already logged in and lands on index.html (e.g. they
 // bookmarked this page while still signed in), skip straight to the
 // dashboard — or to the admin panel, if this is the admin account.
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
 if (user && !authActionInProgress) {
+if (!isAdminUser(user) && !user.emailVerified) {
+// Unverified: only continue if this is an existing free/paying shop.
+try {
+const snap = await getDoc(profileDoc(user.uid));
+if (verificationRequired(user, snap.exists() ? snap.data() : {})) {
+await signOut(auth);
+return;
+}
+} catch (e) { console.error(e); return; }
+}
 window.location.href = isAdminUser(user) ? "admin.html" : "dashboard.html";
 }
 });
@@ -63,6 +82,18 @@ const snap = await getDoc(profileDoc(cred.user.uid));
 if (snap.exists() && snap.data().status === "suspended") {
 await signOut(auth);
 window.showLoginError("This account has been suspended. Please contact support.");
+btn.textContent = "Sign In";
+btn.classList.remove("loading");
+authActionInProgress = false;
+return;
+}
+}
+if (!isAdminUser(cred.user) && !cred.user.emailVerified) {
+const snap2 = await getDoc(profileDoc(cred.user.uid));
+if (verificationRequired(cred.user, snap2.exists() ? snap2.data() : {})) {
+await signOut(auth);
+window.showLoginError("Your email is not verified yet. Please click the link we sent to " + email + " (check Spam too), then sign in again.");
+showResendLink();
 btn.textContent = "Sign In";
 btn.classList.remove("loading");
 authActionInProgress = false;
@@ -111,7 +142,17 @@ await sendEmailVerification(cred.user);
 } catch (verifyErr) {
 console.error("Verification email failed:", verifyErr);
 }
-window.location.href = "payment.html";
+// Do NOT continue until the email is verified: sign out and ask the
+// user to verify, then sign in.
+await signOut(auth);
+document.getElementById("login-email").value = email;
+document.getElementById("signupForm").reset();
+window.showTab("login");
+window.showLoginSuccess("Account created! We sent a verification link to " + email + ". Verify it (check Spam too), then sign in.");
+showResendLink();
+btn.textContent = "Create Account";
+btn.classList.remove("loading");
+authActionInProgress = false;
 } catch (err) {
 window.showLoginError(friendlyAuthError(err));
 btn.textContent = "Create Account";
@@ -119,6 +160,44 @@ btn.classList.remove("loading");
 authActionInProgress = false;
 }
 });
+
+// ---------- RESEND VERIFICATION EMAIL ----------
+function showResendLink() {
+let a = document.getElementById("resend-verify");
+if (!a) {
+a = document.createElement("a");
+a.id = "resend-verify";
+a.textContent = "Resend verification email";
+a.style.cssText = "display:block;text-align:center;margin:10px 0;color:#4F6BF0;font-weight:600;cursor:pointer;font-size:13px";
+a.onclick = () => window.handleResendVerification();
+document.getElementById("success-msg").insertAdjacentElement("afterend", a);
+}
+a.style.display = "block";
+}
+
+window.handleResendVerification = async function () {
+const email = document.getElementById("login-email").value.trim();
+const password = document.getElementById("login-password").value;
+if (!email || !password) {
+window.showLoginError("Enter your email and password above, then click Resend.");
+return;
+}
+authActionInProgress = true;
+try {
+const cred = await signInWithEmailAndPassword(auth, email, password);
+if (cred.user.emailVerified) {
+await signOut(auth);
+window.showLoginSuccess("Your email is already verified. Please sign in.");
+} else {
+await sendEmailVerification(cred.user);
+await signOut(auth);
+window.showLoginSuccess("Verification link sent again to " + email + ". Check Spam too.");
+}
+} catch (err) {
+window.showLoginError(friendlyAuthError(err));
+}
+authActionInProgress = false;
+};
 
 // ---------- FORGOT PASSWORD ----------
 window.handleForgotPassword = async function () {
@@ -143,6 +222,7 @@ case "auth/user-not-found": return "No account found with this email";
 case "auth/wrong-password":
 case "auth/invalid-credential": return "Incorrect email or password.";
 case "auth/email-already-in-use": return "An account already exists with this email. Please log in.";
+case "auth/too-many-requests": return "Too many attempts. Please wait a few minutes and try again.";
 case "auth/weak-password": return "Password must be at least 6 characters..";
 default: return (err && err.message) ? err.message : "Something went wrong. Please try again..";
 }
