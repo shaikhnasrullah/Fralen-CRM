@@ -344,7 +344,7 @@
   </main>
 
   <script type="module">
-    import { app } from "./firebase-config.js";
+    import { app, enforceEmailVerification } from "./firebase-config.js";
 
     import {
       getAuth,
@@ -538,6 +538,8 @@
 
         return;
       }
+
+      if (await enforceEmailVerification(user)) return;
 
       accountEmail.textContent = user.email || user.uid;
       setButton("Loading subscription...", true);
