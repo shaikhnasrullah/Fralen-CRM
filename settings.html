@@ -260,19 +260,73 @@
     </div>
   </div>
 
-  <!-- ACCOUNT TAB -->
-  <div class="tab-panel" data-tab="account">
-    <div class="panel">
-      <div class="acc-row"><span class="lbl">Email</span><span class="val" id="acc-email">—</span></div>
-      <div class="acc-row"><span class="lbl">Account Created</span><span class="val" id="acc-created">—</span></div>
-      <div class="acc-row"><span class="lbl">Account Status</span><span class="val" id="acc-status">—</span></div>
-      <div class="acc-row"><span class="lbl">Subscription Plan</span><span class="val" id="acc-plan">Monthly — ₹499</span></div>
-      <div class="acc-row"><span class="lbl">Payment Status</span><span class="val" id="acc-payment">—</span></div>
-      <div class="acc-row"><span class="lbl">Last Payment Verified</span><span class="val" id="acc-verified-on">—</span></div>
-      <button class="subscribe-btn" onclick="window.location.href='payment.html'">💳 Go to Payment / Subscription</button>
-    </div>
-  </div>
+<!-- ACCOUNT TAB -->
+<div class="tab-panel" data-tab="account">
+  <div class="panel">
 
+    <div class="acc-row">
+      <span class="lbl">Email</span>
+      <span class="val" id="acc-email">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Account Created</span>
+      <span class="val" id="acc-created">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Account Status</span>
+      <span class="val" id="acc-status">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Subscription Type</span>
+      <span class="val" id="acc-plan">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Subscription Status</span>
+      <span class="val" id="acc-sub-status">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Payment Status</span>
+      <span class="val" id="acc-payment">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Payment Amount</span>
+      <span class="val" id="acc-amount">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Payment ID</span>
+      <span class="val" id="acc-payment-id">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Subscription ID</span>
+      <span class="val" id="acc-subscription-id">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Last Payment</span>
+      <span class="val" id="acc-verified-on">—</span>
+    </div>
+
+    <div class="acc-row">
+      <span class="lbl">Next Payment</span>
+      <span class="val" id="acc-next-payment">—</span>
+    </div>
+
+    <button class="subscribe-btn"
+            onclick="window.location.href='payment.html'">
+      💳 Manage Payment / Subscription
+    </button>
+
+  </div>
+</div>
+ 
   <!-- HELP TAB -->
   <div class="tab-panel" data-tab="help">
     <div class="help-card">
@@ -334,36 +388,117 @@ requireAuth(async (user) => {
         renderLogoPreview();
       }
 
-      // Account tab
-      document.getElementById('acc-created').textContent = p.createdAt?.toDate
-        ? p.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-        : '—';
-      document.getElementById('acc-status').innerHTML = p.status === 'suspended'
-        ? '<span class="badge" style="background:#FEE2E2;color:#B91C1C">⏸️ Suspended</span>'
-        : '<span class="badge badge-verified">✅ Active</span>';
 
-      const paymentEl = document.getElementById('acc-payment');
-      if (p.paymentStatus === 'verified') {
-        paymentEl.innerHTML = '<span class="badge badge-verified">✅ Verified</span>';
-      } else if (p.paymentStatus === 'pending') {
-        paymentEl.innerHTML = '<span class="badge badge-pending">⏳ Pending Verification</span>';
-      } else {
-        paymentEl.innerHTML = '<span class="badge badge-none">Not Paid Yet</span>';
-      }
+     
+// ---------------- ACCOUNT / SUBSCRIPTION ----------------
 
-      document.getElementById('acc-verified-on').textContent = p.paymentVerifiedAt
-        ? new Date(p.paymentVerifiedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-        : '—';
-    } else {
-      document.getElementById('acc-status').innerHTML = '<span class="badge badge-verified">✅ Active</span>';
-      document.getElementById('acc-payment').innerHTML = '<span class="badge badge-none">Not Paid Yet</span>';
-    }
-  } catch (e) {
-    console.error('Profile load error:', e);
-  }
-  renderStaff();
-});
+document.getElementById('acc-created').textContent = p.createdAt?.toDate
+  ? p.createdAt.toDate().toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  : '—';
 
+// Account status
+document.getElementById('acc-status').innerHTML =
+  p.status === 'suspended'
+    ? '<span class="badge" style="background:#FEE2E2;color:#B91C1C">⏸️ Suspended</span>'
+    : '<span class="badge badge-verified">✅ Active</span>';
+
+// Subscription type
+document.getElementById('acc-plan').textContent =
+  p.subscriptionPlan ||
+  p.planName ||
+  'Monthly — ₹499';
+
+// Subscription status
+const subStatusEl = document.getElementById('acc-sub-status');
+
+if (p.subscriptionStatus === 'active') {
+  subStatusEl.innerHTML =
+    '<span class="badge badge-verified">🟢 Active</span>';
+} else if (p.subscriptionStatus === 'cancelled') {
+  subStatusEl.innerHTML =
+    '<span class="badge badge-pending">⚠️ Cancelled</span>';
+} else if (p.subscriptionStatus === 'halted') {
+  subStatusEl.innerHTML =
+    '<span class="badge badge-pending">⏸️ Halted</span>';
+} else {
+  subStatusEl.innerHTML =
+    '<span class="badge badge-none">—</span>';
+}
+
+// Payment status
+const paymentEl = document.getElementById('acc-payment');
+
+if (p.paymentStatus === 'verified' || p.paymentStatus === 'captured') {
+
+  paymentEl.innerHTML =
+    '<span class="badge badge-verified">✅ Payment Confirmed</span>';
+
+} else if (p.paymentStatus === 'pending') {
+
+  paymentEl.innerHTML =
+    '<span class="badge badge-pending">⏳ Payment Pending</span>';
+
+} else {
+
+  paymentEl.innerHTML =
+    '<span class="badge badge-none">Not Paid Yet</span>';
+}
+
+// Payment amount
+document.getElementById('acc-amount').textContent =
+  p.paymentAmount
+    ? '₹' + Number(p.paymentAmount).toLocaleString('en-IN')
+    : '—';
+
+// Payment ID
+document.getElementById('acc-payment-id').textContent =
+  p.paymentId || '—';
+
+// Razorpay subscription ID
+document.getElementById('acc-subscription-id').textContent =
+  p.subscriptionId || '—';
+
+// Last payment
+if (p.paymentVerifiedAt) {
+
+  const paymentDate = p.paymentVerifiedAt.toDate
+    ? p.paymentVerifiedAt.toDate()
+    : new Date(p.paymentVerifiedAt);
+
+  document.getElementById('acc-verified-on').textContent =
+    paymentDate.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+} else {
+
+  document.getElementById('acc-verified-on').textContent = '—';
+}
+
+// Next payment
+if (p.nextPaymentAt) {
+
+  const nextDate = p.nextPaymentAt.toDate
+    ? p.nextPaymentAt.toDate()
+    : new Date(p.nextPaymentAt);
+
+  document.getElementById('acc-next-payment').textContent =
+    nextDate.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+} else {
+
+  document.getElementById('acc-next-payment').textContent = '—';
+}
 /* ---------------- STAFF ---------------- */
 function renderStaff() {
   const box = document.getElementById('staff-list');
@@ -455,6 +590,8 @@ document.getElementById('staff-name').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); window.addStaff(); }
 });
 
+
+     
 
 /* ---------------- STAFF PERFORMANCE ---------------- */
 // Sales are taken from the "salesPerson" saved in every order.
