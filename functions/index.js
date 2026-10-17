@@ -26,7 +26,7 @@ const razorpaySecret = defineSecret("RAZORPAY_KEY_SECRET");
 const razorpayWebhookSecret = defineSecret("RAZORPAY_WEBHOOK_SECRET");
 const razorpayKeyId = defineString("RAZORPAY_KEY_ID");
 
-const RAZORPAY_PLAN_ID = "plan_TlHAyzxo0oEVwg";
+const RAZORPAY_PLAN_ID = "plan_TopYFcnfKAdwKd";
 
 const TRIAL_DAYS = 15;
 const AUTHORIZATION_AMOUNT = 100; // ₹1 in paise
