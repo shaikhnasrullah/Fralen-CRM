@@ -178,7 +178,7 @@ window.render = function () {
   list.sort((a, b) => b.months - a.months); // most overdue first
 
   if (list.length === 0) {
-    body.innerHTML = `<div class="empty-state">🎉 Koi customer due nahi hai is threshold pe.</div>`;
+    body.innerHTML = `<div class="empty-state">🎉 There is no customer found in thresold.</div>`;
     return;
   }
 
