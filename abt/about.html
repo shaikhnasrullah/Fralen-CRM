@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us | Fralen CRM — Smart Management Platform for Optical Shops</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tealBrand: {
+              DEFAULT: '#1d4e4e',
+              dark: '#143838',
+              light: '#296868',
+              soft: '#edf4f4',
+            },
+            goldBrand: {
+              DEFAULT: '#d99b26',
+              dark: '#b88019',
+              light: '#f5e6c8',
+              soft: '#fbf4e6',
+            },
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Inter"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #1f2937;
+      background-color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Hero Banner Background with subtle wave/star aesthetic */
+    .hero-banner-bg {
+      background-color: #1d4e4e;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    /* Continuous S-Curve Timeline Connectors matching FurniFlex Reference */
+    @media (min-width: 1024px) {
+      .timeline-step {
+        position: relative;
+      }
+
+      /* Odd Steps (1, 3, 5): Image Left inside Left C-Curve with subtle gold accent ring */
+      .curve-left-frame {
+        position: relative;
+        padding: 18px 0 18px 18px;
+      }
+      .curve-left-frame::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 56%;
+        border-top: 6px solid #1d4e4e;
+        border-left: 6px solid #1d4e4e;
+        border-bottom: 6px solid #1d4e4e;
+        border-top-left-radius: 138px;
+        border-bottom-left-radius: 138px;
+        box-shadow: inset 2px 0 0 rgba(217, 155, 38, 0.35);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Bridge connecting Left Frame bottom to Right Frame top */
+      .bridge-ltr::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 26%;
+        right: 26%;
+        height: 6px;
+        background: linear-gradient(90deg, #1d4e4e 0%, #245c5c 50%, #1d4e4e 100%);
+        z-index: 1;
+      }
+
+      /* Even Steps (2, 4): Image Right inside Right C-Curve */
+      .curve-right-frame {
+        position: relative;
+        padding: 18px 18px 18px 0;
+      }
+      .curve-right-frame::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        right: 0;
+        bottom: 0;
+        width: 56%;
+        border-top: 6px solid #1d4e4e;
+        border-right: 6px solid #1d4e4e;
+        border-bottom: 6px solid #1d4e4e;
+        border-top-right-radius: 138px;
+        border-bottom-right-radius: 138px;
+        box-shadow: inset -2px 0 0 rgba(217, 155, 38, 0.35);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* Bridge connecting Right Frame bottom to Left Frame top */
+      .bridge-rtl::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 26%;
+        right: 26%;
+        height: 6px;
+        background: linear-gradient(90deg, #1d4e4e 0%, #245c5c 50%, #1d4e4e 100%);
+        z-index: 1;
+      }
+
+      /* Final bottom horizontal finishing bar with gold tip */
+      .curve-finish::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 26%;
+        right: 8%;
+        height: 6px;
+        background: linear-gradient(90deg, #1d4e4e 75%, #d99b26 100%);
+        border-radius: 999px;
+      }
+    }
+
+    /* Smooth Scroll Reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.65s ease-out, transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Toast Notification */
+    #toast-notification {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-goldBrand selection:text-white">
+
+  <!-- Toast Notification (Replaces alert()) -->
+  <div id="toast-notification" role="status" class="fixed bottom-5 right-5 z-50 translate-y-24 opacity-0 pointer-events-none bg-tealBrand text-white px-5 py-3.5 rounded-xl shadow-2xl border border-goldBrand/50 flex items-center gap-3 text-sm font-medium">
+    <svg class="w-5 h-5 text-goldBrand shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span id="toast-text">Copied to clipboard!</span>
+  </div>
+
+  <!-- 1. TOP GOLD ANNOUNCEMENT BAR (#d99b26) -->
+  <div class="bg-goldBrand text-white text-xs sm:text-[13px] py-2.5 px-4 sm:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <!-- Left: Follow Us + Clean SVG Social Icons -->
+      <div class="flex items-center gap-3">
+        <span class="font-medium tracking-wide text-white/95">Follow Us</span>
+        <div class="flex items-center gap-2">
+          <!-- Instagram -->
+          <a href="https://www.instagram.com/fralen_optical_crm?mdxt=MWZ4Z3l5NHd3azVhaA==" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram (@fralen_optical_crm)" class="w-6 h-6 rounded-full bg-white/20 hover:bg-white hover:text-goldBrand flex items-center justify-center transition">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/in/shaikh-nasrullah-4188a5347?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn (Shaikh Nasrullah)" class="w-6 h-6 rounded-full bg-white/20 hover:bg-white hover:text-goldBrand flex items-center justify-center transition">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+            </svg>
+          </a>
+          <!-- GitHub -->
+          <a href="https://Github.com/shaikhnasrullah/" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub (shaikhnasrullah)" class="w-6 h-6 rounded-full bg-white/20 hover:bg-white hover:text-goldBrand flex items-center justify-center transition">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Center Announcement -->
+      <div class="text-center font-medium tracking-wide">
+        Smart Management Platform for Optical Shops — Built for Modern Opticians
+      </div>
+
+      <!-- Right Phone Contact -->
+      <div class="flex items-center gap-1.5 font-medium">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+        </svg>
+        <a href="tel:+919304477821" class="hover:underline">+91 93044 77821</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. DEEP TEAL HEADER & HERO BANNER (#1d4e4e) -->
+  <header class="bg-tealBrand text-white sticky top-0 z-40 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
+      <!-- Brand Logo 'Fralen CRM' on Left -->
+      <a href="#" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-lg bg-goldBrand flex items-center justify-center text-white font-heading font-extrabold text-lg shadow-sm group-hover:scale-105 transition">
+          F
+        </div>
+        <span class="font-heading font-bold text-xl tracking-tight text-white">
+          Fralen CRM<span class="text-goldBrand">.</span>
+        </span>
+      </a>
+
+      <!-- Center Nav Links (Home, Features, Modules, About Us [active with gold underline], Contact, Demo) -->
+      <nav class="hidden lg:flex items-center gap-7 text-sm font-medium">
+        <a href="#intro" class="text-white/80 hover:text-white transition py-1">Home</a>
+        <a href="#features" class="text-white/80 hover:text-white transition py-1">Features</a>
+        <a href="#journey" class="text-white/80 hover:text-white transition py-1">Modules</a>
+        <a href="#hero-about" class="text-white font-semibold border-b-2 border-goldBrand py-1">About Us</a>
+        <a href="#founder" class="text-white/80 hover:text-white transition py-1">Contact</a>
+        <a href="#demo" class="text-white/80 hover:text-white transition py-1">Demo</a>
+      </nav>
+
+      <!-- Right Action Icons (Search, User, Dashboard) + Mobile Toggle -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Search Icon Button -->
+        <button id="search-toggle-btn" aria-label="Search Features" title="Quick Feature Search" class="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center text-white/90 hover:text-white transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+        </button>
+
+        <!-- Solo Founder / User Icon Link -->
+        <a href="#founder" aria-label="Founder Profile" title="Meet Solo Founder: Shaikh Nasrullah" class="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center text-white/90 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+        </a>
+
+        <!-- Dashboard / Grid Icon Link -->
+        <a href="#features" aria-label="CRM Dashboard Modules" title="Explore CRM Modules" class="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center text-white/90 hover:text-white transition relative">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+          </svg>
+          <span class="w-2 h-2 rounded-full bg-goldBrand absolute top-1.5 right-1.5"></span>
+        </a>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-nav-btn" aria-label="Toggle Navigation" class="lg:hidden w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition ml-1 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Quick Search Bar -->
+    <div id="search-bar-panel" class="hidden bg-tealBrand-dark border-t border-white/10 px-4 sm:px-8 py-3">
+      <div class="max-w-2xl mx-auto flex items-center gap-3">
+        <input
+          id="feature-search-input"
+          type="text"
+          placeholder="Search Fralen CRM modules (e.g., Prescription, Reminders, Inventory, Migration)..."
+          class="w-full bg-white/10 text-white placeholder-teal-200/60 text-sm px-4 py-2 rounded-xl border border-white/15 focus:outline-none focus:border-goldBrand"
+        />
+        <a href="#features" class="bg-goldBrand hover:bg-goldBrand-dark text-white text-xs font-semibold px-4 py-2.5 rounded-xl shrink-0 transition">
+          Find
+        </a>
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Navigation -->
+    <div id="mobile-nav-menu" class="hidden lg:hidden bg-tealBrand-dark border-t border-white/10 px-6 py-4 space-y-2.5 text-sm">
+      <a href="#intro" class="block text-white/85 hover:text-goldBrand py-1">Home</a>
+      <a href="#features" class="block text-white/85 hover:text-goldBrand py-1">Features</a>
+      <a href="#journey" class="block text-white/85 hover:text-goldBrand py-1">Modules & Story</a>
+      <a href="#hero-about" class="block text-goldBrand font-semibold py-1">About Us</a>
+      <a href="#founder" class="block text-white/85 hover:text-goldBrand py-1">Contact & Founder</a>
+      <a href="#demo" class="block text-white/85 hover:text-goldBrand py-1">Request Demo</a>
+    </div>
+  </header>
+
+  <!-- HERO BANNER WITH DECORATIVE WAVE & STAR OUTLINES -->
+  <section id="hero-about" class="hero-banner-bg relative text-white py-20 sm:py-28 overflow-hidden">
+    <!-- Decorative Wave Lines SVG (Matching FurniFlex Hero Waves) -->
+    <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="none" stroke="#ffffff" stroke-width="1.6" d="M-40,140 C260,260 440,20 740,150 C1040,280 1220,50 1480,170" />
+      <path fill="none" stroke="#d99b26" stroke-width="1.3" d="M-40,210 C320,80 560,290 920,170 C1180,85 1340,240 1480,190" />
+    </svg>
+
+    <!-- Decorative Geometric Star Outlines -->
+    <svg class="absolute top-10 left-[14%] w-7 h-7 text-white/15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+    </svg>
+    <svg class="absolute top-14 right-[12%] w-8 h-8 text-goldBrand/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+    </svg>
+    <svg class="absolute bottom-7 left-[34%] w-6 h-6 text-white/15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+    </svg>
+
+    <div class="relative max-w-4xl mx-auto px-4 text-center">
+      <h1 class="font-heading text-4xl sm:text-5xl md:text-[54px] font-bold tracking-tight text-white">
+        About Us
+      </h1>
+    </div>
+  </section>
+
+  <!-- 3. INTRO SECTION: Discover Fralen CRM -->
+  <section id="intro" class="py-16 sm:py-24 px-4 sm:px-8 bg-white">
+    <div class="max-w-5xl mx-auto reveal">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs font-semibold uppercase tracking-widest text-goldBrand">
+          Optical Retail Innovation
+        </span>
+        <h2 class="font-heading text-2xl sm:text-4xl font-bold text-gray-900 mt-2 leading-tight">
+          Discover Fralen CRM - <br class="hidden sm:inline" />
+          Where Innovation Meets Design
+        </h2>
+      </div>
+
+      <!-- Wide Rounded-Corner Hero Showcase Image with Subtle Caption Overlay -->
+      <div class="relative rounded-3xl overflow-hidden shadow-xl border border-gray-100 group">
+        <img
+          src="https://i.ibb.co/ns1hN0Jq/Screenshot-2026-11-09-155419.png"
+          onerror="this.src='https://placehold.co/1200x600/1d4e4e/ffffff?text=Fralen+CRM+Optical+Shop+Platform'"
+          alt="Modern Optical Store Eyewear Display & Smart CRM Management"
+          class="w-full h-[300px] sm:h-[430px] md:h-[490px] object-cover group-hover:scale-[1.02] transition duration-700"
+        />
+        <!-- Subtle Gradient & Caption Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-tealBrand-dark/85 via-tealBrand-dark/20 to-transparent flex items-end p-6 sm:p-10">
+          <div class="max-w-2xl text-white">
+            <span class="inline-block bg-goldBrand text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-2.5">
+              All-in-One Optical Management
+            </span>
+            <p class="text-sm sm:text-lg font-medium text-white/95 leading-relaxed">
+              Fralen CRM is a web-based platform designed to simplify optical retail operations, improve customer relationships, and support smarter business decisions.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. THE FRALEN CRM JOURNEY STORY (Continuous S-Curved Timeline) -->
+  <section id="journey" class="py-16 sm:py-24 px-4 sm:px-8 bg-[#fcfdfd]">
+    <div class="max-w-5xl mx-auto">
+      <!-- Centered Section Title -->
+      <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+        <span class="text-xs font-semibold uppercase tracking-widest text-gray-400">
+          Fralen CRM Journey
+        </span>
+        <h2 class="font-heading text-3xl sm:text-4xl font-bold text-gray-900 mt-1.5">
+          The Fralen CRM Journey Story
+        </h2>
+        <p class="mt-3 text-gray-500 text-sm sm:text-base leading-relaxed">
+          Transforming optical retail workflows with intuitive design. Explore our story of solo craftsmanship and dedication, creating software that simplifies store operations and enhances patient care.
+        </p>
+      </div>
+
+      <!-- S-CURVED PATH MILESTONES -->
+      <div class="space-y-12 lg:space-y-0">
+
+        <!-- Milestone 1: From Humble Beginnings (Image Left, Text Right) -->
+        <div class="timeline-step bridge-ltr lg:pb-8 reveal">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <!-- Left Image inside Teal C-Curve -->
+            <div class="lg:col-span-6">
+              <div class="curve-left-frame">
+                <div class="relative z-10 rounded-[115px] lg:rounded-l-[125px] lg:rounded-r-2xl overflow-hidden shadow-md bg-white">
+                  <img
+                    src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=900&q=80"
+                    onerror="this.src='https://placehold.co/750x450/1d4e4e/ffffff?text=From+Humble+Beginnings'"
+                    alt="Software Craftsmanship and Coding Beginnings"
+                    class="w-full h-56 sm:h-64 object-cover hover:scale-105 transition duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Text with Gold-Tinted Icon Badge -->
+            <div class="lg:col-span-6 lg:pl-4">
+              <div class="w-11 h-11 rounded-xl bg-goldBrand-soft text-goldBrand flex items-center justify-center mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                </svg>
+              </div>
+              <h3 class="font-heading text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                From Humble Beginnings
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Our story began with a focused solo vision: solving the everyday operational hurdles faced by optical store owners. Driven by a passion for blending optical retail practicality with modern web engineering, what started as a single developer's mission has grown into a dedicated platform built for clarity and speed.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Milestone 2: Milestones and Achievements (Text Left, Image Right) -->
+        <div class="timeline-step bridge-rtl lg:pb-8 reveal">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <!-- Left Text -->
+            <div class="lg:col-span-6 order-2 lg:order-1 lg:pr-4">
+              <div class="w-11 h-11 rounded-xl bg-goldBrand-soft text-goldBrand flex items-center justify-center mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0" />
+                </svg>
+              </div>
+              <h3 class="font-heading text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                Milestones and Achievements
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Along the journey, we reached crucial product milestones—launching structured digital prescription records (SPH, CYL, AXIS, ADD) and automated eye-test reminders. We expanded the platform beyond simple billing into an end-to-end optical workflow engine tailored for independent opticians.
+              </p>
+            </div>
+
+            <!-- Right Image inside Teal C-Curve -->
+            <div class="lg:col-span-6 order-1 lg:order-2">
+              <div class="curve-right-frame">
+                <div class="relative z-10 rounded-[115px] lg:rounded-r-[125px] lg:rounded-l-2xl overflow-hidden shadow-md bg-white">
+                  <img
+                    src="https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=900&q=80"
+                    onerror="this.src='https://placehold.co/750x450/1d4e4e/ffffff?text=Milestones+%26+Achievements'"
+                    alt="Optical Prescription Precision and Optometry Tools"
+                    class="w-full h-56 sm:h-64 object-cover hover:scale-105 transition duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Milestone 3: Innovation and Growth (Image Left, Text Right) -->
+        <div class="timeline-step bridge-ltr lg:pb-8 reveal">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <!-- Left Image -->
+            <div class="lg:col-span-6">
+              <div class="curve-left-frame">
+                <div class="relative z-10 rounded-[115px] lg:rounded-l-[125px] lg:rounded-r-2xl overflow-hidden shadow-md bg-white">
+                  <img
+                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80"
+                    onerror="this.src='https://placehold.co/750x450/1d4e4e/ffffff?text=Innovation+and+Growth'"
+                    alt="Smart Business Analytics Dashboard and Reports"
+                    class="w-full h-56 sm:h-64 object-cover hover:scale-105 transition duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Text -->
+            <div class="lg:col-span-6 lg:pl-4">
+              <div class="w-11 h-11 rounded-xl bg-goldBrand-soft text-goldBrand flex items-center justify-center mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                </svg>
+              </div>
+              <h3 class="font-heading text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                Innovation and Growth
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Innovation remains at the heart of Fralen CRM. We introduced real-time sales dashboards, smart Excel/CSV data migration with automatic column mapping, and expense tracking—eliminating tedious paperwork and empowering store owners with instant business clarity.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Milestone 4: Our Digital Reach (Text Left, Image Right) -->
+        <div class="timeline-step bridge-rtl lg:pb-8 reveal">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <!-- Left Text -->
+            <div class="lg:col-span-6 order-2 lg:order-1 lg:pr-4">
+              <div class="w-11 h-11 rounded-xl bg-goldBrand-soft text-goldBrand flex items-center justify-center mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
+              </div>
+              <h3 class="font-heading text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                Our Digital Reach
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                Today, Fralen CRM helps optical shops organize customer histories, track frame and lens inventory replenishment, and grow their online reputation with our built-in Review Assistant. Every release reflects real feedback from optical store owners.
+              </p>
+            </div>
+
+            <!-- Right Image -->
+            <div class="lg:col-span-6 order-1 lg:order-2">
+              <div class="curve-right-frame">
+                <div class="relative z-10 rounded-[115px] lg:rounded-r-[125px] lg:rounded-l-2xl overflow-hidden shadow-md bg-white">
+                  <img
+                    src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=80"
+                    onerror="this.src='https://placehold.co/750x450/1d4e4e/ffffff?text=Our+Digital+Reach'"
+                    alt="Modern Retail Customer Experience and Digital Reach"
+                    class="w-full h-56 sm:h-64 object-cover hover:scale-105 transition duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Milestone 5: Looking Ahead (Image Left, Text Right) -->
+        <div class="timeline-step curve-finish lg:pb-8 reveal">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            <!-- Left Image -->
+            <div class="lg:col-span-6">
+              <div class="curve-left-frame">
+                <div class="relative z-10 rounded-[115px] lg:rounded-l-[125px] lg:rounded-r-2xl overflow-hidden shadow-md bg-white">
+                  <img
+                    src="https://images.unsplash.com/photo-1509966756634-9c23dd6e6815?auto=format&fit=crop&w=900&q=80"
+                    onerror="this.src='https://placehold.co/750x450/1d4e4e/ffffff?text=Looking+Ahead'"
+                    alt="Future Optical Technology and Precision Eyewear"
+                    class="w-full h-56 sm:h-64 object-cover hover:scale-105 transition duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Text -->
+            <div class="lg:col-span-6 lg:pl-4">
+              <div class="w-11 h-11 rounded-xl bg-goldBrand-soft text-goldBrand flex items-center justify-center mb-4">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h3 class="font-heading text-xl sm:text-2xl font-bold text-gray-900 mb-3">
+                Looking Ahead
+              </h3>
+              <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                As we look to the future, our goal remains clear: to craft software that unites speed, clinical precision, and effortless usability. We are excited about upcoming smart automation and analytics upgrades designed to keep your optical shop running at its absolute best.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. INTERACTIVE FEATURES STRIP (From LinkedIn Showcase) -->
+  <section id="features" class="py-16 sm:py-24 px-4 sm:px-8 bg-white border-t border-gray-100">
+    <div class="max-w-6xl mx-auto reveal">
+      <div class="text-center max-w-2xl mx-auto mb-10">
+        <span class="text-xs font-semibold uppercase tracking-widest text-goldBrand">Key Modules</span>
+        <h2 class="font-heading text-2xl sm:text-4xl font-bold text-gray-900 mt-1.5">
+          Explore the Key Features of FRALEN CRM
+        </h2>
+        <p class="text-gray-500 text-sm sm:text-base mt-2">
+          Click any module below to inspect how it streamlines your optical shop workflow.
+        </p>
+      </div>
+
+      <!-- Interactive Module Filter Pills -->
+      <div class="flex flex-wrap items-center justify-center gap-2 mb-8" id="module-tabs">
+        <button data-filter="all" class="filter-btn active-tab bg-tealBrand text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-full transition cursor-pointer">
+          All Modules (7)
+        </button>
+        <button data-filter="clinical" class="filter-btn bg-tealBrand-soft text-tealBrand hover:bg-tealBrand hover:text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-full transition cursor-pointer">
+          Customer & Rx
+        </button>
+        <button data-filter="operations" class="filter-btn bg-tealBrand-soft text-tealBrand hover:bg-tealBrand hover:text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-full transition cursor-pointer">
+          Stock & Billing
+        </button>
+        <button data-filter="growth" class="filter-btn bg-tealBrand-soft text-tealBrand hover:bg-tealBrand hover:text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-full transition cursor-pointer">
+          Analytics & Growth
+        </button>
+      </div>
+
+      <!-- 7 Feature Cards Grid -->
+      <div id="features-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 1. Smart Dashboard & Reports -->
+        <div data-category="growth" class="feature-card p-6 rounded-2xl border border-gray-100 bg-[#fafcfc] hover:border-goldBrand/50 hover:shadow-lg transition group">
+          <div class="w-11 h-11 rounded-xl bg-tealBrand text-white flex items-center justify-center mb-4 group-hover:bg-goldBrand transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-900">Smart Dashboard & Reports</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+            Get a clear overview of business activities, daily sales, and important store performance information at a glance.
+          </p>
+        </div>
+
+        <!-- 2. Customer & Prescription Management -->
+        <div data-category="clinical" class="feature-card p-6 rounded-2xl border border-gray-100 bg-[#fafcfc] hover:border-goldBrand/50 hover:shadow-lg transition group">
+          <div class="w-11 h-11 rounded-xl bg-tealBrand text-white flex items-center justify-center mb-4 group-hover:bg-goldBrand transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-900">Customer & Prescription Management</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+            Organize customer records and maintain detailed optical prescription histories for convenient future reference.
+          </p>
+        </div>
+
+        <!-- 3. Smart Eye Test Reminders -->
+        <div data-category="clinical" class="feature-card p-6 rounded-2xl border border-gray-100 bg-[#fafcfc] hover:border-goldBrand/50 hover:shadow-lg transition group">
+          <div class="w-11 h-11 rounded-xl bg-tealBrand text-white flex items-center justify-center mb-4 group-hover:bg-goldBrand transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-900">Smart Eye Test Reminders</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+            Schedule eye-test follow-ups effortlessly and help customers remember when they are due for another check-up.
+          </p>
+        </div>
+
+        <!-- 4. Inventory & Purchase Management -->
+        <div data-category="operations" class="feature-card p-6 rounded-2xl border border-gray-100 bg-[#fafcfc] hover:border-goldBrand/50 hover:shadow-lg transition group">
+          <div class="w-11 h-11 rounded-xl bg-tealBrand text-white flex items-center justify-center mb-4 group-hover:bg-goldBrand transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-900">Inventory & Purchase Management</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+            Organize frames and lenses, monitor stock levels, maintain purchase records, and track stock replenishment activities.
+          </p>
+        </div>
+
+        <!-- 5. Sales & Expense Tracking -->
+        <div data-category="operations" class="feature-card p-6 rounded-2xl border border-gray-100 bg-[#fafcfc] hover:border-goldBrand/50 hover:shadow-lg transition group">
+          <div class="w-11 h-11 rounded-xl bg-tealBrand text-white flex items-center justify-center mb-4 group-hover:bg-goldBrand transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-900">Sales & Expense Tracking</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+            Record sales transactions, maintain organized sales history, and track operational costs for true profit clarity.
+          </p>
+        </div>
+
+        <!-- 6. Smart Data Migration -->
+        <div data-category="growth" class="feature-card p-6 rounded-2xl border border-gray-100 bg-[#fafcfc] hover:border-goldBrand/50 hover:shadow-lg transition group">
+          <div class="w-11 h-11 rounded-xl bg-tealBrand text-white flex items-center justify-center mb-4 group-hover:bg-goldBrand transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-900">Smart Data Migration</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+            Import existing Excel/CSV customer and stock data in seconds with automatic column detection and mapping support.
+          </p>
+        </div>
+
+        <!-- 7. Review Assistant (Spans neatly on desktop) -->
+        <div data-category="growth" class="feature-card lg:col-span-3 p-6 sm:p-7 rounded-2xl border border-goldBrand/30 bg-gradient-to-r from-tealBrand-soft via-white to-goldBrand-soft hover:shadow-lg transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div class="flex items-start sm:items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-goldBrand text-white flex items-center justify-center shrink-0 shadow-sm">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-heading font-bold text-lg text-gray-900">Review Assistant</h3>
+              <p class="text-gray-600 text-sm mt-1">
+                Generate service-specific review prompts automatically and guide satisfied customers directly to your optical shop's review page.
+              </p>
+            </div>
+          </div>
+          <a href="#demo" class="bg-tealBrand hover:bg-tealBrand-dark text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-full shrink-0 transition">
+            Try It Live
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. MEET THE SOLO FOUNDER SECTION (Styled like FurniFlex Team Card Row, Centered for Solo Founder) -->
+  <section id="founder" class="py-16 sm:py-24 px-4 sm:px-8 bg-[#f7fafa]">
+    <div class="max-w-4xl mx-auto reveal">
+      <div class="text-center max-w-xl mx-auto mb-12">
+        <span class="text-xs font-semibold uppercase tracking-widest text-goldBrand">
+          The Mind Behind Fralen CRM
+        </span>
+        <h2 class="font-heading text-3xl sm:text-4xl font-bold text-gray-900 mt-1.5">
+          Meet the Solo Founder
+        </h2>
+        <p class="text-gray-500 text-sm sm:text-base mt-2">
+          Built single-handedly from architecture to interface to empower optical store owners.
+        </p>
+      </div>
+
+      <!-- Centered Prominent Solo Founder Card matching FurniFlex Card Visuals -->
+      <div class="max-w-md mx-auto">
+        <div class="rounded-3xl overflow-hidden bg-white shadow-xl border border-gray-100 transition hover:-translate-y-1 duration-300">
+          <!-- Top Light Slate Portrait / Profile Area -->
+          <div class="relative bg-gradient-to-b from-[#e8efef] to-[#f3f6f6] pt-10 pb-7 px-6 flex flex-col items-center">
+            <span class="absolute top-4 right-4 bg-goldBrand text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-xs">
+              100% Solo Built
+            </span>
+
+            <!-- Founder Avatar Circle -->
+            <div class="w-32 h-32 rounded-full p-1.5 bg-white shadow-md ring-2 ring-tealBrand/20">
+              <div class="w-full h-full rounded-full bg-tealBrand flex flex-col items-center justify-center text-white">
+                <span class="font-heading font-extrabold text-3xl tracking-tight">SN</span>
+                <span class="text-[10px] uppercase tracking-widest text-goldBrand font-semibold mt-0.5">Founder</span>
+              </div>
+            </div>
+
+            <!-- Bio -->
+            <p class="text-center text-gray-600 text-sm leading-relaxed mt-5">
+              Building Fralen CRM single-handedly to simplify optical retail operations, improve customer relationships, and support smarter business decisions.
+            </p>
+
+            <!-- Direct Interactive Contact Actions (Phone & Email with tel:/mailto: + One-Click Copy) -->
+            <div class="mt-5 w-full space-y-2.5">
+              <!-- Phone Row -->
+              <div class="flex items-center justify-between bg-white border border-gray-200/80 rounded-xl px-3.5 py-2 text-xs sm:text-sm">
+                <a href="tel:+919304477821" class="flex items-center gap-2 text-gray-800 hover:text-tealBrand font-medium">
+                  <svg class="w-4 h-4 text-tealBrand shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                  </svg>
+                  <span>+91 93044 77821</span>
+                </a>
+                <button onclick="copyText('+91 93044 77821', 'Phone number copied!')" class="text-[11px] font-semibold text-goldBrand-dark bg-goldBrand-soft hover:bg-goldBrand hover:text-white px-2.5 py-1 rounded-lg transition cursor-pointer">
+                  Copy
+                </button>
+              </div>
+
+              <!-- Email Row -->
+              <div class="flex items-center justify-between bg-white border border-gray-200/80 rounded-xl px-3.5 py-2 text-xs sm:text-sm">
+                <a href="mailto:mdnasrullah911@gmail.com" class="flex items-center gap-2 text-gray-800 hover:text-tealBrand font-medium truncate pr-2">
+                  <svg class="w-4 h-4 text-goldBrand shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  </svg>
+                  <span class="truncate">mdnasrullah911@gmail.com</span>
+                </a>
+                <button onclick="copyText('mdnasrullah911@gmail.com', 'Email address copied!')" class="text-[11px] font-semibold text-goldBrand-dark bg-goldBrand-soft hover:bg-goldBrand hover:text-white px-2.5 py-1 rounded-lg transition shrink-0 cursor-pointer">
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Deep Teal Bar (Matches FurniFlex Card Footer) -->
+          <div class="bg-tealBrand text-white px-6 py-4 flex items-center justify-between gap-3">
+            <div>
+              <h3 class="font-heading font-bold text-lg leading-tight">Shaikh Nasrullah</h3>
+              <p class="text-xs text-teal-200 mt-0.5">Solo Founder & Full-Stack Developer</p>
+            </div>
+
+            <!-- Social Circle Buttons (LinkedIn, Instagram, GitHub) -->
+            <div class="flex items-center gap-2">
+              <a href="https://www.linkedin.com/in/shaikh-nasrullah-4188a5347?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn" class="w-8 h-8 rounded-full bg-white/15 hover:bg-goldBrand text-white flex items-center justify-center transition">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                </svg>
+              </a>
+              <a href="https://www.instagram.com/fralen_optical_crm?mdxt=MWZ4Z3l5NHd3azVhaA==" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="@fralen_optical_crm" class="w-8 h-8 rounded-full bg-white/15 hover:bg-goldBrand text-white flex items-center justify-center transition">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+              <a href="https://Github.com/shaikhnasrullah/" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="shaikhnasrullah" class="w-8 h-8 rounded-full bg-white/15 hover:bg-goldBrand text-white flex items-center justify-center transition">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEMO REQUEST CALLOUT SECTION -->
+  <section id="demo" class="py-14 px-4 sm:px-8 bg-white">
+    <div class="max-w-5xl mx-auto reveal">
+      <div class="rounded-3xl bg-tealBrand text-white p-8 sm:p-11 shadow-xl flex flex-col lg:flex-row items-center justify-between gap-8">
+        <div class="space-y-2 text-center lg:text-left max-w-xl">
+          <span class="inline-block bg-goldBrand text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+            Free Walkthrough
+          </span>
+          <h2 class="font-heading text-2xl sm:text-3xl font-bold">
+            Experience Fralen CRM in Your Optical Shop
+          </h2>
+          <p class="text-teal-100/85 text-sm sm:text-base">
+            Schedule a personalized 1-on-1 demo with Shaikh Nasrullah and see how fast you can manage prescriptions, reminders, and stock.
+          </p>
+        </div>
+
+        <form id="demo-request-form" class="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <input
+            type="text"
+            required
+            placeholder="Your Optical Shop / Phone"
+            class="bg-white text-gray-900 placeholder-gray-400 text-sm px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-goldBrand min-w-[240px]"
+          />
+          <button
+            type="submit"
+            class="bg-goldBrand hover:bg-goldBrand-dark text-white font-semibold text-sm px-6 py-3 rounded-xl shadow-md transition whitespace-nowrap cursor-pointer"
+          >
+            Book Demo
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. MATCHING DEEP TEAL FOOTER (#1d4e4e) -->
+  <footer class="bg-tealBrand text-white pt-14 pb-8 px-4 sm:px-8 border-t border-white/10">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-10 pb-10 border-b border-white/15">
+        <!-- Brand Column -->
+        <div class="md:col-span-5 space-y-4">
+          <a href="#" class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-lg bg-goldBrand flex items-center justify-center text-white font-heading font-extrabold text-lg">
+              F
+            </div>
+            <span class="font-heading font-bold text-xl">
+              Fralen CRM<span class="text-goldBrand">.</span>
+            </span>
+          </a>
+          <p class="text-teal-100/80 text-sm leading-relaxed max-w-sm">
+            A smart web-based management platform built for optical shops to streamline prescriptions, customer relationships, eye-test reminders, and inventory control.
+          </p>
+          <div class="flex items-center gap-3 pt-1">
+            <a href="https://www.instagram.com/fralen_optical_crm?mdxt=MWZ4Z3l5NHd3azVhaA==" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="w-9 h-9 rounded-full bg-white/10 hover:bg-goldBrand flex items-center justify-center transition">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+            <a href="https://www.linkedin.com/in/shaikh-nasrullah-4188a5347?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" class="w-9 h-9 rounded-full bg-white/10 hover:bg-goldBrand flex items-center justify-center transition">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+              </svg>
+            </a>
+            <a href="https://Github.com/shaikhnasrullah/" target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="w-9 h-9 rounded-full bg-white/10 hover:bg-goldBrand flex items-center justify-center transition">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="md:col-span-3 space-y-3">
+          <h4 class="font-heading font-bold text-sm uppercase tracking-wider text-goldBrand">Quick Links</h4>
+          <ul class="space-y-2 text-sm text-teal-100/80">
+            <li><a href="http://www.fralencrm.in" class="hover:text-white transition">Discover Fralen CRM</a></li>
+            <li><a href="#journey" class="hover:text-white transition">The Journey Story</a></li>
+            <li><a href="#features" class="hover:text-white transition">Key Features</a></li>
+            <li><a href="#founder" class="hover:text-white transition">Solo Founder Profile</a></li>
+            <li><a href="#demo" class="hover:text-white transition">Request a Demo</a></li>
+          </ul>
+        </div>
+
+        <!-- Contact Details -->
+        <div class="md:col-span-4 space-y-3">
+          <h4 class="font-heading font-bold text-sm uppercase tracking-wider text-goldBrand">Contact Details</h4>
+          <ul class="space-y-2.5 text-sm text-teal-100/85">
+            <li><strong class="text-white">Founder:</strong> Shaikh Nasrullah</li>
+            <li>
+              <strong class="text-white">Phone:</strong>
+              <a href="tel:+919304477821" class="hover:underline ml-1">+91 93044 77821</a>
+            </li>
+            <li>
+              <strong class="text-white">Email:</strong>
+              <a href="mailto:mdnasrullah911@gmail.com" class="hover:underline ml-1">mdnasrullah911@gmail.com</a>
+            </li>
+            <li>
+              <strong class="text-white">Instagram:</strong>
+              <a href="https://www.instagram.com/fralen_optical_crm?mdxt=MWZ4Z3l5NHd3azVhaA==" target="_blank" rel="noopener noreferrer" class="hover:underline ml-1">@fralen_optical_crm</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-teal-200/75">
+        <p>&copy; <span id="current-year"></span> Fralen CRM. Designed & Built by Shaikh Nasrullah. All rights reserved.</p>
+        <p>Smart Management Platform for Optical Shops</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Interactive JavaScript -->
+  <script>
+    // Set current year dynamically
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Mobile Navigation Toggle
+    const mobileNavBtn = document.getElementById('mobile-nav-btn');
+    const mobileNavMenu = document.getElementById('mobile-nav-menu');
+    mobileNavBtn.addEventListener('click', () => {
+      mobileNavMenu.classList.toggle('hidden');
+    });
+    mobileNavMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => mobileNavMenu.classList.add('hidden'));
+    });
+
+    // Quick Search Bar Toggle & Filter
+    const searchToggleBtn = document.getElementById('search-toggle-btn');
+    const searchBarPanel = document.getElementById('search-bar-panel');
+    const featureSearchInput = document.getElementById('feature-search-input');
+
+    searchToggleBtn.addEventListener('click', () => {
+      searchBarPanel.classList.toggle('hidden');
+      if (!searchBarPanel.classList.contains('hidden')) {
+        featureSearchInput.focus();
+      }
+    });
+
+    featureSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      document.querySelectorAll('.feature-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+
+    // Interactive Module Category Filter Tabs
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const featureCards = document.querySelectorAll('.feature-card');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('bg-tealBrand', 'text-white');
+          b.classList.add('bg-tealBrand-soft', 'text-tealBrand');
+        });
+        btn.classList.remove('bg-tealBrand-soft', 'text-tealBrand');
+        btn.classList.add('bg-tealBrand', 'text-white');
+
+        const filter = btn.getAttribute('data-filter');
+        featureCards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category') === filter) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Toast Helper
+    function showToast(message) {
+      const toast = document.getElementById('toast-notification');
+      document.getElementById('toast-text').textContent = message;
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 2800);
+    }
+
+    // One-Click Copy Helper
+    function copyText(value, label) {
+      const tempInput = document.createElement('input');
+      tempInput.value = value;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        showToast(label);
+      } catch (err) {
+        showToast('Unable to copy automatically.');
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    // Demo Request Form Submission
+    document.getElementById('demo-request-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      showToast('Demo request sent! Shaikh Nasrullah will contact you shortly.');
+      this.reset();
+    });
+
+    // Scroll Reveal Animations
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>
